@@ -28,8 +28,6 @@ A n x 1 vector with class labels for instances in the training set
 }
  
 }
-\details{
-}
 \value{
 Returns a list
 \item{scoringmatrix }{Binary matrix with 0 (not selected) or 1 (selected) assignment in each iteration}
@@ -40,8 +38,6 @@ Returns a list
 \item{trainacc}{Classification accuracy using the optimal set of features in the training set}
 \item{testacc}{Classification accuracy using the optimal set of features in the test set}
 \item{testauc}{AUC using the optimal set of features in the test set}
-}
-\references{
 }
 \author{
 Karan Uppal

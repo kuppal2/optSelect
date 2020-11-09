@@ -1,0 +1,1 @@
+Please refer to the "inst/install_optSelect.R" and "inst/run_example.R" files for instructions on installing the package and for an example run script. Please refer to the "man" folder for description of arguments.

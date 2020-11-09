@@ -3,14 +3,12 @@ data(Golub)
 
 # call run_pso function()
 system.time(optselect_res<-run_pso(trainm=Golub$trainm,trainclass=Golub$trainclass,testm=Golub$testm,testclass=Golub$testclass,
-outloc="/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/res/",maxnum=5))
+outloc="~/optSelectGolub/",maxnum=5,num_part=5))
 
-
+print("Selected features:")
 print(optselect_res$bestfeatnames)
-print(optselect_res$test_auc)
+print("Test set AUC:")
+print(optselect_res$testauc)
 
-scoringmatrix<-as.data.frame(optselect_res$scoringmatrix)
-print(scoringmatrix)
-print(feat_names[feat_ind])
 print("Complete")
 

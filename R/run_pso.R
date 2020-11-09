@@ -28,9 +28,9 @@ function(trainm,trainclass,testm,testclass,outloc,maxnum=5,
                   evalMode="CV2",
                   minfitnessthresh=50,
                   minnum=3,inertia_method="global",particlebehav_method="randbased",constriction_factor=1,
-                  select.global.best=TRUE,numnodes=4,itr.terminate=FALSE,train.pct=0.8,min.iter.select=1,
+                  select.global.best=TRUE,numnodes=4,itr.terminate=FALSE,train.pct=0.7,min.iter.select=1,
                   bootstrap.itr=10,evalFunc=NA,boostweight=NA,stage1.featsel.methods=c("limma","lasso","rfe","elasticnet", "f.test"),
-                  RankAggreg.run=TRUE,...)
+                  RankAggreg.run=FALSE,...)
 {
 	
 suppressWarnings(dir.create(outloc))

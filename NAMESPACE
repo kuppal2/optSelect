@@ -1,2 +1,6 @@
+<<<<<<< HEAD
 export(run_pso,performCMA,b3pso,eval_fit_test_diff,get_KIindex,get_DSindex,find_similar_samples,nn_search,mdist,svm_cv,evalFunc_multiobj)
+=======
+export(run_pso,performCMA,b3pso,eval_fit_test_diff,get_KIindex,get_DSindex,find_similar_samples,nn_search,mdist,svm_cv,evalFunc_multiobj,)
+>>>>>>> 53e39c9aa29f120f9c9571d6158c60dfad65abf5
 import(snow,e1071,yaImpute,pROC,bioDist,RankAggreg,CMA,expm)

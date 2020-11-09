@@ -30,7 +30,11 @@ function(trainm,trainclass,testm,testclass,outloc,maxnum=5,
                   minnum=3,inertia_method="global",particlebehav_method="randbased",constriction_factor=1,
                   select.global.best=TRUE,numnodes=4,itr.terminate=FALSE,train.pct=0.8,min.iter.select=1,
                   bootstrap.itr=10,evalFunc=NA,boostweight=NA,stage1.featsel.methods=c("limma","lasso","rfe","elasticnet", "f.test"),
+<<<<<<< HEAD
                   RankAggreg.run=TRUE,...)
+=======
+                  RankAggreg.run=FALSE,...)
+>>>>>>> 53e39c9aa29f120f9c9571d6158c60dfad65abf5
 {
 	
 suppressWarnings(dir.create(outloc))

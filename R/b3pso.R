@@ -217,8 +217,13 @@ prob_behavior_particles<-array(0, dim=c(num_part, dim(transition_matrix)[2]))
 	
 	clusterEvalQ(cl, library(MASS))
 	clusterEvalQ(cl, library(CMA))
+<<<<<<< HEAD
 #	clusterCall(cl, function() library(pROC))
 	clusterEvalQ(cl, library(pROC))
+=======
+	clusterCall(cl, function() library(pROC))
+ 	
+>>>>>>> 53e39c9aa29f120f9c9571d6158c60dfad65abf5
 	
 	itr_data={}
         k<-0

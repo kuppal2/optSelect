@@ -1,0 +1,7772 @@
+
+R version 3.4.0 (2017-04-21) -- "You Stupid Darkness"
+Copyright (C) 2017 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> #.libPaths("/home/kuppal3/karan_libs/Rlibs")
+> library(snow)
+> library(e1071)
+> library(yaImpute)
+
+Attaching package: ‘yaImpute’
+
+The following object is masked from ‘package:e1071’:
+
+    impute
+
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+> library(bioDist)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘parallel’
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, clusterSplit, makeCluster, parApply,
+    parCapply, parLapply, parRapply, parSapply, splitIndices,
+    stopCluster
+
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following object is masked from ‘package:pROC’:
+
+    var
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parRapply, parSapply
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, cbind, colMeans, colnames,
+    colSums, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+    grepl, intersect, is.unsorted, lapply, lengths, Map, mapply, match,
+    mget, order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rowMeans, rownames, rowSums, sapply, setdiff, sort,
+    table, tapply, union, unique, unsplit, which, which.max, which.min
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: KernSmooth
+KernSmooth 2.23 loaded
+Copyright M. P. Wand 1997-2009
+> #library(CMA, lib="/home/kuppal3/karan_libs/Rlibs/")
+> library(RankAggreg)
+> library(CMA)
+
+Attaching package: ‘CMA’
+
+The following object is masked from ‘package:pROC’:
+
+    roc
+
+The following object is masked from ‘package:e1071’:
+
+    tune
+
+> library(expm)
+Loading required package: Matrix
+
+Attaching package: ‘expm’
+
+The following object is masked from ‘package:Matrix’:
+
+    expm
+
+> library(plyr)
+
+Attaching package: ‘plyr’
+
+The following object is masked from ‘package:CMA’:
+
+    join
+
+> library(doParallel)
+Loading required package: foreach
+Loading required package: iterators
+> cl<-makeCluster(1)
+> 
+> 
+> args<-commandArgs(trailingOnly=TRUE)
+> 
+> #dirloc<-"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/"
+> #sname<-paste("/home/stu/kuppal3/Research/Feature_selection/Rcode/versionnov2014/OCFS_",args[9],".R",sep="")
+> 
+> sname<-paste("/home/kuppal2/Documents/Projects/xmsPANDA/Other/scripts/OCFS_",args[9],".R",sep="")
+> source(sname)
+> print(sname)
+[1] "/home/kuppal2/Documents/Projects/xmsPANDA/Other/scripts/OCFS_vfeb817_v5C_2018_v12.R"
+> 
+> dirloc<-"/home/kuppal2/Documents/Projects/xmsPANDA/Other/Datasets/MAQCII_BreastCancer/"
+> setwd(dirloc)
+> 
+> outloc<-paste(dirloc,"/OCFSvmay2415_MAQCPCR",args[9],"/",sep="")
+> 
+> sname<-paste(dirloc,"MaqcIIbr.Rda",sep="")
+> load(sname)
+> 
+> trainm<-MaqcIIbr$trainx
+> testm<-MaqcIIbr$testx
+> trainclass<-MaqcIIbr$trainPCRvsRD
+> testclass<-MaqcIIbr$testPCRvsRD
+> 
+> trainm<-trainm[,-c(22284)]
+> testm<-testm[,-c(22284)]
+> trainm<-apply(trainm,2,as.numeric)
+> testm<-apply(testm,2,as.numeric)
+> 
+> trainm<-cbind(trainclass,trainm)
+> testm<-cbind(testclass,testm)
+> 
+> trainm<-na.omit(trainm)
+> testm<-na.omit(testm)
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/home/kuppal2/Documents/Projects/xmsPANDA/Other/Datasets/MAQCII_BreastCancer//OCFSvmay2415_MAQCPCRvfeb817_v5C_2018_v12' already exists
+> setwd(outloc)
+> 
+> 
+> trainm<-as.matrix(trainm)
+> testm<-as.matrix(testm)
+> trainclass<-trainm[,1] #CMAres$modtrainclass
+> testclass<-testm[,1] #CMAres$modtestclass
+> trainm<-trainm[,-c(1)] #CMAres$modtrainmata
+> testm<-testm[,-c(1)] #CMAres$modtestmata
+> 
+> #a: Confusions
+> #b: Neighbors
+> #c: Global
+> #d: Death
+> 
+> a<-c(0.25,0.25,0.25,0.25)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0.25,0.25,0.5,0)
+> d<-c(0.9,0.1,0,0.1)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0,0.5,0.5,0)
+> d<-c(0.9,0.1,0,0)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.2,0.3,0.4,0.1)
+> c<-c(0,0.4,0.4,0.2)
+> d<-c(0.9,0.1,0,0)
+> 
+> transition_matrix<-rbind(a,b,c,d)
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/home/kuppal2/Documents/Projects/xmsPANDA/Other/Datasets/MAQCII_BreastCancer//OCFSvmay2415_MAQCPCRvfeb817_v5C_2018_v12' already exists
+> setwd(outloc)
+> temp2=t(trainm)
+> temp2=apply(temp2, 2, function(x){which(x=="MD")})
+> temp2=unlist(temp2)
+> temp2=unique(temp2)
+> if(length(temp2)>1)
++ {
++ 	trainm=trainm[,-c(temp2)]
++ 
++ 	rm(temp2)
++ }
+> 
+> boostweight=rep(0,dim(trainm)[2])
+> 
+> #if(FALSE)
+> {
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("limma"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("lasso"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("rfe"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("elasticnet"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ if(FALSE){
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("rf"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ }
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("f.test"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ }
+[1] "dim of trainm is "
+[1]   130 22283
+[1]   130 22283
+[1] "length of factcols"
+[1] 0
+[1]   130 22283
+[1]   100 22283
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 2 1 2 2
+Levels: 1 2
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] 6.7866 8.0963 7.4812
+[1] "norm train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "mean of feat 2"
+[1] 8.273493
+[1] "sd of feat 2"
+[1] 0.7010279
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   130 22283
+GeneSelection: iteration 1 
+
+Attaching package: ‘limma’
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    plotMA
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "limma:3:82.3076923076923"
+[1] "limma:3:82.3076923076923"
+[1] "limma:4:78.4615384615385"
+[1] "limma:3:82.3076923076923"
+[1] "limma:5:78.4615384615385"
+[1] "limma:3:82.3076923076923"
+[1] "limma:6:80.7692307692308"
+[1] "limma:3:82.3076923076923"
+[1] "limma:7:79.2307692307692"
+[1] "limma:3:82.3076923076923"
+[1] "limma:8:80.7692307692308"
+[1] "limma:3:82.3076923076923"
+[1] "limma:9:81.5384615384615"
+[1] "limma:3:82.3076923076923"
+[1] "limma:10:80"
+[1] "limma:3:82.3076923076923"
+[1] "dim of scoring matrix is "
+[1] 22283     1
+[1] 22283
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+[1]  3490 13543 18415
+     203963_at 214164_x_at 219051_x_at
+[1,]   12.0638     12.6474      8.5236
+[2,]   11.3553     11.7852      8.9626
+[3,]   12.3832     12.7464     10.7458
+     203963_at 214164_x_at 219051_x_at
+[1,]   12.4052     12.7392      9.5138
+[2,]   10.4033     10.9092      5.3641
+[3,]    9.8307     10.6696      7.1097
+[1] "numgenes selected:3"
+[1] "test acc:0.74"
+[1] "test AUC acc:0.709803921568627"
+[1] "10 fold train80.7692307692308"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 19  8
+         2 14 89
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 10 21
+        2  5 64
+[1] "train acc:0.830769230769231"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 19  8
+         2 14 89
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   130 22283
+[1]   130 22283
+[1] "length of factcols"
+[1] 0
+[1]   130 22283
+[1]   100 22283
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 2 1 2 2
+Levels: 1 2
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] 6.7866 8.0963 7.4812
+[1] "norm train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "mean of feat 2"
+[1] 8.273493
+[1] "sd of feat 2"
+[1] 0.7010279
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   130 22283
+GeneSelection: iteration 1 
+Loaded glmnet 2.0-16
+
+
+Attaching package: ‘glmnet’
+
+The following object is masked from ‘package:pROC’:
+
+    auc
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+genelist
+ 1083 15464  2667  4208  8166 11253 11968  2211  4756  8207 18226  1326  1732 
+   18    16    14    14    14    12    12     8     6     6     6     4     4 
+ 3155  4352  4874  5278 18415 20137  2841  3223  4349  7691  8292  8550 10271 
+    4     4     4     4     4     4     2     2     2     2     2     2     2 
+10980 12226 12517 16398 16738 18220 18313 18456 18802 19380 20350 20616 21064 
+    2     2     2     2     2     2     2     2     2     2     2     2     2 
+21615 
+    2 
+[1] "varselmethod"
+[1] "forward"
+[1] "lasso:3:78.4615384615385"
+[1] "lasso:3:78.4615384615385"
+[1] "lasso:4:86.9230769230769"
+[1] "lasso:4:86.9230769230769"
+[1] "lasso:5:83.8461538461538"
+[1] "lasso:4:86.9230769230769"
+[1] "lasso:6:87.6923076923077"
+[1] "lasso:6:87.6923076923077"
+[1] "lasso:7:86.1538461538462"
+[1] "lasso:6:87.6923076923077"
+[1] "lasso:8:85.3846153846154"
+[1] "lasso:6:87.6923076923077"
+[1] "lasso:9:87.6923076923077"
+[1] "lasso:9:87.6923076923077"
+[1] "lasso:10:88.4615384615385"
+[1] "lasso:10:88.4615384615385"
+[1] "dim of scoring matrix is "
+[1] 22283     1
+[1] 22283
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]  1083  2211  2667  4208  4756  8166  8207 11253 11968 15464
+     201555_at 202683_s_at 203139_at 204681_s_at 205229_s_at 208670_s_at
+[1,]    9.9323      8.8393    9.7965      7.5046      6.8695      8.6539
+[2,]    9.5628      8.4030    8.3696      8.7229      5.4533      9.5953
+[3,]   10.3905      8.3998    9.0933      6.9584      6.2767      9.8134
+     208712_at 211864_s_at 212583_at 216092_s_at
+[1,]   10.9476     10.7931    6.8476     10.4159
+[2,]   11.4622      9.0349    6.8369      9.7648
+[3,]   10.4996     10.4934    7.3452      8.3641
+     201555_at 202683_s_at 203139_at 204681_s_at 205229_s_at 208670_s_at
+[1,]    9.9499      8.8732    8.8140      8.7098      5.2668      8.8319
+[2,]    9.6616      8.5511    8.7652      8.1223      7.1769      9.8519
+[3,]    9.4638      8.5826    9.4426      7.5006      6.9284      9.3521
+     208712_at 211864_s_at 212583_at 216092_s_at
+[1,]   10.8225      9.2348    7.5912     10.6963
+[2,]    9.8721     10.1938    7.5112      9.3780
+[3,]   10.2362      8.4931    4.6920      9.3840
+[1] "numgenes selected:10"
+[1] "test acc:0.76"
+[1] "test AUC acc:0.666666666666667"
+[1] "10 fold train89.2307692307692"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 28  2
+         2  5 95
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1  8 17
+        2  7 68
+[1] "train acc:0.946153846153846"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 28  2
+         2  5 95
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   130 22283
+[1]   130 22283
+[1] "length of factcols"
+[1] 0
+[1]   130 22283
+[1]   100 22283
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 2 1 2 2
+Levels: 1 2
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] 6.7866 8.0963 7.4812
+[1] "norm train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "mean of feat 2"
+[1] 8.273493
+[1] "sd of feat 2"
+[1] 0.7010279
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   130 22283
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "rfe:3:76.9230769230769"
+[1] "rfe:3:76.9230769230769"
+[1] "rfe:4:76.9230769230769"
+[1] "rfe:4:76.9230769230769"
+[1] "rfe:5:82.3076923076923"
+[1] "rfe:5:82.3076923076923"
+[1] "rfe:6:83.0769230769231"
+[1] "rfe:6:83.0769230769231"
+[1] "rfe:7:80.7692307692308"
+[1] "rfe:6:83.0769230769231"
+[1] "rfe:8:83.0769230769231"
+[1] "rfe:8:83.0769230769231"
+[1] "rfe:9:85.3846153846154"
+[1] "rfe:9:85.3846153846154"
+[1] "rfe:10:84.6153846153846"
+[1] "rfe:9:85.3846153846154"
+[1] "dim of scoring matrix is "
+[1] 22283     1
+[1] 22283
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+[1]  4756  5005  5223  5240  5278  5357  8388  8667 13990
+     205229_s_at 205478_at 205696_s_at 205713_s_at 205751_at 205830_at
+[1,]      6.8695    7.9799     11.6168     10.0607    5.3569    9.0445
+[2,]      5.4533    6.0596      9.5737      5.6228    3.7733    9.6145
+[3,]      6.2767    5.5057      7.2600      6.8404    2.5009    7.0195
+     208893_s_at 209173_at 214612_x_at
+[1,]      4.0949   12.9392      6.0516
+[2,]      9.2703   14.1501      5.7915
+[3,]      3.9487   14.5585      3.4135
+     205229_s_at 205478_at 205696_s_at 205713_s_at 205751_at 205830_at
+[1,]      5.2668    4.8386      9.0616      5.2933    5.4450    8.7696
+[2,]      7.1769   11.9784      7.7288      4.3142    6.3482    7.0550
+[3,]      6.9284   12.5884      7.1560      4.5240    6.0619    6.8984
+     208893_s_at 209173_at 214612_x_at
+[1,]      7.6049   13.2041      6.2012
+[2,]      8.9154   11.3631      7.0485
+[3,]      9.1121   11.1800      5.5564
+[1] "numgenes selected:9"
+[1] "test acc:0.79"
+[1] "test AUC acc:0.629411764705882"
+[1] "10 fold train84.6153846153846"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 26  2
+         2  7 95
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1  6 12
+        2  9 73
+[1] "train acc:0.930769230769231"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 26  2
+         2  7 95
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   130 22283
+[1]   130 22283
+[1] "length of factcols"
+[1] 0
+[1]   130 22283
+[1]   100 22283
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 2 1 2 2
+Levels: 1 2
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] 6.7866 8.0963 7.4812
+[1] "norm train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "mean of feat 2"
+[1] 8.273493
+[1] "sd of feat 2"
+[1] 0.7010279
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   130 22283
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "elasticnet:3:78.4615384615385"
+[1] "elasticnet:3:78.4615384615385"
+[1] "elasticnet:4:84.6153846153846"
+[1] "elasticnet:4:84.6153846153846"
+[1] "elasticnet:5:81.5384615384615"
+[1] "elasticnet:4:84.6153846153846"
+[1] "elasticnet:6:84.6153846153846"
+[1] "elasticnet:6:84.6153846153846"
+[1] "elasticnet:7:85.3846153846154"
+[1] "elasticnet:7:85.3846153846154"
+[1] "elasticnet:8:85.3846153846154"
+[1] "elasticnet:8:85.3846153846154"
+[1] "elasticnet:9:83.8461538461538"
+[1] "elasticnet:8:85.3846153846154"
+[1] "elasticnet:10:87.6923076923077"
+[1] "elasticnet:10:87.6923076923077"
+[1] "dim of scoring matrix is "
+[1] 22283     1
+[1] 22283
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]  1083  2667  3155  4352  4874  8166  8207 11253 11968 15464
+     201555_at 203139_at 203628_at 204825_at 205347_s_at 208670_s_at 208712_at
+[1,]    9.9323    9.7965   10.7755    8.9393      7.7184      8.6539   10.9476
+[2,]    9.5628    8.3696    9.8410    7.7652      7.0526      9.5953   11.4622
+[3,]   10.3905    9.0933    9.4169    9.9136      7.7606      9.8134   10.4996
+     211864_s_at 212583_at 216092_s_at
+[1,]     10.7931    6.8476     10.4159
+[2,]      9.0349    6.8369      9.7648
+[3,]     10.4934    7.3452      8.3641
+     201555_at 203139_at 203628_at 204825_at 205347_s_at 208670_s_at 208712_at
+[1,]    9.9499    8.8140    9.4326    7.9851      8.3232      8.8319   10.8225
+[2,]    9.6616    8.7652    9.8046    5.2744      7.4873      9.8519    9.8721
+[3,]    9.4638    9.4426    7.9079    5.9481      8.2573      9.3521   10.2362
+     211864_s_at 212583_at 216092_s_at
+[1,]      9.2348    7.5912     10.6963
+[2,]     10.1938    7.5112      9.3780
+[3,]      8.4931    4.6920      9.3840
+[1] "numgenes selected:10"
+[1] "test acc:0.76"
+[1] "test AUC acc:0.72156862745098"
+[1] "10 fold train88.4615384615385"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 26  3
+         2  7 94
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 10 19
+        2  5 66
+[1] "train acc:0.923076923076923"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 26  3
+         2  7 94
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   130 22283
+[1]   130 22283
+[1] "length of factcols"
+[1] 0
+[1]   130 22283
+[1]   100 22283
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 2 1 2 2
+Levels: 1 2
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] 6.7866 8.0963 7.4812
+[1] "norm train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "mean of feat 2"
+[1] 8.273493
+[1] "sd of feat 2"
+[1] 0.7010279
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   130 22283
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "f.test:3:82.3076923076923"
+[1] "f.test:3:82.3076923076923"
+[1] "f.test:4:80.7692307692308"
+[1] "f.test:3:82.3076923076923"
+[1] "f.test:5:78.4615384615385"
+[1] "f.test:3:82.3076923076923"
+[1] "f.test:6:80.7692307692308"
+[1] "f.test:3:82.3076923076923"
+[1] "f.test:7:81.5384615384615"
+[1] "f.test:3:82.3076923076923"
+[1] "f.test:8:81.5384615384615"
+[1] "f.test:3:82.3076923076923"
+[1] "f.test:9:80"
+[1] "f.test:3:82.3076923076923"
+[1] "f.test:10:81.5384615384615"
+[1] "f.test:3:82.3076923076923"
+[1] "dim of scoring matrix is "
+[1] 22283     1
+[1] 22283
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+[1]  3490 13543 18415
+     203963_at 214164_x_at 219051_x_at
+[1,]   12.0638     12.6474      8.5236
+[2,]   11.3553     11.7852      8.9626
+[3,]   12.3832     12.7464     10.7458
+     203963_at 214164_x_at 219051_x_at
+[1,]   12.4052     12.7392      9.5138
+[2,]   10.4033     10.9092      5.3641
+[3,]    9.8307     10.6696      7.1097
+[1] "numgenes selected:3"
+[1] "test acc:0.74"
+[1] "test AUC acc:0.709803921568627"
+[1] "10 fold train80.7692307692308"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 19  8
+         2 14 89
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 10 21
+        2  5 64
+[1] "train acc:0.830769230769231"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 19  8
+         2 14 89
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+There were 30 warnings (use warnings() to see them)
+> #1
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("limma","lasso","rfe","elasticnet", "f.test"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   130 22283
+[1]   130 22283
+[1] "length of factcols"
+[1] 0
+[1]   130 22283
+[1]   100 22283
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 2 1 2 2
+Levels: 1 2
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] 6.7866 8.0963 7.4812
+[1] "norm train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "mean of feat 2"
+[1] 8.273493
+[1] "sd of feat 2"
+[1] 0.7010279
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   130 22283
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "limma:3:82.3076923076923"
+[1] "limma:3:82.3076923076923"
+[1] "limma:4:78.4615384615385"
+[1] "limma:3:82.3076923076923"
+[1] "limma:5:78.4615384615385"
+[1] "limma:3:82.3076923076923"
+[1] "limma:6:80.7692307692308"
+[1] "limma:3:82.3076923076923"
+[1] "limma:7:79.2307692307692"
+[1] "limma:3:82.3076923076923"
+[1] "limma:8:80.7692307692308"
+[1] "limma:3:82.3076923076923"
+[1] "limma:9:81.5384615384615"
+[1] "limma:3:82.3076923076923"
+[1] "limma:10:80"
+[1] "limma:3:82.3076923076923"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+genelist
+ 1083 15464  2667  4208  8166 11253 11968  2211  4756  8207 18226  1326  1732 
+   18    16    14    14    14    12    12     8     6     6     6     4     4 
+ 3155  4352  4874  5278 18415 20137  2841  3223  4349  7691  8292  8550 10271 
+    4     4     4     4     4     4     2     2     2     2     2     2     2 
+10980 12226 12517 16398 16738 18220 18313 18456 18802 19380 20350 20616 21064 
+    2     2     2     2     2     2     2     2     2     2     2     2     2 
+21615 
+    2 
+[1] "varselmethod"
+[1] "forward"
+[1] "lasso:3:80"
+[1] "lasso:3:80"
+[1] "lasso:4:86.1538461538462"
+[1] "lasso:4:86.1538461538462"
+[1] "lasso:5:86.1538461538462"
+[1] "lasso:5:86.1538461538462"
+[1] "lasso:6:85.3846153846154"
+[1] "lasso:5:86.1538461538462"
+[1] "lasso:7:86.1538461538462"
+[1] "lasso:7:86.1538461538462"
+[1] "lasso:8:90"
+[1] "lasso:8:90"
+[1] "lasso:9:87.6923076923077"
+[1] "lasso:8:90"
+[1] "lasso:10:90"
+[1] "lasso:10:90"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "rfe:3:76.9230769230769"
+[1] "rfe:3:76.9230769230769"
+[1] "rfe:4:81.5384615384615"
+[1] "rfe:4:81.5384615384615"
+[1] "rfe:5:81.5384615384615"
+[1] "rfe:5:81.5384615384615"
+[1] "rfe:6:83.0769230769231"
+[1] "rfe:6:83.0769230769231"
+[1] "rfe:7:83.0769230769231"
+[1] "rfe:7:83.0769230769231"
+[1] "rfe:8:83.8461538461538"
+[1] "rfe:8:83.8461538461538"
+[1] "rfe:9:85.3846153846154"
+[1] "rfe:9:85.3846153846154"
+[1] "rfe:10:83.8461538461538"
+[1] "rfe:9:85.3846153846154"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "elasticnet:3:78.4615384615385"
+[1] "elasticnet:3:78.4615384615385"
+[1] "elasticnet:4:84.6153846153846"
+[1] "elasticnet:4:84.6153846153846"
+[1] "elasticnet:5:82.3076923076923"
+[1] "elasticnet:4:84.6153846153846"
+[1] "elasticnet:6:83.0769230769231"
+[1] "elasticnet:4:84.6153846153846"
+[1] "elasticnet:7:84.6153846153846"
+[1] "elasticnet:7:84.6153846153846"
+[1] "elasticnet:8:84.6153846153846"
+[1] "elasticnet:8:84.6153846153846"
+[1] "elasticnet:9:85.3846153846154"
+[1] "elasticnet:9:85.3846153846154"
+[1] "elasticnet:10:85.3846153846154"
+[1] "elasticnet:10:85.3846153846154"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "f.test:3:76.9230769230769"
+[1] "f.test:3:76.9230769230769"
+[1] "f.test:4:79.2307692307692"
+[1] "f.test:4:79.2307692307692"
+[1] "f.test:5:78.4615384615385"
+[1] "f.test:4:79.2307692307692"
+[1] "f.test:6:80"
+[1] "f.test:6:80"
+[1] "f.test:7:81.5384615384615"
+[1] "f.test:7:81.5384615384615"
+[1] "f.test:8:81.5384615384615"
+[1] "f.test:8:81.5384615384615"
+[1] "f.test:9:81.5384615384615"
+[1] "f.test:9:81.5384615384615"
+[1] "f.test:10:83.0769230769231"
+[1] "f.test:10:83.0769230769231"
+[1] "dim of scoring matrix is "
+[1] 22283     5
+[1] 22283
+[1] "DS index stage 1"
+[1] 0.1772065
+[1] "bestgenelist"
+ [1]  1083  2211  2667  3155  3490  4208  4352  4752  4756  4874  5005  5223
+[13]  5240  5278  5357  5927  8166  8207  8388  8667 11253 11968 13543 13990
+[25] 15240 15464 18415
+     201555_at 202683_s_at 203139_at 203628_at 203963_at 204681_s_at 204825_at
+[1,]    9.9323      8.8393    9.7965   10.7755   12.0638      7.5046    8.9393
+[2,]    9.5628      8.4030    8.3696    9.8410   11.3553      8.7229    7.7652
+[3,]   10.3905      8.3998    9.0933    9.4169   12.3832      6.9584    9.9136
+     205225_at 205229_s_at 205347_s_at 205478_at 205696_s_at 205713_s_at
+[1,]   13.0759      6.8695      7.7184    7.9799     11.6168     10.0607
+[2,]   13.7616      5.4533      7.0526    6.0596      9.5737      5.6228
+[3,]   12.7360      6.2767      7.7606    5.5057      7.2600      6.8404
+     205751_at 205830_at 206401_s_at 208670_s_at 208712_at 208893_s_at
+[1,]    5.3569    9.0445      9.9796      8.6539   10.9476      4.0949
+[2,]    3.7733    9.6145      9.9498      9.5953   11.4622      9.2703
+[3,]    2.5009    7.0195      6.0807      9.8134   10.4996      3.9487
+     209173_at 211864_s_at 212583_at 214164_x_at 214612_x_at 215867_x_at
+[1,]   12.9392     10.7931    6.8476     12.6474      6.0516     12.6194
+[2,]   14.1501      9.0349    6.8369     11.7852      5.7915     11.5534
+[3,]   14.5585     10.4934    7.3452     12.7464      3.4135     12.7285
+     216092_s_at 219051_x_at
+[1,]     10.4159      8.5236
+[2,]      9.7648      8.9626
+[3,]      8.3641     10.7458
+     201555_at 202683_s_at 203139_at 203628_at 203963_at 204681_s_at 204825_at
+[1,]    9.9499      8.8732    8.8140    9.4326   12.4052      8.7098    7.9851
+[2,]    9.6616      8.5511    8.7652    9.8046   10.4033      8.1223    5.2744
+[3,]    9.4638      8.5826    9.4426    7.9079    9.8307      7.5006    5.9481
+     205225_at 205229_s_at 205347_s_at 205478_at 205696_s_at 205713_s_at
+[1,]   13.8754      5.2668      8.3232    4.8386      9.0616      5.2933
+[2,]   11.7217      7.1769      7.4873   11.9784      7.7288      4.3142
+[3,]   10.9960      6.9284      8.2573   12.5884      7.1560      4.5240
+     205751_at 205830_at 206401_s_at 208670_s_at 208712_at 208893_s_at
+[1,]    5.4450    8.7696     10.6463      8.8319   10.8225      7.6049
+[2,]    6.3482    7.0550      8.2532      9.8519    9.8721      8.9154
+[3,]    6.0619    6.8984      7.4477      9.3521   10.2362      9.1121
+     209173_at 211864_s_at 212583_at 214164_x_at 214612_x_at 215867_x_at
+[1,]   13.2041      9.2348    7.5912     12.7392      6.2012     12.5744
+[2,]   11.3631     10.1938    7.5112     10.9092      7.0485     11.0575
+[3,]   11.1800      8.4931    4.6920     10.6696      5.5564     11.0769
+     216092_s_at 219051_x_at
+[1,]     10.6963      9.5138
+[2,]      9.3780      5.3641
+[3,]      9.3840      7.1097
+[1] "numgenes selected:27"
+[1] "test acc:0.8"
+[1] "test AUC acc:0.690196078431373"
+[1] "10 fold train92.3076923076923"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 33  0
+         2  0 97
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1  8 13
+        2  7 72
+[1] "train acc:1"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 33  0
+         2  0 97
+[1] "DS index stage 1"
+[1] 0.1772065
+[1] "KI index stage 1"
+[1] 0.5798114
+Warning messages:
+1: In if (is.na(boostweight) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+2: In if (is.na(testm) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+3: In if (is.na(testclass) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+> 
+> cma_feat_list<-colnames(trainm)
+> 
+> save(CMAres,file="CMAres.Rda")
+> write.table(cma_feat_list,file="selected_cma_feat_list.txt",sep="t",row.names=FALSE)
+> 
+> # modtraindata=modtrain, modtestdata=modtest, blindtest=testacc, modtrainclass=nci_y, modtestclass=test_y
+> #if(FALSE)
+> {
++ trainm<-CMAres$modtraindata
++ testm<-CMAres$modtestdata
++ trainclass<-CMAres$modtrainclass
++ testclass<-CMAres$modtestclass
++ learningsets<-CMAres$learningsets
++ }
+> 
+> if(FALSE)
++ {
++ trainclass<-trainm[,1] #CMAres$modtrainclass
++ testclass<-testm[,1] #CMAres$modtestclass
++ trainm<-trainm[,-c(1)] #CMAres$modtrainmata
++ testm<-testm[,-c(1)] #CMAres$modtestmata
++ 
++ }
+> 
+> d_dim<-dim(trainm)
+> 
+> print("Original dimension")
+[1] "Original dimension"
+> print(d_dim)
+[1] 130  27
+> 
+> system.time(psores<-run_pso(outloc=outloc,trainm,trainclass,testm,testclass,transition_matrix,c1=2.05,
++ c2=2.05,
++ itr=10,
++ globalpso_maxitr=10,
++ global_max_itr=10,
++ num_part=20,
++ kname="radial",
++ errortype="BER",
++ weightA<-as.numeric(args[1]),
++ weightB<-as.numeric(args[2]),
++ weightC<-as.numeric(args[3]),
++ weightD<-as.numeric(args[4]),
++ featweight.max=0.1,
++ featweight.min=0.01,
++ numfolds=10,
++ followerprob=as.numeric(args[6]),
++ confusionprob=as.numeric(args[7]),
++ leaderprob=as.numeric(args[8]),
++ wmax=1,
++ wmin=0.1,
++ behavior_reset_itr=5,
++ maxitrreset=10,
++ num_neighbors=3,
++ minselect.pct=0.5,
++ evalMode="CV2",
++ minfitnessthresh=50,
++ maxnum=as.numeric(args[10]),minnum=3,inertia_method=args[5],particlebehav_method="randbased",constriction_factor=1,
++ select.global.best=TRUE,numnodes=4,evalFunc=eval_fit_kfold_diff,itr.terminate=FALSE,train.pct=0.8))
+[1] "c1: 2.05"
+[1] "c2: 2.05"
+[1] "itr: 10"
+[1] "globalpso_maxitr: 10"
+[1] "global_max_itr: 10"
+[1] "num_part: 20"
+[1] "kname: radial"
+[1] "errortype: BER"
+[1] "weightA: 0.8"
+[1] "weightB: 0.05"
+[1] "weightC: 0.05"
+[1] "weightD: 0.1"
+[1] "featweight.max: 0.1"
+[1] "featweight.min: 0.01"
+[1] "numfolds: 10"
+[1] "followerprob: 0.3"
+[1] "confusionprob: 0.1"
+[1] "leaderprob: 0.5"
+[1] "wmax: 1"
+[1] "wmin: 0.1"
+[1] "behavior_reset_itr: 5"
+[1] "maxitrreset: 10"
+[1] "num_neighbors: 3"
+[1] "minselect.pct: 0.5"
+[1] "minfitnessthresh: 50"
+[1] "maxnum: 10"
+[1] "minnum: 3"
+[1] "inertia_method: global"
+[1] "particlebehav_method: randbased"
+[1] "constriction_factor: 1"
+[1] "select.global.best: TRUE"
+[1] "train 10 fold"
+[1] 91.53846
+[1] "here"
+[1] "s"
+[1] 104
+[1] 130  27
+[1] 10
+[1] "learning sets: 1"
+  [1] 110 106  24 109  32  30  33 120 103  74  41  93  54   8  91  14  31  22
+ [19]  15  29  89  66  78  43  17  46  67  49 125  58 112  36 130  92 101 123
+ [37] 115  65  52  25  40  85  42 126  63 116  48 118  69   1  20   2  50  96
+ [55]  73  60  68  87 102  59  82  75 114 113  16   5  34  13 111  39  28  86
+ [73]  44  95  51 105  10 121  21 100  72  11  47  38  53 108  61   4 104  18
+ [91]  55  64  70 124  79 122   7  77  84 127  81 107   6  71
+[1] "Starting global iteration number : 1"
+[1] "iteration number: "
+[1] 1
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "iteration number: "
+[1] 8
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "iteration number: "
+[1] 96
+[1] "iteration number: "
+[1] 97
+[1] "iteration number: "
+[1] 98
+[1] "iteration number: "
+[1] 99
+[1] "iteration number: "
+[1] 100
+[1] "iteration number: "
+[1] 101
+[1] "iteration number: "
+[1] 102
+[1] "iteration number: "
+[1] 103
+[1] "iteration number: "
+[1] 104
+[1] "iteration number: "
+[1] 105
+[1] "iteration number: "
+[1] 106
+[1] "iteration number: "
+[1] 107
+[1] "iteration number: "
+[1] 108
+[1] "iteration number: "
+[1] 109
+[1] "iteration number: "
+[1] 110
+[1] "iteration number: "
+[1] 111
+[1] "iteration number: "
+[1] 112
+[1] "iteration number: "
+[1] 113
+[1] "iteration number: "
+[1] 114
+[1] "iteration number: "
+[1] 115
+[1] "iteration number: "
+[1] 116
+[1] "iteration number: "
+[1] 117
+[1] "iteration number: "
+[1] 118
+[1] "iteration number: "
+[1] 119
+[1] "iteration number: "
+[1] 120
+[1] "iteration number: "
+[1] 121
+[1] "iteration number: "
+[1] 122
+[1] "iteration number: "
+[1] 123
+[1] "iteration number: "
+[1] 124
+[1] "iteration number: "
+[1] 125
+[1] "iteration number: "
+[1] 126
+[1] "iteration number: "
+[1] 127
+[1] "iteration number: "
+[1] 128
+[1] "iteration number: "
+[1] 129
+[1] "iteration number: "
+[1] 130
+[1] "iteration number: "
+[1] 131
+[1] "iteration number: "
+[1] 132
+[1] "iteration number: "
+[1] 133
+[1] "iteration number: "
+[1] 134
+[1] "iteration number: "
+[1] 135
+[1] "iteration number: "
+[1] 136
+[1] "iteration number: "
+[1] 137
+[1] "iteration number: "
+[1] 138
+[1] "iteration number: "
+[1] 139
+[1] "iteration number: "
+[1] 140
+[1] "iteration number: "
+[1] 141
+[1] "iteration number: "
+[1] 142
+[1] "iteration number: "
+[1] 143
+[1] "iteration number: "
+[1] 144
+[1] "iteration number: "
+[1] 145
+[1] "iteration number: "
+[1] 146
+[1] "iteration number: "
+[1] 147
+[1] "iteration number: "
+[1] 148
+[1] "iteration number: "
+[1] 149
+[1] "iteration number: "
+[1] 150
+[1] "iteration number: "
+[1] 151
+[1] "iteration number: "
+[1] 152
+[1] "iteration number: "
+[1] 153
+[1] "iteration number: "
+[1] 154
+[1] "iteration number: "
+[1] 155
+[1] "iteration number: "
+[1] 156
+[1] "iteration number: "
+[1] 157
+[1] "iteration number: "
+[1] 158
+[1] "iteration number: "
+[1] 159
+[1] "iteration number: "
+[1] 160
+[1] "iteration number: "
+[1] 161
+[1] "iteration number: "
+[1] 162
+[1] "iteration number: "
+[1] 163
+[1] "iteration number: "
+[1] 164
+[1] "iteration number: "
+[1] 165
+[1] "iteration number: "
+[1] 166
+[1] "iteration number: "
+[1] 167
+[1] "iteration number: "
+[1] 168
+[1] "iteration number: "
+[1] 169
+[1] "iteration number: "
+[1] 170
+[1] "iteration number: "
+[1] 171
+[1] "iteration number: "
+[1] 172
+[1] "iteration number: "
+[1] 173
+[1] "iteration number: "
+[1] 174
+[1] "iteration number: "
+[1] 175
+[1] "iteration number: "
+[1] 176
+[1] "iteration number: "
+[1] 177
+[1] "iteration number: "
+[1] 178
+[1] "iteration number: "
+[1] 179
+[1] "iteration number: "
+[1] 180
+[1] "iteration number: "
+[1] 181
+[1] "iteration number: "
+[1] 182
+[1] "iteration number: "
+[1] 183
+[1] "iteration number: "
+[1] 184
+[1] "iteration number: "
+[1] 185
+[1] "iteration number: "
+[1] 186
+[1] "iteration number: "
+[1] 187
+[1] "iteration number: "
+[1] 188
+[1] "iteration number: "
+[1] 189
+[1] "iteration number: "
+[1] 190
+[1] "iteration number: "
+[1] 191
+[1] "iteration number: "
+[1] 192
+[1] "iteration number: "
+[1] 193
+[1] "iteration number: "
+[1] 194
+[1] "iteration number: "
+[1] 195
+[1] "iteration number: "
+[1] 196
+[1] "iteration number: "
+[1] 197
+[1] "iteration number: "
+[1] 198
+[1] "iteration number: "
+[1] 199
+[1] "iteration number: "
+[1] 200
+[1] "iteration number: "
+[1] 201
+[1] "iteration number: "
+[1] 202
+[1] "iteration number: "
+[1] 203
+[1] "iteration number: "
+[1] 204
+[1] "iteration number: "
+[1] 205
+[1] "iteration number: "
+[1] 206
+[1] "iteration number: "
+[1] 207
+[1] "iteration number: "
+[1] 208
+[1] "iteration number: "
+[1] 209
+[1] "iteration number: "
+[1] 210
+[1] "iteration number: "
+[1] 211
+[1] "iteration number: "
+[1] 212
+[1] "iteration number: "
+[1] 213
+[1] "iteration number: "
+[1] 214
+[1] "iteration number: "
+[1] 215
+[1] "iteration number: "
+[1] 216
+[1] "iteration number: "
+[1] 217
+[1] "iteration number: "
+[1] 218
+[1] "iteration number: "
+[1] 219
+[1] "iteration number: "
+[1] 220
+[1] "iteration number: "
+[1] 221
+[1] "iteration number: "
+[1] 222
+[1] "iteration number: "
+[1] 223
+[1] "iteration number: "
+[1] 224
+[1] "iteration number: "
+[1] 225
+[1] "iteration number: "
+[1] 226
+[1] "iteration number: "
+[1] 227
+[1] "iteration number: "
+[1] 228
+[1] "iteration number: "
+[1] 229
+[1] "iteration number: "
+[1] 230
+[1] "iteration number: "
+[1] 231
+[1] "iteration number: "
+[1] 232
+[1] "iteration number: "
+[1] 233
+[1] "iteration number: "
+[1] 234
+[1] "iteration number: "
+[1] 235
+[1] "iteration number: "
+[1] 236
+[1] "iteration number: "
+[1] 237
+[1] "iteration number: "
+[1] 238
+[1] "iteration number: "
+[1] 239
+[1] "iteration number: "
+[1] 240
+[1] "iteration number: "
+[1] 241
+[1] "iteration number: "
+[1] 242
+[1] "iteration number: "
+[1] 243
+[1] "iteration number: "
+[1] 244
+[1] "iteration number: "
+[1] 245
+[1] "iteration number: "
+[1] 246
+[1] "iteration number: "
+[1] 247
+[1] "iteration number: "
+[1] 248
+[1] "iteration number: "
+[1] 249
+[1] "iteration number: "
+[1] 250
+[1] "iteration number: "
+[1] 251
+[1] "iteration number: "
+[1] 252
+[1] "iteration number: "
+[1] 253
+[1] "iteration number: "
+[1] 254
+[1] "iteration number: "
+[1] 255
+[1] "iteration number: "
+[1] 256
+[1] "iteration number: "
+[1] 257
+[1] "iteration number: "
+[1] 258
+[1] "iteration number: "
+[1] 259
+[1] "iteration number: "
+[1] 260
+[1] "iteration number: "
+[1] 261
+[1] "iteration number: "
+[1] 262
+[1] "iteration number: "
+[1] 263
+[1] "iteration number: "
+[1] 264
+[1] "iteration number: "
+[1] 265
+[1] "iteration number: "
+[1] 266
+[1] "iteration number: "
+[1] 267
+[1] "iteration number: "
+[1] 268
+[1] "iteration number: "
+[1] 269
+[1] "iteration number: "
+[1] 270
+[1] "iteration number: "
+[1] 271
+[1] "iteration number: "
+[1] 272
+[1] "iteration number: "
+[1] 273
+[1] "iteration number: "
+[1] 274
+[1] "iteration number: "
+[1] 275
+[1] "iteration number: "
+[1] 276
+[1] "iteration number: "
+[1] 277
+[1] "iteration number: "
+[1] 278
+[1] "iteration number: "
+[1] 279
+[1] "iteration number: "
+[1] 280
+[1] "iteration number: "
+[1] 281
+[1] "iteration number: "
+[1] 282
+[1] "iteration number: "
+[1] 283
+[1] "iteration number: "
+[1] 284
+[1] "iteration number: "
+[1] 285
+[1] "iteration number: "
+[1] 286
+[1] "iteration number: "
+[1] 287
+[1] "iteration number: "
+[1] 288
+[1] "iteration number: "
+[1] 289
+[1] "iteration number: "
+[1] 290
+[1] "iteration number: "
+[1] 291
+[1] "iteration number: "
+[1] 292
+[1] "iteration number: "
+[1] 293
+[1] "iteration number: "
+[1] 294
+[1] "iteration number: "
+[1] 295
+[1] "iteration number: "
+[1] 296
+[1] "iteration number: "
+[1] 297
+[1] "iteration number: "
+[1] 298
+[1] "iteration number: "
+[1] 299
+[1] "iteration number: "
+[1] 300
+[1] "iteration number: "
+[1] 301
+[1] "iteration number: "
+[1] 302
+[1] "iteration number: "
+[1] 303
+[1] "iteration number: "
+[1] 304
+[1] "iteration number: "
+[1] 305
+[1] "iteration number: "
+[1] 306
+[1] "iteration number: "
+[1] 307
+[1] "iteration number: "
+[1] 308
+[1] "iteration number: "
+[1] 309
+[1] "iteration number: "
+[1] 310
+[1] "iteration number: "
+[1] 311
+[1] "iteration number: "
+[1] 312
+[1] "iteration number: "
+[1] 313
+[1] "iteration number: "
+[1] 314
+[1] "iteration number: "
+[1] 315
+[1] "iteration number: "
+[1] 316
+[1] "iteration number: "
+[1] 317
+[1] "iteration number: "
+[1] 318
+[1] "iteration number: "
+[1] 319
+[1] "iteration number: "
+[1] 320
+[1] "iteration number: "
+[1] 321
+[1] "iteration number: "
+[1] 322
+[1] "iteration number: "
+[1] 323
+[1] "iteration number: "
+[1] 324
+[1] "iteration number: "
+[1] 325
+[1] "iteration number: "
+[1] 326
+[1] "iteration number: "
+[1] 327
+[1] "iteration number: "
+[1] 328
+[1] "iteration number: "
+[1] 329
+[1] "iteration number: "
+[1] 330
+[1] "No change for 11 iterations. Exiting PSO."
+[1] "##################################"
+[1] "Results summary for itr:1"
+[1] "number of features selected using population mean"
+[1] 15
+[1] "number of features selected using current global best"
+[1] 16
+[1] "feat ind length"
+[1] 16
+[1] "best accuracy"
+[1] 40.91312
+[1] "test acc:0.807692307692308"
+[1] "##################################"
+[1] "learning sets: 2"
+  [1] 120  41  14  56  22  74  66  93  54  31  91   8  43  90  46  15  24 110
+ [19]  33 106   9  99  12  78  98  32  51   5  37  62  58  34 129 104  23  48
+ [37]  75  39   2  18  52  27 119 117  82  36  77 116  79   3 111  38  95  70
+ [55]  20  13 112  87  49  21  28  57 114  40 101 122 100  84  86  10 123  67
+ [73]   6 113  44  61  68  85 118  97   7  71  45  16  47  19   4  76  53 128
+ [91]  88  11  35  59  25 130  60  96  65  42  64  94 124  69
+[1] "Starting global iteration number : 2"
+[1] "iteration number: "
+[1] 1
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "iteration number: "
+[1] 8
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "iteration number: "
+[1] 96
+[1] "iteration number: "
+[1] 97
+[1] "iteration number: "
+[1] 98
+[1] "iteration number: "
+[1] 99
+[1] "iteration number: "
+[1] 100
+[1] "iteration number: "
+[1] 101
+[1] "iteration number: "
+[1] 102
+[1] "iteration number: "
+[1] 103
+[1] "iteration number: "
+[1] 104
+[1] "iteration number: "
+[1] 105
+[1] "iteration number: "
+[1] 106
+[1] "iteration number: "
+[1] 107
+[1] "iteration number: "
+[1] 108
+[1] "iteration number: "
+[1] 109
+[1] "iteration number: "
+[1] 110
+[1] "iteration number: "
+[1] 111
+[1] "iteration number: "
+[1] 112
+[1] "iteration number: "
+[1] 113
+[1] "iteration number: "
+[1] 114
+[1] "iteration number: "
+[1] 115
+[1] "iteration number: "
+[1] 116
+[1] "iteration number: "
+[1] 117
+[1] "iteration number: "
+[1] 118
+[1] "iteration number: "
+[1] 119
+[1] "iteration number: "
+[1] 120
+[1] "iteration number: "
+[1] 121
+[1] "iteration number: "
+[1] 122
+[1] "iteration number: "
+[1] 123
+[1] "iteration number: "
+[1] 124
+[1] "iteration number: "
+[1] 125
+[1] "iteration number: "
+[1] 126
+[1] "iteration number: "
+[1] 127
+[1] "iteration number: "
+[1] 128
+[1] "iteration number: "
+[1] 129
+[1] "iteration number: "
+[1] 130
+[1] "iteration number: "
+[1] 131
+[1] "iteration number: "
+[1] 132
+[1] "iteration number: "
+[1] 133
+[1] "iteration number: "
+[1] 134
+[1] "iteration number: "
+[1] 135
+[1] "iteration number: "
+[1] 136
+[1] "iteration number: "
+[1] 137
+[1] "iteration number: "
+[1] 138
+[1] "iteration number: "
+[1] 139
+[1] "iteration number: "
+[1] 140
+[1] "iteration number: "
+[1] 141
+[1] "iteration number: "
+[1] 142
+[1] "iteration number: "
+[1] 143
+[1] "iteration number: "
+[1] 144
+[1] "iteration number: "
+[1] 145
+[1] "iteration number: "
+[1] 146
+[1] "iteration number: "
+[1] 147
+[1] "iteration number: "
+[1] 148
+[1] "iteration number: "
+[1] 149
+[1] "iteration number: "
+[1] 150
+[1] "iteration number: "
+[1] 151
+[1] "iteration number: "
+[1] 152
+[1] "iteration number: "
+[1] 153
+[1] "iteration number: "
+[1] 154
+[1] "iteration number: "
+[1] 155
+[1] "iteration number: "
+[1] 156
+[1] "iteration number: "
+[1] 157
+[1] "iteration number: "
+[1] 158
+[1] "iteration number: "
+[1] 159
+[1] "iteration number: "
+[1] 160
+[1] "iteration number: "
+[1] 161
+[1] "iteration number: "
+[1] 162
+[1] "iteration number: "
+[1] 163
+[1] "iteration number: "
+[1] 164
+[1] "iteration number: "
+[1] 165
+[1] "iteration number: "
+[1] 166
+[1] "iteration number: "
+[1] 167
+[1] "iteration number: "
+[1] 168
+[1] "iteration number: "
+[1] 169
+[1] "iteration number: "
+[1] 170
+[1] "iteration number: "
+[1] 171
+[1] "iteration number: "
+[1] 172
+[1] "iteration number: "
+[1] 173
+[1] "iteration number: "
+[1] 174
+[1] "iteration number: "
+[1] 175
+[1] "iteration number: "
+[1] 176
+[1] "iteration number: "
+[1] 177
+[1] "iteration number: "
+[1] 178
+[1] "iteration number: "
+[1] 179
+[1] "iteration number: "
+[1] 180
+[1] "iteration number: "
+[1] 181
+[1] "iteration number: "
+[1] 182
+[1] "iteration number: "
+[1] 183
+[1] "iteration number: "
+[1] 184
+[1] "iteration number: "
+[1] 185
+[1] "iteration number: "
+[1] 186
+[1] "iteration number: "
+[1] 187
+[1] "iteration number: "
+[1] 188
+[1] "iteration number: "
+[1] 189
+[1] "iteration number: "
+[1] 190
+[1] "iteration number: "
+[1] 191
+[1] "iteration number: "
+[1] 192
+[1] "iteration number: "
+[1] 193
+[1] "iteration number: "
+[1] 194
+[1] "iteration number: "
+[1] 195
+[1] "iteration number: "
+[1] 196
+[1] "iteration number: "
+[1] 197
+[1] "iteration number: "
+[1] 198
+[1] "iteration number: "
+[1] 199
+[1] "iteration number: "
+[1] 200
+[1] "iteration number: "
+[1] 201
+[1] "iteration number: "
+[1] 202
+[1] "iteration number: "
+[1] 203
+[1] "iteration number: "
+[1] 204
+[1] "iteration number: "
+[1] 205
+[1] "iteration number: "
+[1] 206
+[1] "iteration number: "
+[1] 207
+[1] "iteration number: "
+[1] 208
+[1] "iteration number: "
+[1] 209
+[1] "iteration number: "
+[1] 210
+[1] "iteration number: "
+[1] 211
+[1] "iteration number: "
+[1] 212
+[1] "iteration number: "
+[1] 213
+[1] "iteration number: "
+[1] 214
+[1] "iteration number: "
+[1] 215
+[1] "iteration number: "
+[1] 216
+[1] "iteration number: "
+[1] 217
+[1] "iteration number: "
+[1] 218
+[1] "iteration number: "
+[1] 219
+[1] "iteration number: "
+[1] 220
+[1] "iteration number: "
+[1] 221
+[1] "iteration number: "
+[1] 222
+[1] "iteration number: "
+[1] 223
+[1] "iteration number: "
+[1] 224
+[1] "iteration number: "
+[1] 225
+[1] "iteration number: "
+[1] 226
+[1] "iteration number: "
+[1] 227
+[1] "iteration number: "
+[1] 228
+[1] "iteration number: "
+[1] 229
+[1] "iteration number: "
+[1] 230
+[1] "iteration number: "
+[1] 231
+[1] "iteration number: "
+[1] 232
+[1] "iteration number: "
+[1] 233
+[1] "iteration number: "
+[1] 234
+[1] "iteration number: "
+[1] 235
+[1] "iteration number: "
+[1] 236
+[1] "No change for 11 iterations. Exiting PSO."
+[1] "##################################"
+[1] "Results summary for itr:2"
+[1] "number of features selected using population mean"
+[1] 16
+[1] "number of features selected using current global best"
+[1] 16
+[1] "feat ind length"
+[1] 16
+[1] "best accuracy"
+[1] 40.50211
+[1] "test acc:0.846153846153846"
+[1] "##################################"
+[1] "learning sets: 3"
+  [1]   8  14  78 109 110  24  29  56   9  91  46  12  89  90  54  66  99  74
+ [19]  98  17 120  32  31  93 103  30  40  45  88 102  36   6   7 105 129 111
+ [37] 112 119  58  73 108  50  81  76 127  82  92 101  35 117  57 113  69  13
+ [55]  20 125  10  96  47  18 130   1 115  68  75  71  87  60  72  86  42 104
+ [73]  63   4  64  95  26  94  77  85  23  70  21  37  49 128   3 126  65  61
+ [91] 118  39 121  38 124 107  80 114 122  79  19  28  34  11
+[1] "Starting global iteration number : 3"
+[1] "iteration number: "
+[1] 1
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "iteration number: "
+[1] 8
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "iteration number: "
+[1] 96
+[1] "iteration number: "
+[1] 97
+[1] "iteration number: "
+[1] 98
+[1] "iteration number: "
+[1] 99
+[1] "iteration number: "
+[1] 100
+[1] "iteration number: "
+[1] 101
+[1] "iteration number: "
+[1] 102
+[1] "iteration number: "
+[1] 103
+[1] "iteration number: "
+[1] 104
+[1] "iteration number: "
+[1] 105
+[1] "iteration number: "
+[1] 106
+[1] "iteration number: "
+[1] 107
+[1] "iteration number: "
+[1] 108
+[1] "iteration number: "
+[1] 109
+[1] "iteration number: "
+[1] 110
+[1] "iteration number: "
+[1] 111
+[1] "iteration number: "
+[1] 112
+[1] "iteration number: "
+[1] 113
+[1] "iteration number: "
+[1] 114
+[1] "iteration number: "
+[1] 115
+[1] "iteration number: "
+[1] 116
+[1] "iteration number: "
+[1] 117
+[1] "iteration number: "
+[1] 118
+[1] "iteration number: "
+[1] 119
+[1] "iteration number: "
+[1] 120
+[1] "iteration number: "
+[1] 121
+[1] "iteration number: "
+[1] 122
+[1] "iteration number: "
+[1] 123
+[1] "iteration number: "
+[1] 124
+[1] "iteration number: "
+[1] 125
+[1] "iteration number: "
+[1] 126
+[1] "iteration number: "
+[1] 127
+[1] "iteration number: "
+[1] 128
+[1] "iteration number: "
+[1] 129
+[1] "iteration number: "
+[1] 130
+[1] "iteration number: "
+[1] 131
+[1] "iteration number: "
+[1] 132
+[1] "iteration number: "
+[1] 133
+[1] "iteration number: "
+[1] 134
+[1] "iteration number: "
+[1] 135
+[1] "iteration number: "
+[1] 136
+[1] "iteration number: "
+[1] 137
+[1] "iteration number: "
+[1] 138
+[1] "iteration number: "
+[1] 139
+[1] "iteration number: "
+[1] 140
+[1] "iteration number: "
+[1] 141
+[1] "iteration number: "
+[1] 142
+[1] "iteration number: "
+[1] 143
+[1] "iteration number: "
+[1] 144
+[1] "iteration number: "
+[1] 145
+[1] "iteration number: "
+[1] 146
+[1] "iteration number: "
+[1] 147
+[1] "iteration number: "
+[1] 148
+[1] "iteration number: "
+[1] 149
+[1] "iteration number: "
+[1] 150
+[1] "iteration number: "
+[1] 151
+[1] "iteration number: "
+[1] 152
+[1] "iteration number: "
+[1] 153
+[1] "iteration number: "
+[1] 154
+[1] "iteration number: "
+[1] 155
+[1] "iteration number: "
+[1] 156
+[1] "iteration number: "
+[1] 157
+[1] "iteration number: "
+[1] 158
+[1] "iteration number: "
+[1] 159
+[1] "iteration number: "
+[1] 160
+[1] "iteration number: "
+[1] 161
+[1] "iteration number: "
+[1] 162
+[1] "iteration number: "
+[1] 163
+[1] "iteration number: "
+[1] 164
+[1] "iteration number: "
+[1] 165
+[1] "iteration number: "
+[1] 166
+[1] "iteration number: "
+[1] 167
+[1] "iteration number: "
+[1] 168
+[1] "iteration number: "
+[1] 169
+[1] "iteration number: "
+[1] 170
+[1] "iteration number: "
+[1] 171
+[1] "iteration number: "
+[1] 172
+[1] "iteration number: "
+[1] 173
+[1] "iteration number: "
+[1] 174
+[1] "iteration number: "
+[1] 175
+[1] "iteration number: "
+[1] 176
+[1] "iteration number: "
+[1] 177
+[1] "iteration number: "
+[1] 178
+[1] "iteration number: "
+[1] 179
+[1] "iteration number: "
+[1] 180
+[1] "iteration number: "
+[1] 181
+[1] "iteration number: "
+[1] 182
+[1] "iteration number: "
+[1] 183
+[1] "iteration number: "
+[1] 184
+[1] "iteration number: "
+[1] 185
+[1] "iteration number: "
+[1] 186
+[1] "iteration number: "
+[1] 187
+[1] "iteration number: "
+[1] 188
+[1] "iteration number: "
+[1] 189
+[1] "iteration number: "
+[1] 190
+[1] "iteration number: "
+[1] 191
+[1] "iteration number: "
+[1] 192
+[1] "iteration number: "
+[1] 193
+[1] "iteration number: "
+[1] 194
+[1] "iteration number: "
+[1] 195
+[1] "iteration number: "
+[1] 196
+[1] "iteration number: "
+[1] 197
+[1] "iteration number: "
+[1] 198
+[1] "No change for 11 iterations. Exiting PSO."
+[1] "##################################"
+[1] "Results summary for itr:3"
+[1] "number of features selected using population mean"
+[1] 27
+[1] "number of features selected using current global best"
+[1] 14
+[1] "feat ind length"
+[1] 14
+[1] "best accuracy"
+[1] 40.09253
+[1] "test acc:0.884615384615385"
+[1] "##################################"
+[1] "learning sets: 4"
+  [1]  54  22   9  14  46  99 120  29  43  74  66  91  41 106  32  56  83  93
+ [19]  78  33  12  17 109   8  31  24  42  81  20  36 113   6  73 130  94  18
+ [37]  26  75   7  28  71  72 121 107 129  59  27 127  92 112  39  67  97  79
+ [55] 101  50 115 102  38  10  37  64  47  96 124  86  11  61  52  95 104  35
+ [73]  23   4  70   3   1 118  16  49  88 119  58  68  45 100 117  77 116  63
+ [91]  69  87  34 128 108 114 122   2  48  21  85  53  80  60
+[1] "Starting global iteration number : 4"
+[1] "iteration number: "
+[1] 1
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "iteration number: "
+[1] 8
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "iteration number: "
+[1] 96
+[1] "iteration number: "
+[1] 97
+[1] "iteration number: "
+[1] 98
+[1] "iteration number: "
+[1] 99
+[1] "iteration number: "
+[1] 100
+[1] "iteration number: "
+[1] 101
+[1] "iteration number: "
+[1] 102
+[1] "iteration number: "
+[1] 103
+[1] "iteration number: "
+[1] 104
+[1] "iteration number: "
+[1] 105
+[1] "iteration number: "
+[1] 106
+[1] "iteration number: "
+[1] 107
+[1] "iteration number: "
+[1] 108
+[1] "iteration number: "
+[1] 109
+[1] "iteration number: "
+[1] 110
+[1] "iteration number: "
+[1] 111
+[1] "iteration number: "
+[1] 112
+[1] "iteration number: "
+[1] 113
+[1] "iteration number: "
+[1] 114
+[1] "iteration number: "
+[1] 115
+[1] "iteration number: "
+[1] 116
+[1] "iteration number: "
+[1] 117
+[1] "iteration number: "
+[1] 118
+[1] "iteration number: "
+[1] 119
+[1] "iteration number: "
+[1] 120
+[1] "iteration number: "
+[1] 121
+[1] "iteration number: "
+[1] 122
+[1] "iteration number: "
+[1] 123
+[1] "iteration number: "
+[1] 124
+[1] "iteration number: "
+[1] 125
+[1] "iteration number: "
+[1] 126
+[1] "iteration number: "
+[1] 127
+[1] "iteration number: "
+[1] 128
+[1] "iteration number: "
+[1] 129
+[1] "iteration number: "
+[1] 130
+[1] "iteration number: "
+[1] 131
+[1] "iteration number: "
+[1] 132
+[1] "iteration number: "
+[1] 133
+[1] "iteration number: "
+[1] 134
+[1] "iteration number: "
+[1] 135
+[1] "iteration number: "
+[1] 136
+[1] "iteration number: "
+[1] 137
+[1] "iteration number: "
+[1] 138
+[1] "iteration number: "
+[1] 139
+[1] "iteration number: "
+[1] 140
+[1] "iteration number: "
+[1] 141
+[1] "iteration number: "
+[1] 142
+[1] "iteration number: "
+[1] 143
+[1] "iteration number: "
+[1] 144
+[1] "iteration number: "
+[1] 145
+[1] "iteration number: "
+[1] 146
+[1] "iteration number: "
+[1] 147
+[1] "iteration number: "
+[1] 148
+[1] "iteration number: "
+[1] 149
+[1] "iteration number: "
+[1] 150
+[1] "iteration number: "
+[1] 151
+[1] "iteration number: "
+[1] 152
+[1] "iteration number: "
+[1] 153
+[1] "iteration number: "
+[1] 154
+[1] "iteration number: "
+[1] 155
+[1] "iteration number: "
+[1] 156
+[1] "iteration number: "
+[1] 157
+[1] "iteration number: "
+[1] 158
+[1] "iteration number: "
+[1] 159
+[1] "iteration number: "
+[1] 160
+[1] "iteration number: "
+[1] 161
+[1] "iteration number: "
+[1] 162
+[1] "iteration number: "
+[1] 163
+[1] "iteration number: "
+[1] 164
+[1] "iteration number: "
+[1] 165
+[1] "iteration number: "
+[1] 166
+[1] "iteration number: "
+[1] 167
+[1] "iteration number: "
+[1] 168
+[1] "iteration number: "
+[1] 169
+[1] "iteration number: "
+[1] 170
+[1] "iteration number: "
+[1] 171
+[1] "iteration number: "
+[1] 172
+[1] "iteration number: "
+[1] 173
+[1] "iteration number: "
+[1] 174
+[1] "iteration number: "
+[1] 175
+[1] "iteration number: "
+[1] 176
+[1] "iteration number: "
+[1] 177
+[1] "iteration number: "
+[1] 178
+[1] "iteration number: "
+[1] 179
+[1] "iteration number: "
+[1] 180
+[1] "iteration number: "
+[1] 181
+[1] "iteration number: "
+[1] 182
+[1] "iteration number: "
+[1] 183
+[1] "iteration number: "
+[1] 184
+[1] "iteration number: "
+[1] 185
+[1] "iteration number: "
+[1] 186
+[1] "iteration number: "
+[1] 187
+[1] "iteration number: "
+[1] 188
+[1] "iteration number: "
+[1] 189
+[1] "iteration number: "
+[1] 190
+[1] "iteration number: "
+[1] 191
+[1] "iteration number: "
+[1] 192
+[1] "iteration number: "
+[1] 193
+[1] "No change for 11 iterations. Exiting PSO."
+[1] "##################################"
+[1] "Results summary for itr:4"
+[1] "number of features selected using population mean"
+[1] 9
+[1] "number of features selected using current global best"
+[1] 9
+[1] "feat ind length"
+[1] 9
+[1] "best accuracy"
+[1] 44.24743
+[1] "test acc:0.807692307692308"
+[1] "##################################"
+[1] "learning sets: 5"
+  [1]  41 109  74  78  24  32  15  22  46  33  43  54 106  17  99   8  91  12
+ [19] 103  29  66  93   9 110  89  98  25  23  86 108 114  77 112   4  26   6
+ [37]  11 122  21  38 101  50 124  84 130  80 115  62   1  69  75  82  58  19
+ [55]  18  61   2  60   3 100 113 121  28  65 117 116  57 129  63  27 125  51
+ [73]  55  47  72  16  70  13 127  92  79  10  96  94  34   7   5  88  20  68
+ [91]  45  48  49  81 118 107 105  39 111  42  40  35 102  59
+[1] "Starting global iteration number : 5"
+[1] "iteration number: "
+[1] 1
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "iteration number: "
+[1] 8
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "iteration number: "
+[1] 96
+[1] "iteration number: "
+[1] 97
+[1] "iteration number: "
+[1] 98
+[1] "iteration number: "
+[1] 99
+[1] "iteration number: "
+[1] 100
+[1] "iteration number: "
+[1] 101
+[1] "iteration number: "
+[1] 102
+[1] "iteration number: "
+[1] 103
+[1] "iteration number: "
+[1] 104
+[1] "iteration number: "
+[1] 105
+[1] "iteration number: "
+[1] 106
+[1] "iteration number: "
+[1] 107
+[1] "iteration number: "
+[1] 108
+[1] "iteration number: "
+[1] 109
+[1] "iteration number: "
+[1] 110
+[1] "iteration number: "
+[1] 111
+[1] "iteration number: "
+[1] 112
+[1] "iteration number: "
+[1] 113
+[1] "iteration number: "
+[1] 114
+[1] "iteration number: "
+[1] 115
+[1] "iteration number: "
+[1] 116
+[1] "iteration number: "
+[1] 117
+[1] "iteration number: "
+[1] 118
+[1] "iteration number: "
+[1] 119
+[1] "iteration number: "
+[1] 120
+[1] "iteration number: "
+[1] 121
+[1] "iteration number: "
+[1] 122
+[1] "iteration number: "
+[1] 123
+[1] "iteration number: "
+[1] 124
+[1] "iteration number: "
+[1] 125
+[1] "iteration number: "
+[1] 126
+[1] "iteration number: "
+[1] 127
+[1] "iteration number: "
+[1] 128
+[1] "iteration number: "
+[1] 129
+[1] "iteration number: "
+[1] 130
+[1] "iteration number: "
+[1] 131
+[1] "iteration number: "
+[1] 132
+[1] "iteration number: "
+[1] 133
+[1] "iteration number: "
+[1] 134
+[1] "iteration number: "
+[1] 135
+[1] "iteration number: "
+[1] 136
+[1] "iteration number: "
+[1] 137
+[1] "iteration number: "
+[1] 138
+[1] "iteration number: "
+[1] 139
+[1] "iteration number: "
+[1] 140
+[1] "iteration number: "
+[1] 141
+[1] "iteration number: "
+[1] 142
+[1] "iteration number: "
+[1] 143
+[1] "iteration number: "
+[1] 144
+[1] "iteration number: "
+[1] 145
+[1] "iteration number: "
+[1] 146
+[1] "iteration number: "
+[1] 147
+[1] "iteration number: "
+[1] 148
+[1] "iteration number: "
+[1] 149
+[1] "iteration number: "
+[1] 150
+[1] "iteration number: "
+[1] 151
+[1] "iteration number: "
+[1] 152
+[1] "iteration number: "
+[1] 153
+[1] "iteration number: "
+[1] 154
+[1] "iteration number: "
+[1] 155
+[1] "iteration number: "
+[1] 156
+[1] "iteration number: "
+[1] 157
+[1] "iteration number: "
+[1] 158
+[1] "iteration number: "
+[1] 159
+[1] "iteration number: "
+[1] 160
+[1] "iteration number: "
+[1] 161
+[1] "iteration number: "
+[1] 162
+[1] "iteration number: "
+[1] 163
+[1] "iteration number: "
+[1] 164
+[1] "iteration number: "
+[1] 165
+[1] "iteration number: "
+[1] 166
+[1] "iteration number: "
+[1] 167
+[1] "iteration number: "
+[1] 168
+[1] "iteration number: "
+[1] 169
+[1] "iteration number: "
+[1] 170
+[1] "iteration number: "
+[1] 171
+[1] "iteration number: "
+[1] 172
+[1] "iteration number: "
+[1] 173
+[1] "iteration number: "
+[1] 174
+[1] "iteration number: "
+[1] 175
+[1] "iteration number: "
+[1] 176
+[1] "iteration number: "
+[1] 177
+[1] "iteration number: "
+[1] 178
+[1] "iteration number: "
+[1] 179
+[1] "iteration number: "
+[1] 180
+[1] "iteration number: "
+[1] 181
+[1] "iteration number: "
+[1] 182
+[1] "iteration number: "
+[1] 183
+[1] "iteration number: "
+[1] 184
+[1] "iteration number: "
+[1] 185
+[1] "iteration number: "
+[1] 186
+[1] "iteration number: "
+[1] 187
+[1] "iteration number: "
+[1] 188
+[1] "iteration number: "
+[1] 189
+[1] "iteration number: "
+[1] 190
+[1] "iteration number: "
+[1] 191
+[1] "iteration number: "
+[1] 192
+[1] "iteration number: "
+[1] 193
+[1] "iteration number: "
+[1] 194
+[1] "iteration number: "
+[1] 195
+[1] "iteration number: "
+[1] 196
+[1] "iteration number: "
+[1] 197
+[1] "iteration number: "
+[1] 198
+[1] "iteration number: "
+[1] 199
+[1] "iteration number: "
+[1] 200
+[1] "iteration number: "
+[1] 201
+[1] "iteration number: "
+[1] 202
+[1] "iteration number: "
+[1] 203
+[1] "iteration number: "
+[1] 204
+[1] "iteration number: "
+[1] 205
+[1] "iteration number: "
+[1] 206
+[1] "iteration number: "
+[1] 207
+[1] "iteration number: "
+[1] 208
+[1] "iteration number: "
+[1] 209
+[1] "iteration number: "
+[1] 210
+[1] "iteration number: "
+[1] 211
+[1] "iteration number: "
+[1] 212
+[1] "iteration number: "
+[1] 213
+[1] "iteration number: "
+[1] 214
+[1] "iteration number: "
+[1] 215
+[1] "iteration number: "
+[1] 216
+[1] "iteration number: "
+[1] 217
+[1] "iteration number: "
+[1] 218
+[1] "iteration number: "
+[1] 219
+[1] "iteration number: "
+[1] 220
+[1] "iteration number: "
+[1] 221
+[1] "iteration number: "
+[1] 222
+[1] "iteration number: "
+[1] 223
+[1] "iteration number: "
+[1] 224
+[1] "iteration number: "
+[1] 225
+[1] "iteration number: "
+[1] 226
+[1] "iteration number: "
+[1] 227
+[1] "iteration number: "
+[1] 228
+[1] "iteration number: "
+[1] 229
+[1] "iteration number: "
+[1] 230
+[1] "iteration number: "
+[1] 231
+[1] "iteration number: "
+[1] 232
+[1] "iteration number: "
+[1] 233
+[1] "iteration number: "
+[1] 234
+[1] "iteration number: "
+[1] 235
+[1] "iteration number: "
+[1] 236
+[1] "iteration number: "
+[1] 237
+[1] "iteration number: "
+[1] 238
+[1] "iteration number: "
+[1] 239
+[1] "iteration number: "
+[1] 240
+[1] "iteration number: "
+[1] 241
+[1] "iteration number: "
+[1] 242
+[1] "iteration number: "
+[1] 243
+[1] "iteration number: "
+[1] 244
+[1] "iteration number: "
+[1] 245
+[1] "iteration number: "
+[1] 246
+[1] "iteration number: "
+[1] 247
+[1] "iteration number: "
+[1] 248
+[1] "iteration number: "
+[1] 249
+[1] "iteration number: "
+[1] 250
+[1] "iteration number: "
+[1] 251
+[1] "iteration number: "
+[1] 252
+[1] "iteration number: "
+[1] 253
+[1] "iteration number: "
+[1] 254
+[1] "iteration number: "
+[1] 255
+[1] "iteration number: "
+[1] 256
+[1] "iteration number: "
+[1] 257
+[1] "iteration number: "
+[1] 258
+[1] "iteration number: "
+[1] 259
+[1] "iteration number: "
+[1] 260
+[1] "iteration number: "
+[1] 261
+[1] "iteration number: "
+[1] 262
+[1] "iteration number: "
+[1] 263
+[1] "iteration number: "
+[1] 264
+[1] "iteration number: "
+[1] 265
+[1] "iteration number: "
+[1] 266
+[1] "iteration number: "
+[1] 267
+[1] "iteration number: "
+[1] 268
+[1] "iteration number: "
+[1] 269
+[1] "iteration number: "
+[1] 270
+[1] "iteration number: "
+[1] 271
+[1] "iteration number: "
+[1] 272
+[1] "iteration number: "
+[1] 273
+[1] "iteration number: "
+[1] 274
+[1] "iteration number: "
+[1] 275
+[1] "iteration number: "
+[1] 276
+[1] "iteration number: "
+[1] 277
+[1] "iteration number: "
+[1] 278
+[1] "iteration number: "
+[1] 279
+[1] "iteration number: "
+[1] 280
+[1] "iteration number: "
+[1] 281
+[1] "iteration number: "
+[1] 282
+[1] "iteration number: "
+[1] 283
+[1] "iteration number: "
+[1] 284
+[1] "iteration number: "
+[1] 285
+[1] "iteration number: "
+[1] 286
+[1] "iteration number: "
+[1] 287
+[1] "iteration number: "
+[1] 288
+[1] "iteration number: "
+[1] 289
+[1] "iteration number: "
+[1] 290
+[1] "iteration number: "
+[1] 291
+[1] "iteration number: "
+[1] 292
+[1] "iteration number: "
+[1] 293
+[1] "iteration number: "
+[1] 294
+[1] "iteration number: "
+[1] 295
+[1] "iteration number: "
+[1] 296
+[1] "iteration number: "
+[1] 297
+[1] "iteration number: "
+[1] 298
+[1] "iteration number: "
+[1] 299
+[1] "iteration number: "
+[1] 300
+[1] "iteration number: "
+[1] 301
+[1] "iteration number: "
+[1] 302
+[1] "iteration number: "
+[1] 303
+[1] "iteration number: "
+[1] 304
+[1] "iteration number: "
+[1] 305
+[1] "iteration number: "
+[1] 306
+[1] "iteration number: "
+[1] 307
+[1] "iteration number: "
+[1] 308
+[1] "iteration number: "
+[1] 309
+[1] "iteration number: "
+[1] 310
+[1] "iteration number: "
+[1] 311
+[1] "No change for 11 iterations. Exiting PSO."
+[1] "##################################"
+[1] "Results summary for itr:5"
+[1] "number of features selected using population mean"
+[1] 15
+[1] "number of features selected using current global best"
+[1] 15
+[1] "feat ind length"
+[1] 15
+[1] "best accuracy"
+[1] 42.32234
+[1] "test acc:0.884615384615385"
+[1] "##################################"
+[1] "learning sets: 6"
+  [1]   8  24  31  78  33  93 106  14  99  17  91  15 110 109  29  43  74  83
+ [19]  54  12  90  66  98 103  32   9  49  72  23  77 118  96  70 111  35  28
+ [37]  47  76 130  45  10  61  68  20  87  58 129   6 119  42  75  95 114  53
+ [55]  82  73  63  34  80 121   1 123  51  40  26   3  60  69  84 102  44   4
+ [73]  52 116  88 100 127 108 128  36  19  71 104  85  92 105  59  64 126   7
+ [91]  11 117  67  27  65 124  39  21  97  86  94  79   5  55
+[1] "Starting global iteration number : 6"
+[1] "iteration number: "
+[1] 1
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "iteration number: "
+[1] 8
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "iteration number: "
+[1] 96
+[1] "iteration number: "
+[1] 97
+[1] "iteration number: "
+[1] 98
+[1] "iteration number: "
+[1] 99
+[1] "iteration number: "
+[1] 100
+[1] "iteration number: "
+[1] 101
+[1] "iteration number: "
+[1] 102
+[1] "iteration number: "
+[1] 103
+[1] "iteration number: "
+[1] 104
+[1] "iteration number: "
+[1] 105
+[1] "iteration number: "
+[1] 106
+[1] "iteration number: "
+[1] 107
+[1] "iteration number: "
+[1] 108
+[1] "iteration number: "
+[1] 109
+[1] "iteration number: "
+[1] 110
+[1] "iteration number: "
+[1] 111
+[1] "iteration number: "
+[1] 112
+[1] "iteration number: "
+[1] 113
+[1] "iteration number: "
+[1] 114
+[1] "iteration number: "
+[1] 115
+[1] "iteration number: "
+[1] 116
+[1] "iteration number: "
+[1] 117
+[1] "iteration number: "
+[1] 118
+[1] "iteration number: "
+[1] 119
+[1] "iteration number: "
+[1] 120
+[1] "iteration number: "
+[1] 121
+[1] "iteration number: "
+[1] 122
+[1] "iteration number: "
+[1] 123
+[1] "iteration number: "
+[1] 124
+[1] "iteration number: "
+[1] 125
+[1] "iteration number: "
+[1] 126
+[1] "iteration number: "
+[1] 127
+[1] "iteration number: "
+[1] 128
+[1] "iteration number: "
+[1] 129
+[1] "iteration number: "
+[1] 130
+[1] "iteration number: "
+[1] 131
+[1] "iteration number: "
+[1] 132
+[1] "iteration number: "
+[1] 133
+[1] "iteration number: "
+[1] 134
+[1] "iteration number: "
+[1] 135
+[1] "iteration number: "
+[1] 136
+[1] "iteration number: "
+[1] 137
+[1] "iteration number: "
+[1] 138
+[1] "iteration number: "
+[1] 139
+[1] "iteration number: "
+[1] 140
+[1] "iteration number: "
+[1] 141
+[1] "iteration number: "
+[1] 142
+[1] "iteration number: "
+[1] 143
+[1] "iteration number: "
+[1] 144
+[1] "iteration number: "
+[1] 145
+[1] "iteration number: "
+[1] 146
+[1] "iteration number: "
+[1] 147
+[1] "iteration number: "
+[1] 148
+[1] "iteration number: "
+[1] 149
+[1] "iteration number: "
+[1] 150
+[1] "iteration number: "
+[1] 151
+[1] "iteration number: "
+[1] 152
+[1] "iteration number: "
+[1] 153
+[1] "iteration number: "
+[1] 154
+[1] "iteration number: "
+[1] 155
+[1] "iteration number: "
+[1] 156
+[1] "iteration number: "
+[1] 157
+[1] "iteration number: "
+[1] 158
+[1] "iteration number: "
+[1] 159
+[1] "iteration number: "
+[1] 160
+[1] "iteration number: "
+[1] 161
+[1] "iteration number: "
+[1] 162
+[1] "iteration number: "
+[1] 163
+[1] "iteration number: "
+[1] 164
+[1] "iteration number: "
+[1] 165
+[1] "iteration number: "
+[1] 166
+[1] "iteration number: "
+[1] 167
+[1] "iteration number: "
+[1] 168
+[1] "iteration number: "
+[1] 169
+[1] "iteration number: "
+[1] 170
+[1] "iteration number: "
+[1] 171
+[1] "iteration number: "
+[1] 172
+[1] "iteration number: "
+[1] 173
+[1] "iteration number: "
+[1] 174
+[1] "iteration number: "
+[1] 175
+[1] "iteration number: "
+[1] 176
+[1] "iteration number: "
+[1] 177
+[1] "iteration number: "
+[1] 178
+[1] "iteration number: "
+[1] 179
+[1] "iteration number: "
+[1] 180
+[1] "iteration number: "
+[1] 181
+[1] "iteration number: "
+[1] 182
+[1] "iteration number: "
+[1] 183
+[1] "iteration number: "
+[1] 184
+[1] "iteration number: "
+[1] 185
+[1] "iteration number: "
+[1] 186
+[1] "iteration number: "
+[1] 187
+[1] "iteration number: "
+[1] 188
+[1] "iteration number: "
+[1] 189
+[1] "iteration number: "
+[1] 190
+[1] "iteration number: "
+[1] 191
+[1] "iteration number: "
+[1] 192
+[1] "iteration number: "
+[1] 193
+[1] "iteration number: "
+[1] 194
+[1] "iteration number: "
+[1] 195
+[1] "iteration number: "
+[1] 196
+[1] "iteration number: "
+[1] 197
+[1] "iteration number: "
+[1] 198
+[1] "iteration number: "
+[1] 199
+[1] "iteration number: "
+[1] 200
+[1] "iteration number: "
+[1] 201
+[1] "iteration number: "
+[1] 202
+[1] "No change for 11 iterations. Exiting PSO."
+[1] "##################################"
+[1] "Results summary for itr:6"
+[1] "number of features selected using population mean"
+[1] 16
+[1] "number of features selected using current global best"
+[1] 16
+[1] "feat ind length"
+[1] 16
+[1] "best accuracy"
+[1] 40.60999
+[1] "test acc:0.884615384615385"
+[1] "##################################"
+[1] "learning sets: 7"
+  [1]  90  83  54  17  22 110  56  91  41  98 106  14  74  30  12  78   8  93
+ [19]  99 120 103  29  89  15 109  66  59  75 128   1  84 123   6  87 113 129
+ [37] 125 118  62  19  69  20   5 100 111  85  68  92  81  51  23 112 115  10
+ [55]  13  67  82  16  71  73  47  18  70  61  28 124  27  25   7  63 114  48
+ [73]  57 117  58 119   4  52  21  88  64  53  49  95  55  94 116 102  37 121
+ [91]   3  40  39 122 105 104  60  80  97  42 101  76  44  35
+[1] "Starting global iteration number : 7"
+[1] "iteration number: "
+[1] 1
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "iteration number: "
+[1] 8
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "iteration number: "
+[1] 96
+[1] "iteration number: "
+[1] 97
+[1] "iteration number: "
+[1] 98
+[1] "iteration number: "
+[1] 99
+[1] "iteration number: "
+[1] 100
+[1] "iteration number: "
+[1] 101
+[1] "iteration number: "
+[1] 102
+[1] "iteration number: "
+[1] 103
+[1] "iteration number: "
+[1] 104
+[1] "iteration number: "
+[1] 105
+[1] "iteration number: "
+[1] 106
+[1] "iteration number: "
+[1] 107
+[1] "iteration number: "
+[1] 108
+[1] "iteration number: "
+[1] 109
+[1] "iteration number: "
+[1] 110
+[1] "iteration number: "
+[1] 111
+[1] "iteration number: "
+[1] 112
+[1] "iteration number: "
+[1] 113
+[1] "iteration number: "
+[1] 114
+[1] "iteration number: "
+[1] 115
+[1] "iteration number: "
+[1] 116
+[1] "iteration number: "
+[1] 117
+[1] "iteration number: "
+[1] 118
+[1] "iteration number: "
+[1] 119
+[1] "iteration number: "
+[1] 120
+[1] "iteration number: "
+[1] 121
+[1] "iteration number: "
+[1] 122
+[1] "iteration number: "
+[1] 123
+[1] "iteration number: "
+[1] 124
+[1] "iteration number: "
+[1] 125
+[1] "iteration number: "
+[1] 126
+[1] "iteration number: "
+[1] 127
+[1] "iteration number: "
+[1] 128
+[1] "iteration number: "
+[1] 129
+[1] "iteration number: "
+[1] 130
+[1] "iteration number: "
+[1] 131
+[1] "iteration number: "
+[1] 132
+[1] "iteration number: "
+[1] 133
+[1] "iteration number: "
+[1] 134
+[1] "iteration number: "
+[1] 135
+[1] "iteration number: "
+[1] 136
+[1] "iteration number: "
+[1] 137
+[1] "iteration number: "
+[1] 138
+[1] "iteration number: "
+[1] 139
+[1] "iteration number: "
+[1] 140
+[1] "iteration number: "
+[1] 141
+[1] "iteration number: "
+[1] 142
+[1] "iteration number: "
+[1] 143
+[1] "iteration number: "
+[1] 144
+[1] "iteration number: "
+[1] 145
+[1] "iteration number: "
+[1] 146
+[1] "iteration number: "
+[1] 147
+[1] "iteration number: "
+[1] 148
+[1] "iteration number: "
+[1] 149
+[1] "iteration number: "
+[1] 150
+[1] "iteration number: "
+[1] 151
+[1] "iteration number: "
+[1] 152
+[1] "iteration number: "
+[1] 153
+[1] "iteration number: "
+[1] 154
+[1] "iteration number: "
+[1] 155
+[1] "iteration number: "
+[1] 156
+[1] "iteration number: "
+[1] 157
+[1] "iteration number: "
+[1] 158
+[1] "iteration number: "
+[1] 159
+[1] "iteration number: "
+[1] 160
+[1] "iteration number: "
+[1] 161
+[1] "iteration number: "
+[1] 162
+[1] "iteration number: "
+[1] 163
+[1] "iteration number: "
+[1] 164
+[1] "iteration number: "
+[1] 165
+[1] "iteration number: "
+[1] 166
+[1] "iteration number: "
+[1] 167
+[1] "iteration number: "
+[1] 168
+[1] "iteration number: "
+[1] 169
+[1] "iteration number: "
+[1] 170
+[1] "iteration number: "
+[1] 171
+[1] "iteration number: "
+[1] 172
+[1] "iteration number: "
+[1] 173
+[1] "iteration number: "
+[1] 174
+[1] "iteration number: "
+[1] 175
+[1] "iteration number: "
+[1] 176
+[1] "iteration number: "
+[1] 177
+[1] "iteration number: "
+[1] 178
+[1] "iteration number: "
+[1] 179
+[1] "iteration number: "
+[1] 180
+[1] "iteration number: "
+[1] 181
+[1] "iteration number: "
+[1] 182
+[1] "iteration number: "
+[1] 183
+[1] "iteration number: "
+[1] 184
+[1] "iteration number: "
+[1] 185
+[1] "iteration number: "
+[1] 186
+[1] "iteration number: "
+[1] 187
+[1] "iteration number: "
+[1] 188
+[1] "iteration number: "
+[1] 189
+[1] "iteration number: "
+[1] 190
+[1] "iteration number: "
+[1] 191
+[1] "No change for 11 iterations. Exiting PSO."
+[1] "##################################"
+[1] "Results summary for itr:7"
+[1] "number of features selected using population mean"
+[1] 20
+[1] "number of features selected using current global best"
+[1] 20
+[1] "feat ind length"
+[1] 20
+[1] "best accuracy"
+[1] 42.59151
+[1] "test acc:1"
+[1] "##################################"
+[1] "learning sets: 8"
+  [1]  41  66  90  46  12  31  22  33  91  98  54 110 106 109  30  83  14  43
+ [19]   9   8 103  74  56  99  24  93  13  57  26 113  39  68  36  80  82 112
+ [37]  69 127 116  51  92  48  16 104  49  75 100 126 107  85  44  64  88  84
+ [55] 119 117 105  96   7 111 121 125  28  47  70  95  71  61  76 128  11  63
+ [73]  79  94 114  53 108  73  34 129  55 124  60  45 123 130  19  50   3  65
+ [91]  23  20  62  10  58 122  25  67   2  81 118 102  97   4
+[1] "Starting global iteration number : 8"
+[1] "iteration number: "
+[1] 1
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "iteration number: "
+[1] 8
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "iteration number: "
+[1] 96
+[1] "iteration number: "
+[1] 97
+[1] "iteration number: "
+[1] 98
+[1] "iteration number: "
+[1] 99
+[1] "iteration number: "
+[1] 100
+[1] "iteration number: "
+[1] 101
+[1] "iteration number: "
+[1] 102
+[1] "iteration number: "
+[1] 103
+[1] "iteration number: "
+[1] 104
+[1] "iteration number: "
+[1] 105
+[1] "iteration number: "
+[1] 106
+[1] "iteration number: "
+[1] 107
+[1] "iteration number: "
+[1] 108
+[1] "iteration number: "
+[1] 109
+[1] "iteration number: "
+[1] 110
+[1] "iteration number: "
+[1] 111
+[1] "iteration number: "
+[1] 112
+[1] "iteration number: "
+[1] 113
+[1] "iteration number: "
+[1] 114
+[1] "iteration number: "
+[1] 115
+[1] "iteration number: "
+[1] 116
+[1] "iteration number: "
+[1] 117
+[1] "iteration number: "
+[1] 118
+[1] "iteration number: "
+[1] 119
+[1] "iteration number: "
+[1] 120
+[1] "iteration number: "
+[1] 121
+[1] "iteration number: "
+[1] 122
+[1] "iteration number: "
+[1] 123
+[1] "iteration number: "
+[1] 124
+[1] "iteration number: "
+[1] 125
+[1] "iteration number: "
+[1] 126
+[1] "iteration number: "
+[1] 127
+[1] "iteration number: "
+[1] 128
+[1] "iteration number: "
+[1] 129
+[1] "iteration number: "
+[1] 130
+[1] "iteration number: "
+[1] 131
+[1] "iteration number: "
+[1] 132
+[1] "iteration number: "
+[1] 133
+[1] "iteration number: "
+[1] 134
+[1] "iteration number: "
+[1] 135
+[1] "iteration number: "
+[1] 136
+[1] "iteration number: "
+[1] 137
+[1] "iteration number: "
+[1] 138
+[1] "iteration number: "
+[1] 139
+[1] "iteration number: "
+[1] 140
+[1] "iteration number: "
+[1] 141
+[1] "iteration number: "
+[1] 142
+[1] "iteration number: "
+[1] 143
+[1] "iteration number: "
+[1] 144
+[1] "iteration number: "
+[1] 145
+[1] "iteration number: "
+[1] 146
+[1] "iteration number: "
+[1] 147
+[1] "iteration number: "
+[1] 148
+[1] "iteration number: "
+[1] 149
+[1] "iteration number: "
+[1] 150
+[1] "iteration number: "
+[1] 151
+[1] "iteration number: "
+[1] 152
+[1] "iteration number: "
+[1] 153
+[1] "iteration number: "
+[1] 154
+[1] "iteration number: "
+[1] 155
+[1] "iteration number: "
+[1] 156
+[1] "iteration number: "
+[1] 157
+[1] "iteration number: "
+[1] 158
+[1] "iteration number: "
+[1] 159
+[1] "iteration number: "
+[1] 160
+[1] "iteration number: "
+[1] 161
+[1] "iteration number: "
+[1] 162
+[1] "iteration number: "
+[1] 163
+[1] "iteration number: "
+[1] 164
+[1] "iteration number: "
+[1] 165
+[1] "iteration number: "
+[1] 166
+[1] "iteration number: "
+[1] 167
+[1] "iteration number: "
+[1] 168
+[1] "iteration number: "
+[1] 169
+[1] "iteration number: "
+[1] 170
+[1] "iteration number: "
+[1] 171
+[1] "iteration number: "
+[1] 172
+[1] "iteration number: "
+[1] 173
+[1] "iteration number: "
+[1] 174
+[1] "iteration number: "
+[1] 175
+[1] "iteration number: "
+[1] 176
+[1] "iteration number: "
+[1] 177
+[1] "iteration number: "
+[1] 178
+[1] "iteration number: "
+[1] 179
+[1] "iteration number: "
+[1] 180
+[1] "iteration number: "
+[1] 181
+[1] "iteration number: "
+[1] 182
+[1] "iteration number: "
+[1] 183
+[1] "iteration number: "
+[1] 184
+[1] "iteration number: "
+[1] 185
+[1] "iteration number: "
+[1] 186
+[1] "iteration number: "
+[1] 187
+[1] "iteration number: "
+[1] 188
+[1] "iteration number: "
+[1] 189
+[1] "iteration number: "
+[1] 190
+[1] "iteration number: "
+[1] 191
+[1] "iteration number: "
+[1] 192
+[1] "iteration number: "
+[1] 193
+[1] "iteration number: "
+[1] 194
+[1] "iteration number: "
+[1] 195
+[1] "iteration number: "
+[1] 196
+[1] "iteration number: "
+[1] 197
+[1] "iteration number: "
+[1] 198
+[1] "iteration number: "
+[1] 199
+[1] "iteration number: "
+[1] 200
+[1] "iteration number: "
+[1] 201
+[1] "iteration number: "
+[1] 202
+[1] "iteration number: "
+[1] 203
+[1] "iteration number: "
+[1] 204
+[1] "iteration number: "
+[1] 205
+[1] "iteration number: "
+[1] 206
+[1] "iteration number: "
+[1] 207
+[1] "iteration number: "
+[1] 208
+[1] "iteration number: "
+[1] 209
+[1] "iteration number: "
+[1] 210
+[1] "iteration number: "
+[1] 211
+[1] "iteration number: "
+[1] 212
+[1] "iteration number: "
+[1] 213
+[1] "iteration number: "
+[1] 214
+[1] "iteration number: "
+[1] 215
+[1] "iteration number: "
+[1] 216
+[1] "iteration number: "
+[1] 217
+[1] "iteration number: "
+[1] 218
+[1] "iteration number: "
+[1] 219
+[1] "iteration number: "
+[1] 220
+[1] "iteration number: "
+[1] 221
+[1] "iteration number: "
+[1] 222
+[1] "iteration number: "
+[1] 223
+[1] "iteration number: "
+[1] 224
+[1] "iteration number: "
+[1] 225
+[1] "iteration number: "
+[1] 226
+[1] "iteration number: "
+[1] 227
+[1] "iteration number: "
+[1] 228
+[1] "iteration number: "
+[1] 229
+[1] "iteration number: "
+[1] 230
+[1] "iteration number: "
+[1] 231
+[1] "iteration number: "
+[1] 232
+[1] "iteration number: "
+[1] 233
+[1] "iteration number: "
+[1] 234
+[1] "iteration number: "
+[1] 235
+[1] "iteration number: "
+[1] 236
+[1] "iteration number: "
+[1] 237
+[1] "iteration number: "
+[1] 238
+[1] "iteration number: "
+[1] 239
+[1] "iteration number: "
+[1] 240
+[1] "iteration number: "
+[1] 241
+[1] "iteration number: "
+[1] 242
+[1] "iteration number: "
+[1] 243
+[1] "iteration number: "
+[1] 244
+[1] "iteration number: "
+[1] 245
+[1] "iteration number: "
+[1] 246
+[1] "iteration number: "
+[1] 247
+[1] "iteration number: "
+[1] 248
+[1] "iteration number: "
+[1] 249
+[1] "iteration number: "
+[1] 250
+[1] "iteration number: "
+[1] 251
+[1] "iteration number: "
+[1] 252
+[1] "iteration number: "
+[1] 253
+[1] "iteration number: "
+[1] 254
+[1] "iteration number: "
+[1] 255
+[1] "iteration number: "
+[1] 256
+[1] "iteration number: "
+[1] 257
+[1] "iteration number: "
+[1] 258
+[1] "iteration number: "
+[1] 259
+[1] "iteration number: "
+[1] 260
+[1] "iteration number: "
+[1] 261
+[1] "iteration number: "
+[1] 262
+[1] "iteration number: "
+[1] 263
+[1] "iteration number: "
+[1] 264
+[1] "iteration number: "
+[1] 265
+[1] "iteration number: "
+[1] 266
+[1] "iteration number: "
+[1] 267
+[1] "iteration number: "
+[1] 268
+[1] "iteration number: "
+[1] 269
+[1] "iteration number: "
+[1] 270
+[1] "iteration number: "
+[1] 271
+[1] "iteration number: "
+[1] 272
+[1] "iteration number: "
+[1] 273
+[1] "iteration number: "
+[1] 274
+[1] "iteration number: "
+[1] 275
+[1] "iteration number: "
+[1] 276
+[1] "iteration number: "
+[1] 277
+[1] "iteration number: "
+[1] 278
+[1] "iteration number: "
+[1] 279
+[1] "iteration number: "
+[1] 280
+[1] "iteration number: "
+[1] 281
+[1] "iteration number: "
+[1] 282
+[1] "iteration number: "
+[1] 283
+[1] "iteration number: "
+[1] 284
+[1] "iteration number: "
+[1] 285
+[1] "iteration number: "
+[1] 286
+[1] "iteration number: "
+[1] 287
+[1] "No change for 11 iterations. Exiting PSO."
+[1] "##################################"
+[1] "Results summary for itr:8"
+[1] "number of features selected using population mean"
+[1] 18
+[1] "number of features selected using current global best"
+[1] 18
+[1] "feat ind length"
+[1] 18
+[1] "best accuracy"
+[1] 42.30286
+[1] "test acc:0.961538461538462"
+[1] "##################################"
+[1] "learning sets: 9"
+  [1]  14  66  43  91 106 109  78  22  31  93  29  30   9 120  41 110 103  74
+ [19]  83  99  33  32  90  54  46  24  27  40 126  59  87   2 107 118 130  49
+ [37] 122  52 114 102  55  73  82 104  39 123  69  25  67  63  13 127  38  64
+ [55]  18  72 129 115  21 119  61  62  58   6  48 121   7  37 113  88 124  84
+ [73] 117  76  97  45  47   5  79  42  60 100 128  35  70  81  92  36 108 116
+ [91] 105  71  77  11  51  20  96  65 112  28  34  57  23   4
+[1] "Starting global iteration number : 9"
+[1] "iteration number: "
+[1] 1
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "iteration number: "
+[1] 8
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "iteration number: "
+[1] 96
+[1] "iteration number: "
+[1] 97
+[1] "iteration number: "
+[1] 98
+[1] "iteration number: "
+[1] 99
+[1] "iteration number: "
+[1] 100
+[1] "iteration number: "
+[1] 101
+[1] "iteration number: "
+[1] 102
+[1] "iteration number: "
+[1] 103
+[1] "iteration number: "
+[1] 104
+[1] "iteration number: "
+[1] 105
+[1] "iteration number: "
+[1] 106
+[1] "iteration number: "
+[1] 107
+[1] "iteration number: "
+[1] 108
+[1] "iteration number: "
+[1] 109
+[1] "iteration number: "
+[1] 110
+[1] "iteration number: "
+[1] 111
+[1] "iteration number: "
+[1] 112
+[1] "iteration number: "
+[1] 113
+[1] "iteration number: "
+[1] 114
+[1] "iteration number: "
+[1] 115
+[1] "iteration number: "
+[1] 116
+[1] "iteration number: "
+[1] 117
+[1] "iteration number: "
+[1] 118
+[1] "iteration number: "
+[1] 119
+[1] "iteration number: "
+[1] 120
+[1] "iteration number: "
+[1] 121
+[1] "iteration number: "
+[1] 122
+[1] "iteration number: "
+[1] 123
+[1] "iteration number: "
+[1] 124
+[1] "iteration number: "
+[1] 125
+[1] "iteration number: "
+[1] 126
+[1] "iteration number: "
+[1] 127
+[1] "iteration number: "
+[1] 128
+[1] "iteration number: "
+[1] 129
+[1] "iteration number: "
+[1] 130
+[1] "iteration number: "
+[1] 131
+[1] "iteration number: "
+[1] 132
+[1] "iteration number: "
+[1] 133
+[1] "iteration number: "
+[1] 134
+[1] "iteration number: "
+[1] 135
+[1] "iteration number: "
+[1] 136
+[1] "iteration number: "
+[1] 137
+[1] "iteration number: "
+[1] 138
+[1] "iteration number: "
+[1] 139
+[1] "iteration number: "
+[1] 140
+[1] "iteration number: "
+[1] 141
+[1] "iteration number: "
+[1] 142
+[1] "iteration number: "
+[1] 143
+[1] "iteration number: "
+[1] 144
+[1] "iteration number: "
+[1] 145
+[1] "iteration number: "
+[1] 146
+[1] "iteration number: "
+[1] 147
+[1] "iteration number: "
+[1] 148
+[1] "iteration number: "
+[1] 149
+[1] "iteration number: "
+[1] 150
+[1] "iteration number: "
+[1] 151
+[1] "iteration number: "
+[1] 152
+[1] "iteration number: "
+[1] 153
+[1] "iteration number: "
+[1] 154
+[1] "iteration number: "
+[1] 155
+[1] "iteration number: "
+[1] 156
+[1] "iteration number: "
+[1] 157
+[1] "iteration number: "
+[1] 158
+[1] "iteration number: "
+[1] 159
+[1] "iteration number: "
+[1] 160
+[1] "iteration number: "
+[1] 161
+[1] "iteration number: "
+[1] 162
+[1] "iteration number: "
+[1] 163
+[1] "iteration number: "
+[1] 164
+[1] "iteration number: "
+[1] 165
+[1] "iteration number: "
+[1] 166
+[1] "iteration number: "
+[1] 167
+[1] "iteration number: "
+[1] 168
+[1] "iteration number: "
+[1] 169
+[1] "iteration number: "
+[1] 170
+[1] "iteration number: "
+[1] 171
+[1] "iteration number: "
+[1] 172
+[1] "iteration number: "
+[1] 173
+[1] "iteration number: "
+[1] 174
+[1] "iteration number: "
+[1] 175
+[1] "iteration number: "
+[1] 176
+[1] "iteration number: "
+[1] 177
+[1] "iteration number: "
+[1] 178
+[1] "iteration number: "
+[1] 179
+[1] "iteration number: "
+[1] 180
+[1] "iteration number: "
+[1] 181
+[1] "iteration number: "
+[1] 182
+[1] "iteration number: "
+[1] 183
+[1] "iteration number: "
+[1] 184
+[1] "iteration number: "
+[1] 185
+[1] "iteration number: "
+[1] 186
+[1] "iteration number: "
+[1] 187
+[1] "iteration number: "
+[1] 188
+[1] "iteration number: "
+[1] 189
+[1] "iteration number: "
+[1] 190
+[1] "iteration number: "
+[1] 191
+[1] "iteration number: "
+[1] 192
+[1] "iteration number: "
+[1] 193
+[1] "iteration number: "
+[1] 194
+[1] "iteration number: "
+[1] 195
+[1] "iteration number: "
+[1] 196
+[1] "iteration number: "
+[1] 197
+[1] "iteration number: "
+[1] 198
+[1] "iteration number: "
+[1] 199
+[1] "iteration number: "
+[1] 200
+[1] "iteration number: "
+[1] 201
+[1] "iteration number: "
+[1] 202
+[1] "iteration number: "
+[1] 203
+[1] "iteration number: "
+[1] 204
+[1] "iteration number: "
+[1] 205
+[1] "iteration number: "
+[1] 206
+[1] "iteration number: "
+[1] 207
+[1] "iteration number: "
+[1] 208
+[1] "iteration number: "
+[1] 209
+[1] "iteration number: "
+[1] 210
+[1] "iteration number: "
+[1] 211
+[1] "iteration number: "
+[1] 212
+[1] "iteration number: "
+[1] 213
+[1] "iteration number: "
+[1] 214
+[1] "iteration number: "
+[1] 215
+[1] "iteration number: "
+[1] 216
+[1] "iteration number: "
+[1] 217
+[1] "iteration number: "
+[1] 218
+[1] "iteration number: "
+[1] 219
+[1] "iteration number: "
+[1] 220
+[1] "iteration number: "
+[1] 221
+[1] "iteration number: "
+[1] 222
+[1] "iteration number: "
+[1] 223
+[1] "iteration number: "
+[1] 224
+[1] "iteration number: "
+[1] 225
+[1] "iteration number: "
+[1] 226
+[1] "iteration number: "
+[1] 227
+[1] "iteration number: "
+[1] 228
+[1] "iteration number: "
+[1] 229
+[1] "iteration number: "
+[1] 230
+[1] "iteration number: "
+[1] 231
+[1] "iteration number: "
+[1] 232
+[1] "iteration number: "
+[1] 233
+[1] "iteration number: "
+[1] 234
+[1] "iteration number: "
+[1] 235
+[1] "iteration number: "
+[1] 236
+[1] "iteration number: "
+[1] 237
+[1] "iteration number: "
+[1] 238
+[1] "iteration number: "
+[1] 239
+[1] "iteration number: "
+[1] 240
+[1] "iteration number: "
+[1] 241
+[1] "iteration number: "
+[1] 242
+[1] "iteration number: "
+[1] 243
+[1] "iteration number: "
+[1] 244
+[1] "iteration number: "
+[1] 245
+[1] "iteration number: "
+[1] 246
+[1] "iteration number: "
+[1] 247
+[1] "iteration number: "
+[1] 248
+[1] "iteration number: "
+[1] 249
+[1] "iteration number: "
+[1] 250
+[1] "iteration number: "
+[1] 251
+[1] "iteration number: "
+[1] 252
+[1] "iteration number: "
+[1] 253
+[1] "iteration number: "
+[1] 254
+[1] "iteration number: "
+[1] 255
+[1] "iteration number: "
+[1] 256
+[1] "iteration number: "
+[1] 257
+[1] "iteration number: "
+[1] 258
+[1] "iteration number: "
+[1] 259
+[1] "iteration number: "
+[1] 260
+[1] "iteration number: "
+[1] 261
+[1] "iteration number: "
+[1] 262
+[1] "iteration number: "
+[1] 263
+[1] "iteration number: "
+[1] 264
+[1] "iteration number: "
+[1] 265
+[1] "iteration number: "
+[1] 266
+[1] "iteration number: "
+[1] 267
+[1] "iteration number: "
+[1] 268
+[1] "iteration number: "
+[1] 269
+[1] "iteration number: "
+[1] 270
+[1] "iteration number: "
+[1] 271
+[1] "iteration number: "
+[1] 272
+[1] "iteration number: "
+[1] 273
+[1] "iteration number: "
+[1] 274
+[1] "iteration number: "
+[1] 275
+[1] "iteration number: "
+[1] 276
+[1] "iteration number: "
+[1] 277
+[1] "iteration number: "
+[1] 278
+[1] "iteration number: "
+[1] 279
+[1] "iteration number: "
+[1] 280
+[1] "iteration number: "
+[1] 281
+[1] "iteration number: "
+[1] 282
+[1] "iteration number: "
+[1] 283
+[1] "iteration number: "
+[1] 284
+[1] "iteration number: "
+[1] 285
+[1] "iteration number: "
+[1] 286
+[1] "iteration number: "
+[1] 287
+[1] "iteration number: "
+[1] 288
+[1] "iteration number: "
+[1] 289
+[1] "iteration number: "
+[1] 290
+[1] "iteration number: "
+[1] 291
+[1] "iteration number: "
+[1] 292
+[1] "iteration number: "
+[1] 293
+[1] "iteration number: "
+[1] 294
+[1] "iteration number: "
+[1] 295
+[1] "iteration number: "
+[1] 296
+[1] "iteration number: "
+[1] 297
+[1] "iteration number: "
+[1] 298
+[1] "iteration number: "
+[1] 299
+[1] "iteration number: "
+[1] 300
+[1] "iteration number: "
+[1] 301
+[1] "iteration number: "
+[1] 302
+[1] "iteration number: "
+[1] 303
+[1] "iteration number: "
+[1] 304
+[1] "iteration number: "
+[1] 305
+[1] "iteration number: "
+[1] 306
+[1] "iteration number: "
+[1] 307
+[1] "iteration number: "
+[1] 308
+[1] "iteration number: "
+[1] 309
+[1] "iteration number: "
+[1] 310
+[1] "iteration number: "
+[1] 311
+[1] "iteration number: "
+[1] 312
+[1] "iteration number: "
+[1] 313
+[1] "iteration number: "
+[1] 314
+[1] "iteration number: "
+[1] 315
+[1] "iteration number: "
+[1] 316
+[1] "iteration number: "
+[1] 317
+[1] "iteration number: "
+[1] 318
+[1] "iteration number: "
+[1] 319
+[1] "iteration number: "
+[1] 320
+[1] "iteration number: "
+[1] 321
+[1] "iteration number: "
+[1] 322
+[1] "iteration number: "
+[1] 323
+[1] "iteration number: "
+[1] 324
+[1] "iteration number: "
+[1] 325
+[1] "iteration number: "
+[1] 326
+[1] "iteration number: "
+[1] 327
+[1] "iteration number: "
+[1] 328
+[1] "iteration number: "
+[1] 329
+[1] "iteration number: "
+[1] 330
+[1] "iteration number: "
+[1] 331
+[1] "iteration number: "
+[1] 332
+[1] "iteration number: "
+[1] 333
+[1] "iteration number: "
+[1] 334
+[1] "iteration number: "
+[1] 335
+[1] "iteration number: "
+[1] 336
+[1] "iteration number: "
+[1] 337
+[1] "iteration number: "
+[1] 338
+[1] "iteration number: "
+[1] 339
+[1] "iteration number: "
+[1] 340
+[1] "iteration number: "
+[1] 341
+[1] "iteration number: "
+[1] 342
+[1] "iteration number: "
+[1] 343
+[1] "iteration number: "
+[1] 344
+[1] "iteration number: "
+[1] 345
+[1] "iteration number: "
+[1] 346
+[1] "iteration number: "
+[1] 347
+[1] "iteration number: "
+[1] 348
+[1] "iteration number: "
+[1] 349
+[1] "iteration number: "
+[1] 350
+[1] "iteration number: "
+[1] 351
+[1] "iteration number: "
+[1] 352
+[1] "iteration number: "
+[1] 353
+[1] "iteration number: "
+[1] 354
+[1] "iteration number: "
+[1] 355
+[1] "iteration number: "
+[1] 356
+[1] "iteration number: "
+[1] 357
+[1] "iteration number: "
+[1] 358
+[1] "iteration number: "
+[1] 359
+[1] "iteration number: "
+[1] 360
+[1] "iteration number: "
+[1] 361
+[1] "iteration number: "
+[1] 362
+[1] "iteration number: "
+[1] 363
+[1] "iteration number: "
+[1] 364
+[1] "iteration number: "
+[1] 365
+[1] "iteration number: "
+[1] 366
+[1] "iteration number: "
+[1] 367
+[1] "iteration number: "
+[1] 368
+[1] "iteration number: "
+[1] 369
+[1] "iteration number: "
+[1] 370
+[1] "iteration number: "
+[1] 371
+[1] "iteration number: "
+[1] 372
+[1] "iteration number: "
+[1] 373
+[1] "iteration number: "
+[1] 374
+[1] "iteration number: "
+[1] 375
+[1] "iteration number: "
+[1] 376
+[1] "iteration number: "
+[1] 377
+[1] "iteration number: "
+[1] 378
+[1] "iteration number: "
+[1] 379
+[1] "iteration number: "
+[1] 380
+[1] "iteration number: "
+[1] 381
+[1] "iteration number: "
+[1] 382
+[1] "iteration number: "
+[1] 383
+[1] "iteration number: "
+[1] 384
+[1] "iteration number: "
+[1] 385
+[1] "iteration number: "
+[1] 386
+[1] "iteration number: "
+[1] 387
+[1] "iteration number: "
+[1] 388
+[1] "iteration number: "
+[1] 389
+[1] "iteration number: "
+[1] 390
+[1] "iteration number: "
+[1] 391
+[1] "iteration number: "
+[1] 392
+[1] "iteration number: "
+[1] 393
+[1] "iteration number: "
+[1] 394
+[1] "iteration number: "
+[1] 395
+[1] "iteration number: "
+[1] 396
+[1] "iteration number: "
+[1] 397
+[1] "iteration number: "
+[1] 398
+[1] "iteration number: "
+[1] 399
+[1] "iteration number: "
+[1] 400
+[1] "iteration number: "
+[1] 401
+[1] "iteration number: "
+[1] 402
+[1] "iteration number: "
+[1] 403
+[1] "iteration number: "
+[1] 404
+[1] "iteration number: "
+[1] 405
+[1] "iteration number: "
+[1] 406
+[1] "No change for 11 iterations. Exiting PSO."
+[1] "##################################"
+[1] "Results summary for itr:9"
+[1] "number of features selected using population mean"
+[1] 18
+[1] "number of features selected using current global best"
+[1] 16
+[1] "feat ind length"
+[1] 16
+[1] "best accuracy"
+[1] 40.91858
+[1] "test acc:0.846153846153846"
+[1] "##################################"
+[1] "learning sets: 10"
+  [1]  66  99  15  32 106  98  89  31  17  43  91  56  14  12  41  74 120  93
+ [19]  29 110 103  78  22  30  83  90 121  11  53  92  40  20  39 112  49  97
+ [37]   5  35  96 123  52   7  70  68  51  79  57 102 129   3  77 126 114 130
+ [55] 101  45  36   4 104 117  72  61  21  18  81  60 127  88   6 107  67  58
+ [73]  85  80  65 116  34 108  84  64  55  59  71  62 119  13   1  47  87 122
+ [91]  76 118  38 128  27  25 105 125   2  23 100 113  63  86
+[1] "Starting global iteration number : 10"
+[1] "iteration number: "
+[1] 1
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "iteration number: "
+[1] 8
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "iteration number: "
+[1] 96
+[1] "iteration number: "
+[1] 97
+[1] "iteration number: "
+[1] 98
+[1] "iteration number: "
+[1] 99
+[1] "iteration number: "
+[1] 100
+[1] "iteration number: "
+[1] 101
+[1] "iteration number: "
+[1] 102
+[1] "iteration number: "
+[1] 103
+[1] "iteration number: "
+[1] 104
+[1] "iteration number: "
+[1] 105
+[1] "iteration number: "
+[1] 106
+[1] "iteration number: "
+[1] 107
+[1] "iteration number: "
+[1] 108
+[1] "iteration number: "
+[1] 109
+[1] "iteration number: "
+[1] 110
+[1] "iteration number: "
+[1] 111
+[1] "iteration number: "
+[1] 112
+[1] "iteration number: "
+[1] 113
+[1] "iteration number: "
+[1] 114
+[1] "iteration number: "
+[1] 115
+[1] "iteration number: "
+[1] 116
+[1] "iteration number: "
+[1] 117
+[1] "iteration number: "
+[1] 118
+[1] "iteration number: "
+[1] 119
+[1] "iteration number: "
+[1] 120
+[1] "iteration number: "
+[1] 121
+[1] "iteration number: "
+[1] 122
+[1] "iteration number: "
+[1] 123
+[1] "iteration number: "
+[1] 124
+[1] "iteration number: "
+[1] 125
+[1] "iteration number: "
+[1] 126
+[1] "iteration number: "
+[1] 127
+[1] "iteration number: "
+[1] 128
+[1] "iteration number: "
+[1] 129
+[1] "iteration number: "
+[1] 130
+[1] "iteration number: "
+[1] 131
+[1] "iteration number: "
+[1] 132
+[1] "iteration number: "
+[1] 133
+[1] "iteration number: "
+[1] 134
+[1] "iteration number: "
+[1] 135
+[1] "iteration number: "
+[1] 136
+[1] "iteration number: "
+[1] 137
+[1] "iteration number: "
+[1] 138
+[1] "iteration number: "
+[1] 139
+[1] "iteration number: "
+[1] 140
+[1] "iteration number: "
+[1] 141
+[1] "iteration number: "
+[1] 142
+[1] "iteration number: "
+[1] 143
+[1] "iteration number: "
+[1] 144
+[1] "iteration number: "
+[1] 145
+[1] "iteration number: "
+[1] 146
+[1] "iteration number: "
+[1] 147
+[1] "iteration number: "
+[1] 148
+[1] "iteration number: "
+[1] 149
+[1] "iteration number: "
+[1] 150
+[1] "iteration number: "
+[1] 151
+[1] "iteration number: "
+[1] 152
+[1] "iteration number: "
+[1] 153
+[1] "iteration number: "
+[1] 154
+[1] "iteration number: "
+[1] 155
+[1] "iteration number: "
+[1] 156
+[1] "iteration number: "
+[1] 157
+[1] "iteration number: "
+[1] 158
+[1] "iteration number: "
+[1] 159
+[1] "iteration number: "
+[1] 160
+[1] "iteration number: "
+[1] 161
+[1] "iteration number: "
+[1] 162
+[1] "iteration number: "
+[1] 163
+[1] "iteration number: "
+[1] 164
+[1] "iteration number: "
+[1] 165
+[1] "iteration number: "
+[1] 166
+[1] "iteration number: "
+[1] 167
+[1] "iteration number: "
+[1] 168
+[1] "iteration number: "
+[1] 169
+[1] "iteration number: "
+[1] 170
+[1] "iteration number: "
+[1] 171
+[1] "iteration number: "
+[1] 172
+[1] "iteration number: "
+[1] 173
+[1] "iteration number: "
+[1] 174
+[1] "iteration number: "
+[1] 175
+[1] "iteration number: "
+[1] 176
+[1] "iteration number: "
+[1] 177
+[1] "iteration number: "
+[1] 178
+[1] "iteration number: "
+[1] 179
+[1] "iteration number: "
+[1] 180
+[1] "iteration number: "
+[1] 181
+[1] "iteration number: "
+[1] 182
+[1] "iteration number: "
+[1] 183
+[1] "iteration number: "
+[1] 184
+[1] "iteration number: "
+[1] 185
+[1] "iteration number: "
+[1] 186
+[1] "iteration number: "
+[1] 187
+[1] "iteration number: "
+[1] 188
+[1] "iteration number: "
+[1] 189
+[1] "iteration number: "
+[1] 190
+[1] "iteration number: "
+[1] 191
+[1] "iteration number: "
+[1] 192
+[1] "iteration number: "
+[1] 193
+[1] "iteration number: "
+[1] 194
+[1] "iteration number: "
+[1] 195
+[1] "iteration number: "
+[1] 196
+[1] "iteration number: "
+[1] 197
+[1] "iteration number: "
+[1] 198
+[1] "iteration number: "
+[1] 199
+[1] "iteration number: "
+[1] 200
+[1] "iteration number: "
+[1] 201
+[1] "iteration number: "
+[1] 202
+[1] "iteration number: "
+[1] 203
+[1] "iteration number: "
+[1] 204
+[1] "iteration number: "
+[1] 205
+[1] "iteration number: "
+[1] 206
+[1] "iteration number: "
+[1] 207
+[1] "iteration number: "
+[1] 208
+[1] "iteration number: "
+[1] 209
+[1] "iteration number: "
+[1] 210
+[1] "iteration number: "
+[1] 211
+[1] "iteration number: "
+[1] 212
+[1] "iteration number: "
+[1] 213
+[1] "iteration number: "
+[1] 214
+[1] "iteration number: "
+[1] 215
+[1] "iteration number: "
+[1] 216
+[1] "iteration number: "
+[1] 217
+[1] "iteration number: "
+[1] 218
+[1] "iteration number: "
+[1] 219
+[1] "iteration number: "
+[1] 220
+[1] "iteration number: "
+[1] 221
+[1] "iteration number: "
+[1] 222
+[1] "iteration number: "
+[1] 223
+[1] "iteration number: "
+[1] 224
+[1] "iteration number: "
+[1] 225
+[1] "iteration number: "
+[1] 226
+[1] "iteration number: "
+[1] 227
+[1] "iteration number: "
+[1] 228
+[1] "iteration number: "
+[1] 229
+[1] "iteration number: "
+[1] 230
+[1] "iteration number: "
+[1] 231
+[1] "iteration number: "
+[1] 232
+[1] "iteration number: "
+[1] 233
+[1] "iteration number: "
+[1] 234
+[1] "iteration number: "
+[1] 235
+[1] "iteration number: "
+[1] 236
+[1] "iteration number: "
+[1] 237
+[1] "iteration number: "
+[1] 238
+[1] "iteration number: "
+[1] 239
+[1] "iteration number: "
+[1] 240
+[1] "iteration number: "
+[1] 241
+[1] "iteration number: "
+[1] 242
+[1] "iteration number: "
+[1] 243
+[1] "iteration number: "
+[1] 244
+[1] "iteration number: "
+[1] 245
+[1] "iteration number: "
+[1] 246
+[1] "iteration number: "
+[1] 247
+[1] "iteration number: "
+[1] 248
+[1] "iteration number: "
+[1] 249
+[1] "iteration number: "
+[1] 250
+[1] "iteration number: "
+[1] 251
+[1] "iteration number: "
+[1] 252
+[1] "iteration number: "
+[1] 253
+[1] "iteration number: "
+[1] 254
+[1] "iteration number: "
+[1] 255
+[1] "iteration number: "
+[1] 256
+[1] "iteration number: "
+[1] 257
+[1] "iteration number: "
+[1] 258
+[1] "iteration number: "
+[1] 259
+[1] "No change for 11 iterations. Exiting PSO."
+[1] "##################################"
+[1] "Results summary for itr:10"
+[1] "number of features selected using population mean"
+[1] 18
+[1] "number of features selected using current global best"
+[1] 18
+[1] "feat ind length"
+[1] 18
+[1] "best accuracy"
+[1] 41.00119
+[1] "test acc:0.961538461538462"
+[1] "##################################"
+[1] "testacc"
+ [1] 0.8076923 0.8461538 0.8846154 0.8076923 0.8846154 0.8846154 1.0000000
+ [8] 0.9615385 0.8461538 0.9615385
+[1] 0.8884615
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.8077  0.8462  0.8846  0.8885  0.9423  1.0000 
+[1] 0.06649386
+            [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
+201555_at      1    0    1    0    1    0    1    1    0     1
+202683_s_at    1    1    1    1    1    1    1    1    1     1
+203139_at      0    1    0    1    1    1    1    1    1     1
+203628_at      1    0    1    0    0    1    0    0    1     0
+203963_at      0    0    1    0    0    0    0    0    0     0
+204681_s_at    1    1    1    1    1    1    1    1    1     1
+204825_at      1    1    0    1    0    0    1    1    1     0
+205225_at      1    1    1    0    0    1    1    1    0     1
+205229_s_at    0    0    0    0    1    0    1    1    1     1
+205347_s_at    1    0    0    0    0    1    1    0    0     1
+205478_at      0    1    1    0    1    1    1    1    1     1
+205696_s_at    1    1    1    1    0    0    1    0    1     0
+205713_s_at    0    1    0    0    1    1    1    1    1     0
+205751_at      0    1    0    1    1    1    1    1    1     1
+205830_at      0    1    0    1    1    1    1    1    1     1
+206401_s_at    1    0    1    0    1    0    1    1    0     1
+208670_s_at    0    0    0    0    1    0    1    1    1     1
+208712_at      1    0    1    0    0    0    1    1    1     1
+208893_s_at    1    1    0    0    0    1    0    1    0     1
+209173_at      0    0    1    0    0    0    0    0    0     0
+211864_s_at    1    1    0    0    1    1    1    1    0     1
+212583_at      0    1    1    1    0    1    1    1    1     1
+214164_x_at    1    1    0    0    1    0    0    0    1     0
+214612_x_at    1    0    1    0    1    1    1    0    0     0
+215867_x_at    0    0    0    0    0    0    0    0    0     0
+216092_s_at    1    1    1    0    1    1    1    0    0     1
+219051_x_at    1    1    0    1    0    1    0    1    1     1
+[1] "dim of scoring matrix is "
+[1] 27 10
+[1] "DS index stage 2"
+[1] 0.6398068
+[1] "KI index stage 2"
+[1] -Inf
+[1] 1
+[1] "bestgenelist"
+ [1]  2  6  3 11 14 15 22  8 21 26 27  1  7 12 13 16 18  9 17 19 24  4 10 23  5
+[26] 20 25
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at   205830_at 
+         10          10           8           8           8           8 
+  212583_at   205225_at 211864_s_at 216092_s_at 219051_x_at   201555_at 
+          8           7           7           7           7           6 
+  204825_at 205696_s_at 205713_s_at 206401_s_at   208712_at 205229_s_at 
+          6           6           6           6           6           5 
+208670_s_at 208893_s_at 214612_x_at   203628_at 205347_s_at 214164_x_at 
+          5           5           5           4           4           4 
+  203963_at   209173_at 215867_x_at 
+          1           1           0 
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+[1] 0.7878788 0.9896907
+[1] 0.7878788 0.9896907
+[1] "accuracy: 84.1050153590946 num_feat:27 fitness:67.5786084911899"
+$fitfunc
+[1] -67.57861
+
+$cverror
+[1] 84.10502
+
+$cvpermerror
+[1] 52.28452
+
+$testacc
+[1] 100
+
+$reverseacc
+[1] 88.87848
+
+[1] -67.57861
+[1] "bestgenelist"
+ [1]  2  6  3 11 14 15 22  8 21 26 27  1  7 12 13 16 18  9 17 19 24  4 10 23  5
+[26] 20
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at   205830_at 
+         10          10           8           8           8           8 
+  212583_at   205225_at 211864_s_at 216092_s_at 219051_x_at   201555_at 
+          8           7           7           7           7           6 
+  204825_at 205696_s_at 205713_s_at 206401_s_at   208712_at 205229_s_at 
+          6           6           6           6           6           5 
+208670_s_at 208893_s_at 214612_x_at   203628_at 205347_s_at 214164_x_at 
+          5           5           5           4           4           4 
+  203963_at   209173_at 
+          1           1 
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1
+[1] 0.7878788 0.9896907
+[1] 0.7878788 0.9896907
+[1] "accuracy: 85.4896505799037 num_feat:26 fitness:68.6036225383824"
+$fitfunc
+[1] -68.60362
+
+$cverror
+[1] 85.48965
+
+$cvpermerror
+[1] 53.56056
+
+$testacc
+[1] 100
+
+$reverseacc
+[1] 88.87848
+
+[1] -68.60362
+[1] "bestgenelist"
+ [1]  2  6  3 11 14 15 22  8 21 26 27  1  7 12 13 16 18  9 17 19 24  4 10 23  5
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at   205830_at 
+         10          10           8           8           8           8 
+  212583_at   205225_at 211864_s_at 216092_s_at 219051_x_at   201555_at 
+          8           7           7           7           7           6 
+  204825_at 205696_s_at 205713_s_at 206401_s_at   208712_at 205229_s_at 
+          6           6           6           6           6           5 
+208670_s_at 208893_s_at 214612_x_at   203628_at 205347_s_at 214164_x_at 
+          5           5           5           4           4           4 
+  203963_at 
+          1 
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 0 1 1
+[1] 0.7878788 0.9896907
+[1] 0.7878788 0.9896907
+[1] "accuracy: 86.8434483806922 num_feat:25 fitness:69.9809193982001"
+$fitfunc
+[1] -69.98092
+
+$cverror
+[1] 86.84345
+
+$cvpermerror
+[1] 53.56056
+
+$testacc
+[1] 100
+
+$reverseacc
+[1] 88.87848
+
+[1] -69.98092
+[1] "bestgenelist"
+ [1]  2  6  3 11 14 15 22  8 21 26 27  1  7 12 13 16 18  9 17 19 24  4 10 23
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at   205830_at 
+         10          10           8           8           8           8 
+  212583_at   205225_at 211864_s_at 216092_s_at 219051_x_at   201555_at 
+          8           7           7           7           7           6 
+  204825_at 205696_s_at 205713_s_at 206401_s_at   208712_at 205229_s_at 
+          6           6           6           6           6           5 
+208670_s_at 208893_s_at 214612_x_at   203628_at 205347_s_at 214164_x_at 
+          5           5           5           4           4           4 
+ [1] 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 0 1 1
+[1] 0.7878788 0.9896907
+[1] 0.7878788 0.9896907
+[1] "accuracy: 87.1944472447748 num_feat:24 fitness:70.2848829404387"
+$fitfunc
+[1] -70.28488
+
+$cverror
+[1] 87.19445
+
+$cvpermerror
+[1] 53.79474
+
+$testacc
+[1] 98.96907
+
+$reverseacc
+[1] 88.87848
+
+[1] -70.28488
+[1] "bestgenelist"
+ [1]  2  6  3 11 14 15 22  8 21 26 27  1  7 12 13 16 18  9 17 19 24  4 10
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at   205830_at 
+         10          10           8           8           8           8 
+  212583_at   205225_at 211864_s_at 216092_s_at 219051_x_at   201555_at 
+          8           7           7           7           7           6 
+  204825_at 205696_s_at 205713_s_at 206401_s_at   208712_at 205229_s_at 
+          6           6           6           6           6           5 
+208670_s_at 208893_s_at 214612_x_at   203628_at 205347_s_at 
+          5           5           5           4           4 
+ [1] 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 0 1 0 1 1
+[1] 0.7575758 0.9896907
+[1] 0.7575758 0.9896907
+[1] "accuracy: 88.2282830466005 num_feat:23 fitness:71.3454174212831"
+$fitfunc
+[1] -71.34542
+
+$cverror
+[1] 88.22828
+
+$cvpermerror
+[1] 53.79474
+
+$testacc
+[1] 98.96907
+
+$reverseacc
+[1] 87.36332
+
+[1] -71.34542
+[1] "bestgenelist"
+ [1]  2  6  3 11 14 15 22  8 21 26 27  1  7 12 13 16 18  9 17 19 24  4
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at   205830_at 
+         10          10           8           8           8           8 
+  212583_at   205225_at 211864_s_at 216092_s_at 219051_x_at   201555_at 
+          8           7           7           7           7           6 
+  204825_at 205696_s_at 205713_s_at 206401_s_at   208712_at 205229_s_at 
+          6           6           6           6           6           5 
+208670_s_at 208893_s_at 214612_x_at   203628_at 
+          5           5           5           4 
+ [1] 1 1 1 1 0 1 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 0 1 0 1 1
+[1] 0.8181818 0.9896907
+[1] 0.8181818 0.9896907
+[1] "accuracy: 89.6771395841051 num_feat:22 fitness:72.8168224304497"
+$fitfunc
+[1] -72.81682
+
+$cverror
+[1] 89.67714
+
+$cvpermerror
+[1] 53.79474
+
+$testacc
+[1] 98.96907
+
+$reverseacc
+[1] 90.39363
+
+[1] -72.81682
+[1] "bestgenelist"
+ [1]  2  6  3 11 14 15 22  8 21 26 27  1  7 12 13 16 18  9 17 19 24
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at   205830_at 
+         10          10           8           8           8           8 
+  212583_at   205225_at 211864_s_at 216092_s_at 219051_x_at   201555_at 
+          8           7           7           7           7           6 
+  204825_at 205696_s_at 205713_s_at 206401_s_at   208712_at 205229_s_at 
+          6           6           6           6           6           5 
+208670_s_at 208893_s_at 214612_x_at 
+          5           5           5 
+ [1] 1 1 1 0 0 1 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 0 1 0 1 1
+[1] 0.8181818 0.9896907
+[1] 0.8181818 0.9896907
+[1] "accuracy: 89.550354794816 num_feat:21 fitness:72.7985956179802"
+$fitfunc
+[1] -72.7986
+
+$cverror
+[1] 89.55035
+
+$cvpermerror
+[1] 53.56056
+
+$testacc
+[1] 98.96907
+
+$reverseacc
+[1] 90.39363
+
+[1] -72.7986
+[1] "bestgenelist"
+ [1]  2  6  3 11 14 15 22  8 21 26 27  1  7 12 13 16 18  9 17 19
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at   205830_at 
+         10          10           8           8           8           8 
+  212583_at   205225_at 211864_s_at 216092_s_at 219051_x_at   201555_at 
+          8           7           7           7           7           6 
+  204825_at 205696_s_at 205713_s_at 206401_s_at   208712_at 205229_s_at 
+          6           6           6           6           6           5 
+208670_s_at 208893_s_at 
+          5           5 
+ [1] 1 1 1 0 0 1 1 1 1 0 1 1 1 1 1 1 1 1 1 0 1 1 0 0 0 1 1
+[1] 0.7878788 0.9896907
+[1] 0.7878788 0.9896907
+[1] "accuracy: 88.4252939493316 num_feat:20 fitness:71.726977057163"
+$fitfunc
+[1] -71.72698
+
+$cverror
+[1] 88.42529
+
+$cvpermerror
+[1] 53.56056
+
+$testacc
+[1] 99.48454
+
+$reverseacc
+[1] 88.87848
+
+[1] -71.72698
+[1] "bestgenelist"
+ [1]  2  6  3 11 14 15 22  8 21 26 27  1  7 12 13 16 18  9 17
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at   205830_at 
+         10          10           8           8           8           8 
+  212583_at   205225_at 211864_s_at 216092_s_at 219051_x_at   201555_at 
+          8           7           7           7           7           6 
+  204825_at 205696_s_at 205713_s_at 206401_s_at   208712_at 205229_s_at 
+          6           6           6           6           6           5 
+208670_s_at 
+          5 
+ [1] 1 1 1 0 0 1 1 1 1 0 1 1 1 1 1 1 1 1 0 0 1 1 0 0 0 1 1
+[1] 0.8181818 0.9896907
+[1] 0.8181818 0.9896907
+[1] "accuracy: 88.1327197114746 num_feat:19 fitness:71.4636796648129"
+$fitfunc
+[1] -71.46368
+
+$cverror
+[1] 88.13272
+
+$cvpermerror
+[1] 53.54568
+
+$testacc
+[1] 97.96938
+
+$reverseacc
+[1] 90.39363
+
+[1] -71.46368
+[1] "bestgenelist"
+ [1]  2  6  3 11 14 15 22  8 21 26 27  1  7 12 13 16 18  9
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at   205830_at 
+         10          10           8           8           8           8 
+  212583_at   205225_at 211864_s_at 216092_s_at 219051_x_at   201555_at 
+          8           7           7           7           7           6 
+  204825_at 205696_s_at 205713_s_at 206401_s_at   208712_at 205229_s_at 
+          6           6           6           6           6           5 
+ [1] 1 1 1 0 0 1 1 1 1 0 1 1 1 1 1 1 0 1 0 0 1 1 0 0 0 1 1
+[1] 0.8181818 1.0000000
+[1] 0.8181818 1.0000000
+[1] "accuracy: 89.4942760181996 num_feat:18 fitness:72.7739387723752"
+$fitfunc
+[1] -72.77394
+
+$cverror
+[1] 89.49428
+
+$cvpermerror
+[1] 53.79474
+
+$testacc
+[1] 97.96938
+
+$reverseacc
+[1] 90.90909
+
+[1] -72.77394
+[1] "bestgenelist"
+ [1]  2  6  3 11 14 15 22  8 21 26 27  1  7 12 13 16 18
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at   205830_at 
+         10          10           8           8           8           8 
+  212583_at   205225_at 211864_s_at 216092_s_at 219051_x_at   201555_at 
+          8           7           7           7           7           6 
+  204825_at 205696_s_at 205713_s_at 206401_s_at   208712_at 
+          6           6           6           6           6 
+ [1] 1 1 1 0 0 1 1 1 0 0 1 1 1 1 1 1 0 1 0 0 1 1 0 0 0 1 1
+[1] 0.7878788 1.0000000
+[1] 0.7878788 1.0000000
+[1] "accuracy: 88.6055583966761 num_feat:17 fitness:72.0185094725125"
+$fitfunc
+[1] -72.01851
+
+$cverror
+[1] 88.60556
+
+$cvpermerror
+[1] 53.50353
+
+$testacc
+[1] 97.96938
+
+$reverseacc
+[1] 89.39394
+
+[1] -72.01851
+[1] "bestgenelist"
+ [1]  2  6  3 11 14 15 22  8 21 26 27  1  7 12 13 16
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at   205830_at 
+         10          10           8           8           8           8 
+  212583_at   205225_at 211864_s_at 216092_s_at 219051_x_at   201555_at 
+          8           7           7           7           7           6 
+  204825_at 205696_s_at 205713_s_at 206401_s_at 
+          6           6           6           6 
+ [1] 1 1 1 0 0 1 1 1 0 0 1 1 1 1 1 1 0 0 0 0 1 1 0 0 0 1 1
+[1] 0.7878788 1.0000000
+[1] 0.7878788 1.0000000
+[1] "accuracy: 85.7558306348908 num_feat:16 fitness:69.2394706645573"
+$fitfunc
+[1] -69.23947
+
+$cverror
+[1] 85.75583
+
+$cvpermerror
+[1] 53.50353
+
+$testacc
+[1] 98.48485
+
+$reverseacc
+[1] 89.39394
+
+[1] -69.23947
+[1] "bestgenelist"
+ [1]  2  6  3 11 14 15 22  8 21 26 27  1  7 12 13
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at   205830_at 
+         10          10           8           8           8           8 
+  212583_at   205225_at 211864_s_at 216092_s_at 219051_x_at   201555_at 
+          8           7           7           7           7           6 
+  204825_at 205696_s_at 205713_s_at 
+          6           6           6 
+ [1] 1 1 1 0 0 1 1 1 0 0 1 1 1 1 1 0 0 0 0 0 1 1 0 0 0 1 1
+[1] 0.7878788 1.0000000
+[1] 0.7878788 1.0000000
+[1] "accuracy: 87.1298745496839 num_feat:15 fitness:70.6299791973972"
+$fitfunc
+[1] -70.62998
+
+$cverror
+[1] 87.12987
+
+$cvpermerror
+[1] 53.5263
+
+$testacc
+[1] 98.48485
+
+$reverseacc
+[1] 89.39394
+
+[1] -70.62998
+[1] "bestgenelist"
+ [1]  2  6  3 11 14 15 22  8 21 26 27  1  7 12
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at   205830_at 
+         10          10           8           8           8           8 
+  212583_at   205225_at 211864_s_at 216092_s_at 219051_x_at   201555_at 
+          8           7           7           7           7           6 
+  204825_at 205696_s_at 
+          6           6 
+ [1] 1 1 1 0 0 1 1 1 0 0 1 1 0 1 1 0 0 0 0 0 1 1 0 0 0 1 1
+[1] 0.7878788 1.0000000
+[1] 0.7878788 1.0000000
+[1] "accuracy: 86.4378858866238 num_feat:14 fitness:70.0721318140398"
+$fitfunc
+[1] -70.07213
+
+$cverror
+[1] 86.43789
+
+$cvpermerror
+[1] 53.19132
+
+$testacc
+[1] 97.45392
+
+$reverseacc
+[1] 89.39394
+
+[1] -70.07213
+[1] "bestgenelist"
+ [1]  2  6  3 11 14 15 22  8 21 26 27  1  7
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at   205830_at 
+         10          10           8           8           8           8 
+  212583_at   205225_at 211864_s_at 216092_s_at 219051_x_at   201555_at 
+          8           7           7           7           7           6 
+  204825_at 
+          6 
+ [1] 1 1 1 0 0 1 1 1 0 0 1 0 0 1 1 0 0 0 0 0 1 1 0 0 0 1 1
+[1] 0.8181818 1.0000000
+[1] 0.8181818 1.0000000
+[1] "accuracy: 86.5833310062354 num_feat:13 fitness:70.2531595194922"
+$fitfunc
+[1] -70.25316
+
+$cverror
+[1] 86.58333
+
+$cvpermerror
+[1] 53.19132
+
+$testacc
+[1] 97.45392
+
+$reverseacc
+[1] 90.90909
+
+[1] -70.25316
+[1] "bestgenelist"
+ [1]  2  6  3 11 14 15 22  8 21 26 27  1
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at   205830_at 
+         10          10           8           8           8           8 
+  212583_at   205225_at 211864_s_at 216092_s_at 219051_x_at   201555_at 
+          8           7           7           7           7           6 
+ [1] 1 1 1 0 0 1 0 1 0 0 1 0 0 1 1 0 0 0 0 0 1 1 0 0 0 1 1
+[1] 0.8181818 1.0000000
+[1] 0.8181818 1.0000000
+[1] "accuracy: 87.4250139675208 num_feat:12 fitness:71.1189939721101"
+$fitfunc
+[1] -71.11899
+
+$cverror
+[1] 87.42501
+
+$cvpermerror
+[1] 53.20622
+
+$testacc
+[1] 97.45392
+
+$reverseacc
+[1] 90.90909
+
+[1] -71.11899
+[1] "bestgenelist"
+ [1]  2  6  3 11 14 15 22  8 21 26 27
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at   205830_at 
+         10          10           8           8           8           8 
+  212583_at   205225_at 211864_s_at 216092_s_at 219051_x_at 
+          8           7           7           7           7 
+ [1] 0 1 1 0 0 1 0 1 0 0 1 0 0 1 1 0 0 0 0 0 1 1 0 0 0 1 1
+[1] 0.8181818 0.9896907
+[1] 0.8181818 0.9896907
+[1] "accuracy: 81.0645871181456 num_feat:11 fitness:64.8485256292059"
+$fitfunc
+[1] -64.84853
+
+$cverror
+[1] 81.06459
+
+$cvpermerror
+[1] 53.19132
+
+$testacc
+[1] 95.93877
+
+$reverseacc
+[1] 90.39363
+
+[1] -64.84853
+[1] "bestgenelist"
+ [1]  2  6  3 11 14 15 22  8 21 26
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at   205830_at 
+         10          10           8           8           8           8 
+  212583_at   205225_at 211864_s_at 216092_s_at 
+          8           7           7           7 
+ [1] 0 1 1 0 0 1 0 1 0 0 1 0 0 1 1 0 0 0 0 0 1 1 0 0 0 1 0
+[1] 0.7878788 0.9896907
+[1] 0.7878788 0.9896907
+[1] "accuracy: 81.6809598149997 num_feat:10 fitness:65.4205228711202"
+$fitfunc
+[1] -65.42052
+
+$cverror
+[1] 81.68096
+
+$cvpermerror
+[1] 53.44215
+
+$testacc
+[1] 95.93877
+
+$reverseacc
+[1] 88.87848
+
+[1] -65.42052
+[1] "bestgenelist"
+[1]  2  6  3 11 14 15 22  8 21
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at   205830_at 
+         10          10           8           8           8           8 
+  212583_at   205225_at 211864_s_at 
+          8           7           7 
+ [1] 0 1 1 0 0 1 0 1 0 0 1 0 0 1 1 0 0 0 0 0 1 1 0 0 0 0 0
+[1] 0.7575758 0.9896907
+[1] 0.7575758 0.9896907
+[1] "accuracy: 81.5093587299998 num_feat:9 fitness:65.2920992153102"
+$fitfunc
+[1] -65.2921
+
+$cverror
+[1] 81.50936
+
+$cvpermerror
+[1] 53.44458
+
+$testacc
+[1] 96.45423
+
+$reverseacc
+[1] 87.36332
+
+[1] -65.2921
+[1] "bestgenelist"
+[1]  2  6  3 11 14 15 22  8
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at   205830_at 
+         10          10           8           8           8           8 
+  212583_at   205225_at 
+          8           7 
+ [1] 0 1 1 0 0 1 0 1 0 0 1 0 0 1 1 0 0 0 0 0 0 1 0 0 0 0 0
+[1] 0.7575758 0.9793814
+[1] 0.7575758 0.9793814
+[1] "accuracy: 79.271431652817 num_feat:8 fitness:63.0836330127872"
+$fitfunc
+[1] -63.08363
+
+$cverror
+[1] 79.27143
+
+$cvpermerror
+[1] 53.37574
+
+$testacc
+[1] 91.39331
+
+$reverseacc
+[1] 86.84786
+
+[1] -63.08363
+[1] "bestgenelist"
+[1]  2  6  3 11 14 15 22
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at   205830_at 
+         10          10           8           8           8           8 
+  212583_at 
+          8 
+ [1] 0 1 1 0 0 1 0 0 0 0 1 0 0 1 1 0 0 0 0 0 0 1 0 0 0 0 0
+[1] 0.8181818 0.9484536
+[1] 0.8181818 0.9484536
+[1] "accuracy: 77.647560165708 num_feat:7 fitness:61.4891232661584"
+$fitfunc
+[1] -61.48912
+
+$cverror
+[1] 77.64756
+
+$cvpermerror
+[1] 53.43827
+
+$testacc
+[1] 90.87785
+
+$reverseacc
+[1] 88.33177
+
+[1] -61.48912
+[1] "bestgenelist"
+[1]  2  6  3 11 14 15
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at   205830_at 
+         10          10           8           8           8           8 
+ [1] 0 1 1 0 0 1 0 0 0 0 1 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0
+[1] 0.7272727 0.9587629
+[1] 0.7272727 0.9587629
+[1] "accuracy: 71.3497102805135 num_feat:6 fitness:55.245621678569"
+$fitfunc
+[1] -55.24562
+
+$cverror
+[1] 71.34971
+
+$cvpermerror
+[1] 53.4218
+
+$testacc
+[1] 85.81693
+
+$reverseacc
+[1] 84.30178
+
+[1] -55.24562
+[1] "bestgenelist"
+[1]  2  6  3 11 14
+202683_s_at 204681_s_at   203139_at   205478_at   205751_at 
+         10          10           8           8           8 
+ [1] 0 1 1 0 0 1 0 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0
+[1] 0.6969697 0.9381443
+[1] 0.6969697 0.9381443
+[1] "accuracy: 66.5646282535054 num_feat:5 fitness:50.5015438603326"
+$fitfunc
+[1] -50.50154
+
+$cverror
+[1] 66.56463
+
+$cvpermerror
+[1] 53.46706
+
+$testacc
+[1] 82.78663
+
+$reverseacc
+[1] 81.7557
+
+[1] -50.50154
+[1] "bestgenelist"
+[1]  2  6  3 11
+202683_s_at 204681_s_at   203139_at   205478_at 
+         10          10           8           8 
+ [1] 0 1 1 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[1] 0.5454545 0.9587629
+[1] 0.5454545 0.9587629
+[1] "accuracy: 68.1087946586359 num_feat:4 fitness:52.0119147325308"
+$fitfunc
+[1] -52.01191
+
+$cverror
+[1] 68.10879
+
+$cvpermerror
+[1] 53.50019
+
+$testacc
+[1] 78.24117
+
+$reverseacc
+[1] 75.21087
+
+[1] -52.01191
+[1] "bestgenelist"
+[1] 2 6 3
+202683_s_at 204681_s_at   203139_at 
+         10          10           8 
+ [1] 0 1 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[1] 0.4848485 0.9484536
+[1] 0.4848485 0.9484536
+[1] "accuracy: 62.6227848801967 num_feat:3 fitness:46.5798566147422"
+$fitfunc
+[1] -46.57986
+
+$cverror
+[1] 62.62278
+
+$cvpermerror
+[1] 53.49234
+
+$testacc
+[1] 74.21118
+
+$reverseacc
+[1] 71.6651
+
+[1] -46.57986
+[1] "bestgenelist"
+[1] 2 6
+202683_s_at 204681_s_at 
+         10          10 
+ [1] 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[1] "accuracy: 1 num_feat:2 fitness:-100"
+$fitfunc
+[1] 100
+
+$cverror
+[1] 1
+
+$cvpermerror
+[1] 100
+
+$testacc
+[1] 1
+
+$reverseacc
+[1] 1
+
+[1] 100
+[1] "bestgenelist"
+[1] 2
+202683_s_at 
+         10 
+ [1] 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[1] "accuracy: 1 num_feat:1 fitness:-100"
+$fitfunc
+[1] 100
+
+$cverror
+[1] 1
+
+$cvpermerror
+[1] 100
+
+$testacc
+[1] 1
+
+$reverseacc
+[1] 1
+
+[1] 100
+[1] "Number of features selected in 10 iterations:"
+[1] 22
+[1] "Modified train 10 fold accuracy using train data is "
+[1] 95.38462
+[1] "Modified train accuracy is "
+[1] 0.9846154
+[1] "train confusion matrix is "
+          trainclass
+pred_train  1  2
+         1 33  2
+         2  0 95
+[1] "Train dimension is "
+[1] 130  22
+[1] "Test dimension is "
+[1] 100  22
+[1] "Test confusion matrix is "
+    
+pred  1  2
+   1  7 12
+   2  8 73
+[1] "Test acc is "
+[1] 0.8
+[1] "train 10 fold"
+[1] 94.61538
+[1] "Test confusion matrix is "
+    
+pred  1  2
+   1  7 12
+   2  8 73
+[1] "Test acc is "
+[1] 0.8
+[1] "Test AUC:"
+[1] 0.6627451
+[1] "Train acc is "
+[1] 0.9846154
+[1] "# of features after PSO:"
+[1] 130  23
+     user    system   elapsed 
+  233.614   374.598 27770.931 
+There were 50 or more warnings (use warnings() to see the first 50)
+> 
+> 
+> 
+> 
+> feat_ind<-psores$bestfeatlist
+> feat_names<-psores$bestfeatnames
+> 
+> scoringmatrix<-as.data.frame(psores$scoringmatrix)
+> print(scoringmatrix)
+            V1 V2 V3 V4 V5 V6 V7 V8 V9 V10
+201555_at    1  0  1  0  1  0  1  1  0   1
+202683_s_at  1  1  1  1  1  1  1  1  1   1
+203139_at    0  1  0  1  1  1  1  1  1   1
+203628_at    1  0  1  0  0  1  0  0  1   0
+203963_at    0  0  1  0  0  0  0  0  0   0
+204681_s_at  1  1  1  1  1  1  1  1  1   1
+204825_at    1  1  0  1  0  0  1  1  1   0
+205225_at    1  1  1  0  0  1  1  1  0   1
+205229_s_at  0  0  0  0  1  0  1  1  1   1
+205347_s_at  1  0  0  0  0  1  1  0  0   1
+205478_at    0  1  1  0  1  1  1  1  1   1
+205696_s_at  1  1  1  1  0  0  1  0  1   0
+205713_s_at  0  1  0  0  1  1  1  1  1   0
+205751_at    0  1  0  1  1  1  1  1  1   1
+205830_at    0  1  0  1  1  1  1  1  1   1
+206401_s_at  1  0  1  0  1  0  1  1  0   1
+208670_s_at  0  0  0  0  1  0  1  1  1   1
+208712_at    1  0  1  0  0  0  1  1  1   1
+208893_s_at  1  1  0  0  0  1  0  1  0   1
+209173_at    0  0  1  0  0  0  0  0  0   0
+211864_s_at  1  1  0  0  1  1  1  1  0   1
+212583_at    0  1  1  1  0  1  1  1  1   1
+214164_x_at  1  1  0  0  1  0  0  0  1   0
+214612_x_at  1  0  1  0  1  1  1  0  0   0
+215867_x_at  0  0  0  0  0  0  0  0  0   0
+216092_s_at  1  1  1  0  1  1  1  0  0   1
+219051_x_at  1  1  0  1  0  1  0  1  1   1
+> print(feat_names[feat_ind])
+ [1] "202683_s_at" "204681_s_at" "203139_at"   "205478_at"   "205751_at"  
+ [6] "205830_at"   "212583_at"   "205225_at"   "211864_s_at" "216092_s_at"
+[11] "219051_x_at" "201555_at"   "204825_at"   "205696_s_at" "205713_s_at"
+[16] "206401_s_at" "208712_at"   "205229_s_at" "208670_s_at" "208893_s_at"
+[21] "214612_x_at" "203628_at"  
+> 
+> save(psores,file="psores.Rda")
+> print("Complete")
+[1] "Complete"
+> 

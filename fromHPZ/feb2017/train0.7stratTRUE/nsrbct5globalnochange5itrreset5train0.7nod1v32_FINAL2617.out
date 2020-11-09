@@ -1,0 +1,4468 @@
+
+R version 3.2.2 (2015-08-14) -- "Fire Safety"
+Copyright (C) 2015 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> #.libPaths("/home/stu/kuppal3/karan_libs/Rlibs")
+> library(snow)
+> library(e1071)
+> library(yaImpute)
+
+Attaching package: ‘yaImpute’
+
+The following object is masked from ‘package:e1071’:
+
+    impute
+
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+> library(bioDist)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘parallel’
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, clusterSplit, makeCluster, parApply,
+    parCapply, parLapply, parRapply, parSapply, splitIndices,
+    stopCluster
+
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parRapply, parSapply
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, as.vector, cbind, colnames,
+    do.call, duplicated, eval, evalq, Filter, Find, get, grep, grepl,
+    intersect, is.unsorted, lapply, lengths, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unlist, unsplit
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: KernSmooth
+KernSmooth 2.23 loaded
+Copyright M. P. Wand 1997-2009
+> #library(CMA, lib="/home/stu/kuppal3/karan_libs/Rlibs/")
+> library(RankAggreg)
+> library(CMA)
+
+Attaching package: ‘CMA’
+
+The following object is masked from ‘package:pROC’:
+
+    roc
+
+The following object is masked from ‘package:e1071’:
+
+    tune
+
+> library(expm)
+Loading required package: Matrix
+
+Attaching package: ‘expm’
+
+The following object is masked from ‘package:Matrix’:
+
+    expm
+
+> 
+> cl<-makeCluster(1)
+> 
+> 
+> args<-commandArgs(trailingOnly=TRUE)
+> #sname<-paste("/home/stu/kuppal3/Research/Feature_selection/Rcode/version2016/OCFS_",args[9],".R",sep="")
+> #sname<-paste("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/version2016/OCFS_",args[9],".R",sep="")
+> 
+> sname<-paste("/home/kuppal2/Documents/Projects/xmsPANDA/Other/scripts/OCFS_",args[9],".R",sep="")
+> source(sname)
+> print(sname)
+[1] "/home/kuppal2/Documents/Projects/xmsPANDA/Other/scripts/OCFS_vfeb817_v1.R"
+> 
+> #data_loc<-"/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/" #"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/MAQCII_BreastCancer/"
+> #data_loc<-"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/SRBCT_Khan/"
+> data_loc<-"/home/kuppal2/Documents/Projects/xmsPANDA/Other/Datasets/SRBCT_Khan/"
+> 
+> setwd(data_loc)
+> #load("/home/stu/kuppal3/Research/Feature_selection/Datasets/MAQCII_BreastCancer/MaqcIIbr.Rda")
+> 
+> 
+> outloc<-paste(data_loc,"OCFSv062016_v32_SRBCT_sensitivity_itr",args[9],"/",sep="")
+> 
+> 
+> trainm<-read.table("Khan.xtrain.txt",header=FALSE)
+> testm<-read.table("Khan.xtest.txt",header=FALSE)
+> trainclass<-read.table("khan.ytrain.txt", header=FALSE)
+> testclass<-read.table("khan.ytest.txt", header=FALSE)
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/home/kuppal2/Documents/Projects/xmsPANDA/Other/Datasets/SRBCT_Khan/OCFSv062016_v32_SRBCT_sensitivity_itrvfeb817_v1' already exists
+> setwd(outloc)
+> 
+> 
+> trainm<-t(trainm)
+> testm<-t(testm)
+> 
+> cnames<-paste("var",seq(1,dim(trainm)[2]),sep="")
+> colnames(trainm)<-cnames
+> colnames(testm)<-cnames
+> 
+> trainclass<-t(trainclass)
+> testclass<-t(testclass)
+> 
+> trainm<-cbind(trainclass,trainm)
+> testm<-cbind(testclass,testm)
+> 
+> trainm<-na.omit(trainm)
+> testm<-na.omit(testm)
+> 
+> 
+> 
+> 
+> 
+> #OCFSvmay2415v2reg_itr1_LassoRFELIMMAELpres1backwsel_l0.25f0.45c0.25_top10pctmaxitrs100minselmedianrandbehavfeatw0.01_CV2accA100B1wrand6methodsmax100wrand/"
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/home/kuppal2/Documents/Projects/xmsPANDA/Other/Datasets/SRBCT_Khan/OCFSv062016_v32_SRBCT_sensitivity_itrvfeb817_v1' already exists
+> setwd(outloc)
+> 
+> trainm<-as.matrix(trainm)
+> testm<-as.matrix(testm)
+> trainclass<-trainm[,1] #CMAres$modtrainclass
+> testclass<-testm[,1] #CMAres$modtestclass
+> trainm<-trainm[,-c(1)] #CMAres$modtrainmata
+> testm<-testm[,-c(1)] #CMAres$modtestmata
+> 
+> #a: Confusions
+> #b: Neighbors
+> #c: Global
+> #d: Death
+> 
+> a<-c(0.25,0.25,0.25,0.25)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0.25,0.25,0.5,0)
+> d<-c(0.9,0.1,0,0.1)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0,0.5,0.5,0)
+> d<-c(0.9,0.1,0,0)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.2,0.3,0.4,0.1)
+> c<-c(0,0.4,0.4,0.2)
+> d<-c(0.9,0.1,0,0)
+> 
+> transition_matrix<-rbind(a,b,c,d)
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/home/kuppal2/Documents/Projects/xmsPANDA/Other/Datasets/SRBCT_Khan/OCFSv062016_v32_SRBCT_sensitivity_itrvfeb817_v1' already exists
+> setwd(outloc)
+> temp2=t(trainm)
+> temp2=apply(temp2, 2, function(x){which(x=="MD")})
+> temp2=unlist(temp2)
+> temp2=unique(temp2)
+> if(length(temp2)>1)
++ {
++ 	trainm=trainm[,-c(temp2)]
++ 
++ 	rm(temp2)
++ }
+> 
+> boostweight=rep(0,dim(trainm)[2])
+> 
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("limma"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="none",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   63 2308
+[1]   63 2308
+[1] "length of factcols"
+[1] 0
+[1]   63 2308
+[1]   20 2308
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+V1 V2 V4 V6 
+ 3  2  4  2 
+Levels: 1 2 3 4
+[1] "orig train matrix"
+            var1      var2       var3       var4       var5        var6
+[1,]  0.77334370 -2.438405 -0.4825622 -2.7211350 -1.2170580  0.82780920
+[2,] -0.07817778 -2.415754  0.4127717 -2.8251460 -0.6262365  0.05448819
+[3,] -0.08446916 -1.649739 -0.2413075 -2.8752860 -0.8894054 -0.02747398
+[4,]  0.96561400 -2.380547  0.6252965 -1.7412560 -0.8453664  0.94968680
+[5,]  0.07566390 -1.728785  0.8526265  0.2726953 -1.8413700  0.32793590
+         var7        var8       var9     var10
+[1,] 1.342604  0.05704174  0.1335689 0.5654274
+[2,] 1.429498 -0.12024860  0.4567917 0.1590529
+[3,] 1.159300  0.01567648  0.1919418 0.4965847
+[4,] 1.093801  0.81973580 -0.2846201 0.9947322
+[5,] 1.251219  0.77144990  0.0309171 0.2783133
+[1] "orig train matrix"
+            var1      var2       var3       var4       var5        var6
+[1,]  0.77334370 -2.438405 -0.4825622 -2.7211350 -1.2170580  0.82780920
+[2,] -0.07817778 -2.415754  0.4127717 -2.8251460 -0.6262365  0.05448819
+[3,] -0.08446916 -1.649739 -0.2413075 -2.8752860 -0.8894054 -0.02747398
+[4,]  0.96561400 -2.380547  0.6252965 -1.7412560 -0.8453664  0.94968680
+[5,]  0.07566390 -1.728785  0.8526265  0.2726953 -1.8413700  0.32793590
+         var7        var8       var9     var10
+[1,] 1.342604  0.05704174  0.1335689 0.5654274
+[2,] 1.429498 -0.12024860  0.4567917 0.1590529
+[3,] 1.159300  0.01567648  0.1919418 0.4965847
+[4,] 1.093801  0.81973580 -0.2846201 0.9947322
+[5,] 1.251219  0.77144990  0.0309171 0.2783133
+[1] -0.4825622  0.4127717 -0.2413075
+[1] "norm train matrix"
+            var1      var2       var3       var4       var5        var6
+[1,]  0.77334370 -2.438405 -0.4825622 -2.7211350 -1.2170580  0.82780920
+[2,] -0.07817778 -2.415754  0.4127717 -2.8251460 -0.6262365  0.05448819
+[3,] -0.08446916 -1.649739 -0.2413075 -2.8752860 -0.8894054 -0.02747398
+[4,]  0.96561400 -2.380547  0.6252965 -1.7412560 -0.8453664  0.94968680
+[5,]  0.07566390 -1.728785  0.8526265  0.2726953 -1.8413700  0.32793590
+         var7        var8       var9     var10
+[1,] 1.342604  0.05704174  0.1335689 0.5654274
+[2,] 1.429498 -0.12024860  0.4567917 0.1590529
+[3,] 1.159300  0.01567648  0.1919418 0.4965847
+[4,] 1.093801  0.81973580 -0.2846201 0.9947322
+[5,] 1.251219  0.77144990  0.0309171 0.2783133
+[1] "mean of feat 2"
+[1] -1.739001
+[1] "sd of feat 2"
+[1] 0.9055712
+[1] "maxnum is "
+[1] 5
+[1] "# of genes left after filtering:"
+[1]   63 2308
+GeneSelection: iteration 1 
+
+Attaching package: ‘limma’
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    plotMA
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+[1] "dim of scoring matrix is "
+[1] 2308    1
+[1] 2308
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+[1]  246  255  742  842 1003
+        var246    var255     var742   var842   var1003
+[1,] 1.6047470 -1.514582  0.7311171 1.553629 -3.231455
+[2,] 0.7924947 -1.701005  0.3808308 1.732505 -2.294617
+[3,] 1.5527410 -1.256319 -0.2871489 1.454747 -2.154165
+         var246    var255     var742     var842   var1003
+[1,] -2.5010360  1.165710  1.1040309 -0.3690368 -1.988505
+[2,] -0.5151684 -0.592759 -1.1605941  0.7715886 -2.928074
+[3,] -1.9330926 -1.027222 -0.7325119  0.9271515  1.000558
+[1] "numgenes selected:5"
+[1] "test acc:0.9"
+[1] "test AUC acc:0.944444444444445"
+[1] "10 fold train95.2380952380952"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2  3  4
+         1  7  1  0  0
+         2  0 22  0  0
+         3  0  0 12  0
+         4  1  0  0 20
+[1] "confusion matrix test"
+         test_y
+pred_test 1 2 3 4
+        1 3 1 0 0
+        2 0 4 0 0
+        3 0 0 6 0
+        4 0 1 0 5
+[1] "train acc:0.968253968253968"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2  3  4
+         1  7  1  0  0
+         2  0 22  0  0
+         3  0  0 12  0
+         4  1  0  0 20
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+Warning messages:
+1: In if (is.na(boostweight) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+2: In if (is.na(testm) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+3: In if (is.na(testclass) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+4: In mean.default(DS_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+5: In mean.default(DS_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+6: In mean.default(KI_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+> 
+> 
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("lasso"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="none",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   63 2308
+[1]   63 2308
+[1] "length of factcols"
+[1] 0
+[1]   63 2308
+[1]   20 2308
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+V1 V2 V4 V6 
+ 3  2  4  2 
+Levels: 1 2 3 4
+[1] "orig train matrix"
+            var1      var2       var3       var4       var5        var6
+[1,]  0.77334370 -2.438405 -0.4825622 -2.7211350 -1.2170580  0.82780920
+[2,] -0.07817778 -2.415754  0.4127717 -2.8251460 -0.6262365  0.05448819
+[3,] -0.08446916 -1.649739 -0.2413075 -2.8752860 -0.8894054 -0.02747398
+[4,]  0.96561400 -2.380547  0.6252965 -1.7412560 -0.8453664  0.94968680
+[5,]  0.07566390 -1.728785  0.8526265  0.2726953 -1.8413700  0.32793590
+         var7        var8       var9     var10
+[1,] 1.342604  0.05704174  0.1335689 0.5654274
+[2,] 1.429498 -0.12024860  0.4567917 0.1590529
+[3,] 1.159300  0.01567648  0.1919418 0.4965847
+[4,] 1.093801  0.81973580 -0.2846201 0.9947322
+[5,] 1.251219  0.77144990  0.0309171 0.2783133
+[1] "orig train matrix"
+            var1      var2       var3       var4       var5        var6
+[1,]  0.77334370 -2.438405 -0.4825622 -2.7211350 -1.2170580  0.82780920
+[2,] -0.07817778 -2.415754  0.4127717 -2.8251460 -0.6262365  0.05448819
+[3,] -0.08446916 -1.649739 -0.2413075 -2.8752860 -0.8894054 -0.02747398
+[4,]  0.96561400 -2.380547  0.6252965 -1.7412560 -0.8453664  0.94968680
+[5,]  0.07566390 -1.728785  0.8526265  0.2726953 -1.8413700  0.32793590
+         var7        var8       var9     var10
+[1,] 1.342604  0.05704174  0.1335689 0.5654274
+[2,] 1.429498 -0.12024860  0.4567917 0.1590529
+[3,] 1.159300  0.01567648  0.1919418 0.4965847
+[4,] 1.093801  0.81973580 -0.2846201 0.9947322
+[5,] 1.251219  0.77144990  0.0309171 0.2783133
+[1] -0.4825622  0.4127717 -0.2413075
+[1] "norm train matrix"
+            var1      var2       var3       var4       var5        var6
+[1,]  0.77334370 -2.438405 -0.4825622 -2.7211350 -1.2170580  0.82780920
+[2,] -0.07817778 -2.415754  0.4127717 -2.8251460 -0.6262365  0.05448819
+[3,] -0.08446916 -1.649739 -0.2413075 -2.8752860 -0.8894054 -0.02747398
+[4,]  0.96561400 -2.380547  0.6252965 -1.7412560 -0.8453664  0.94968680
+[5,]  0.07566390 -1.728785  0.8526265  0.2726953 -1.8413700  0.32793590
+         var7        var8       var9     var10
+[1,] 1.342604  0.05704174  0.1335689 0.5654274
+[2,] 1.429498 -0.12024860  0.4567917 0.1590529
+[3,] 1.159300  0.01567648  0.1919418 0.4965847
+[4,] 1.093801  0.81973580 -0.2846201 0.9947322
+[5,] 1.251219  0.77144990  0.0309171 0.2783133
+[1] "mean of feat 2"
+[1] -1.739001
+[1] "sd of feat 2"
+[1] 0.9055712
+[1] "maxnum is "
+[1] 5
+[1] "# of genes left after filtering:"
+[1]   63 2308
+GeneSelection: iteration 1 
+Loaded glmnet 2.0-5
+
+
+Attaching package: ‘glmnet’
+
+The following object is masked from ‘package:pROC’:
+
+    auc
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+genelist
+   1    2  246  255  842 1003 1389 1427 1954 1955 2050  836 1764  509 2198 2046 
+  35   12   10   10   10   10   10   10   10   10   10    9    9    8    7    6 
+ 248  129  742    3  589 1319  545  695  851  910 1387 2022 2166 
+   5    3    3    2    2    2    1    1    1    1    1    1    1 
+[1] "varselmethod"
+[1] "none"
+[1] "dim of scoring matrix is "
+[1] 2308    1
+[1] 2308
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+[1]   1   2 246 255 842
+            var1      var2    var246    var255   var842
+[1,]  0.77334370 -2.438405 1.6047470 -1.514582 1.553629
+[2,] -0.07817778 -2.415754 0.7924947 -1.701005 1.732505
+[3,] -0.08446916 -1.649739 1.5527410 -1.256319 1.454747
+          var1       var2     var246    var255     var842
+[1,] 0.1395010 -1.1689275 -2.5010360  1.165710 -0.3690368
+[2,] 1.1642752 -2.0181583 -0.5151684 -0.592759  0.7715886
+[3,] 0.8410929  0.2547197 -1.9330926 -1.027222  0.9271515
+[1] "numgenes selected:5"
+[1] "test acc:0.9"
+[1] "test AUC acc:0.916666666666667"
+[1] "10 fold train96.8253968253968"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2  3  4
+         1  8  0  0  0
+         2  0 22  0  1
+         3  0  0 12  0
+         4  0  1  0 19
+[1] "confusion matrix test"
+         test_y
+pred_test 1 2 3 4
+        1 3 0 0 0
+        2 0 4 0 0
+        3 0 0 6 0
+        4 0 2 0 5
+[1] "train acc:0.968253968253968"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2  3  4
+         1  8  0  0  0
+         2  0 22  0  1
+         3  0  0 12  0
+         4  0  1  0 19
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+There were 12 warnings (use warnings() to see them)
+> 
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("rfe"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="none",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   63 2308
+[1]   63 2308
+[1] "length of factcols"
+[1] 0
+[1]   63 2308
+[1]   20 2308
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+V1 V2 V4 V6 
+ 3  2  4  2 
+Levels: 1 2 3 4
+[1] "orig train matrix"
+            var1      var2       var3       var4       var5        var6
+[1,]  0.77334370 -2.438405 -0.4825622 -2.7211350 -1.2170580  0.82780920
+[2,] -0.07817778 -2.415754  0.4127717 -2.8251460 -0.6262365  0.05448819
+[3,] -0.08446916 -1.649739 -0.2413075 -2.8752860 -0.8894054 -0.02747398
+[4,]  0.96561400 -2.380547  0.6252965 -1.7412560 -0.8453664  0.94968680
+[5,]  0.07566390 -1.728785  0.8526265  0.2726953 -1.8413700  0.32793590
+         var7        var8       var9     var10
+[1,] 1.342604  0.05704174  0.1335689 0.5654274
+[2,] 1.429498 -0.12024860  0.4567917 0.1590529
+[3,] 1.159300  0.01567648  0.1919418 0.4965847
+[4,] 1.093801  0.81973580 -0.2846201 0.9947322
+[5,] 1.251219  0.77144990  0.0309171 0.2783133
+[1] "orig train matrix"
+            var1      var2       var3       var4       var5        var6
+[1,]  0.77334370 -2.438405 -0.4825622 -2.7211350 -1.2170580  0.82780920
+[2,] -0.07817778 -2.415754  0.4127717 -2.8251460 -0.6262365  0.05448819
+[3,] -0.08446916 -1.649739 -0.2413075 -2.8752860 -0.8894054 -0.02747398
+[4,]  0.96561400 -2.380547  0.6252965 -1.7412560 -0.8453664  0.94968680
+[5,]  0.07566390 -1.728785  0.8526265  0.2726953 -1.8413700  0.32793590
+         var7        var8       var9     var10
+[1,] 1.342604  0.05704174  0.1335689 0.5654274
+[2,] 1.429498 -0.12024860  0.4567917 0.1590529
+[3,] 1.159300  0.01567648  0.1919418 0.4965847
+[4,] 1.093801  0.81973580 -0.2846201 0.9947322
+[5,] 1.251219  0.77144990  0.0309171 0.2783133
+[1] -0.4825622  0.4127717 -0.2413075
+[1] "norm train matrix"
+            var1      var2       var3       var4       var5        var6
+[1,]  0.77334370 -2.438405 -0.4825622 -2.7211350 -1.2170580  0.82780920
+[2,] -0.07817778 -2.415754  0.4127717 -2.8251460 -0.6262365  0.05448819
+[3,] -0.08446916 -1.649739 -0.2413075 -2.8752860 -0.8894054 -0.02747398
+[4,]  0.96561400 -2.380547  0.6252965 -1.7412560 -0.8453664  0.94968680
+[5,]  0.07566390 -1.728785  0.8526265  0.2726953 -1.8413700  0.32793590
+         var7        var8       var9     var10
+[1,] 1.342604  0.05704174  0.1335689 0.5654274
+[2,] 1.429498 -0.12024860  0.4567917 0.1590529
+[3,] 1.159300  0.01567648  0.1919418 0.4965847
+[4,] 1.093801  0.81973580 -0.2846201 0.9947322
+[5,] 1.251219  0.77144990  0.0309171 0.2783133
+[1] "mean of feat 2"
+[1] -1.739001
+[1] "sd of feat 2"
+[1] 0.9055712
+[1] "maxnum is "
+[1] 5
+[1] "# of genes left after filtering:"
+[1]   63 2308
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+[1] "dim of scoring matrix is "
+[1] 2308    1
+[1] 2308
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+[1] 187 246 509 819 846
+        var187    var246    var509    var819    var846
+[1,] -3.426515 1.6047470 -1.844528 -2.108664 -3.803169
+[2,] -2.361274 0.7924947 -1.699363 -3.272804 -3.083471
+[3,] -2.259526 1.5527410 -1.478848 -2.767800 -2.285728
+         var187     var246    var509    var819    var846
+[1,] -0.8549605 -2.5010360 -1.367276 -1.657054 -2.160218
+[2,] -2.8949824 -0.5151684 -2.365525 -2.199126 -2.487711
+[3,]  2.9578798 -1.9330926  2.815109 -1.017493 -2.153303
+[1] "numgenes selected:5"
+[1] "test acc:0.8"
+[1] "test AUC acc:0.895833333333333"
+[1] "10 fold train90.4761904761905"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2  3  4
+         1  8  0  0  0
+         2  0 23  0  0
+         3  0  0 12  0
+         4  0  0  0 20
+[1] "confusion matrix test"
+         test_y
+pred_test 1 2 3 4
+        1 3 0 2 0
+        2 0 5 0 0
+        3 0 1 3 0
+        4 0 0 1 5
+[1] "train acc:1"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2  3  4
+         1  8  0  0  0
+         2  0 23  0  0
+         3  0  0 12  0
+         4  0  0  0 20
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+Warning messages:
+1: In if (is.na(boostweight) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+2: In if (is.na(testm) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+3: In if (is.na(testclass) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+4: In mean.default(DS_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+5: In mean.default(DS_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+6: In mean.default(KI_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+> 
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("elasticnet"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="none",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   63 2308
+[1]   63 2308
+[1] "length of factcols"
+[1] 0
+[1]   63 2308
+[1]   20 2308
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+V1 V2 V4 V6 
+ 3  2  4  2 
+Levels: 1 2 3 4
+[1] "orig train matrix"
+            var1      var2       var3       var4       var5        var6
+[1,]  0.77334370 -2.438405 -0.4825622 -2.7211350 -1.2170580  0.82780920
+[2,] -0.07817778 -2.415754  0.4127717 -2.8251460 -0.6262365  0.05448819
+[3,] -0.08446916 -1.649739 -0.2413075 -2.8752860 -0.8894054 -0.02747398
+[4,]  0.96561400 -2.380547  0.6252965 -1.7412560 -0.8453664  0.94968680
+[5,]  0.07566390 -1.728785  0.8526265  0.2726953 -1.8413700  0.32793590
+         var7        var8       var9     var10
+[1,] 1.342604  0.05704174  0.1335689 0.5654274
+[2,] 1.429498 -0.12024860  0.4567917 0.1590529
+[3,] 1.159300  0.01567648  0.1919418 0.4965847
+[4,] 1.093801  0.81973580 -0.2846201 0.9947322
+[5,] 1.251219  0.77144990  0.0309171 0.2783133
+[1] "orig train matrix"
+            var1      var2       var3       var4       var5        var6
+[1,]  0.77334370 -2.438405 -0.4825622 -2.7211350 -1.2170580  0.82780920
+[2,] -0.07817778 -2.415754  0.4127717 -2.8251460 -0.6262365  0.05448819
+[3,] -0.08446916 -1.649739 -0.2413075 -2.8752860 -0.8894054 -0.02747398
+[4,]  0.96561400 -2.380547  0.6252965 -1.7412560 -0.8453664  0.94968680
+[5,]  0.07566390 -1.728785  0.8526265  0.2726953 -1.8413700  0.32793590
+         var7        var8       var9     var10
+[1,] 1.342604  0.05704174  0.1335689 0.5654274
+[2,] 1.429498 -0.12024860  0.4567917 0.1590529
+[3,] 1.159300  0.01567648  0.1919418 0.4965847
+[4,] 1.093801  0.81973580 -0.2846201 0.9947322
+[5,] 1.251219  0.77144990  0.0309171 0.2783133
+[1] -0.4825622  0.4127717 -0.2413075
+[1] "norm train matrix"
+            var1      var2       var3       var4       var5        var6
+[1,]  0.77334370 -2.438405 -0.4825622 -2.7211350 -1.2170580  0.82780920
+[2,] -0.07817778 -2.415754  0.4127717 -2.8251460 -0.6262365  0.05448819
+[3,] -0.08446916 -1.649739 -0.2413075 -2.8752860 -0.8894054 -0.02747398
+[4,]  0.96561400 -2.380547  0.6252965 -1.7412560 -0.8453664  0.94968680
+[5,]  0.07566390 -1.728785  0.8526265  0.2726953 -1.8413700  0.32793590
+         var7        var8       var9     var10
+[1,] 1.342604  0.05704174  0.1335689 0.5654274
+[2,] 1.429498 -0.12024860  0.4567917 0.1590529
+[3,] 1.159300  0.01567648  0.1919418 0.4965847
+[4,] 1.093801  0.81973580 -0.2846201 0.9947322
+[5,] 1.251219  0.77144990  0.0309171 0.2783133
+[1] "mean of feat 2"
+[1] -1.739001
+[1] "sd of feat 2"
+[1] 0.9055712
+[1] "maxnum is "
+[1] 5
+[1] "# of genes left after filtering:"
+[1]   63 2308
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+[1] "dim of scoring matrix is "
+[1] 2308    1
+[1] 2308
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+[1]   1   2   3 246 255
+            var1      var2       var3    var246    var255
+[1,]  0.77334370 -2.438405 -0.4825622 1.6047470 -1.514582
+[2,] -0.07817778 -2.415754  0.4127717 0.7924947 -1.701005
+[3,] -0.08446916 -1.649739 -0.2413075 1.5527410 -1.256319
+          var1       var2       var3     var246    var255
+[1,] 0.1395010 -1.1689275  0.5649728 -2.5010360  1.165710
+[2,] 1.1642752 -2.0181583  1.1035335 -0.5151684 -0.592759
+[3,] 0.8410929  0.2547197 -0.2087477 -1.9330926 -1.027222
+[1] "numgenes selected:5"
+[1] "test acc:0.9"
+[1] "test AUC acc:0.944444444444445"
+[1] "10 fold train95.2380952380952"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2  3  4
+         1  8  0  0  0
+         2  0 23  0  1
+         3  0  0 12  0
+         4  0  0  0 19
+[1] "confusion matrix test"
+         test_y
+pred_test 1 2 3 4
+        1 3 0 0 0
+        2 0 4 0 0
+        3 0 1 6 0
+        4 0 1 0 5
+[1] "train acc:0.984126984126984"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2  3  4
+         1  8  0  0  0
+         2  0 23  0  1
+         3  0  0 12  0
+         4  0  0  0 19
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+There were 12 warnings (use warnings() to see them)
+> 
+> if(FALSE){
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("rf"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="none",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ }
+> 
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("f.test"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="none",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   63 2308
+[1]   63 2308
+[1] "length of factcols"
+[1] 0
+[1]   63 2308
+[1]   20 2308
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+V1 V2 V4 V6 
+ 3  2  4  2 
+Levels: 1 2 3 4
+[1] "orig train matrix"
+            var1      var2       var3       var4       var5        var6
+[1,]  0.77334370 -2.438405 -0.4825622 -2.7211350 -1.2170580  0.82780920
+[2,] -0.07817778 -2.415754  0.4127717 -2.8251460 -0.6262365  0.05448819
+[3,] -0.08446916 -1.649739 -0.2413075 -2.8752860 -0.8894054 -0.02747398
+[4,]  0.96561400 -2.380547  0.6252965 -1.7412560 -0.8453664  0.94968680
+[5,]  0.07566390 -1.728785  0.8526265  0.2726953 -1.8413700  0.32793590
+         var7        var8       var9     var10
+[1,] 1.342604  0.05704174  0.1335689 0.5654274
+[2,] 1.429498 -0.12024860  0.4567917 0.1590529
+[3,] 1.159300  0.01567648  0.1919418 0.4965847
+[4,] 1.093801  0.81973580 -0.2846201 0.9947322
+[5,] 1.251219  0.77144990  0.0309171 0.2783133
+[1] "orig train matrix"
+            var1      var2       var3       var4       var5        var6
+[1,]  0.77334370 -2.438405 -0.4825622 -2.7211350 -1.2170580  0.82780920
+[2,] -0.07817778 -2.415754  0.4127717 -2.8251460 -0.6262365  0.05448819
+[3,] -0.08446916 -1.649739 -0.2413075 -2.8752860 -0.8894054 -0.02747398
+[4,]  0.96561400 -2.380547  0.6252965 -1.7412560 -0.8453664  0.94968680
+[5,]  0.07566390 -1.728785  0.8526265  0.2726953 -1.8413700  0.32793590
+         var7        var8       var9     var10
+[1,] 1.342604  0.05704174  0.1335689 0.5654274
+[2,] 1.429498 -0.12024860  0.4567917 0.1590529
+[3,] 1.159300  0.01567648  0.1919418 0.4965847
+[4,] 1.093801  0.81973580 -0.2846201 0.9947322
+[5,] 1.251219  0.77144990  0.0309171 0.2783133
+[1] -0.4825622  0.4127717 -0.2413075
+[1] "norm train matrix"
+            var1      var2       var3       var4       var5        var6
+[1,]  0.77334370 -2.438405 -0.4825622 -2.7211350 -1.2170580  0.82780920
+[2,] -0.07817778 -2.415754  0.4127717 -2.8251460 -0.6262365  0.05448819
+[3,] -0.08446916 -1.649739 -0.2413075 -2.8752860 -0.8894054 -0.02747398
+[4,]  0.96561400 -2.380547  0.6252965 -1.7412560 -0.8453664  0.94968680
+[5,]  0.07566390 -1.728785  0.8526265  0.2726953 -1.8413700  0.32793590
+         var7        var8       var9     var10
+[1,] 1.342604  0.05704174  0.1335689 0.5654274
+[2,] 1.429498 -0.12024860  0.4567917 0.1590529
+[3,] 1.159300  0.01567648  0.1919418 0.4965847
+[4,] 1.093801  0.81973580 -0.2846201 0.9947322
+[5,] 1.251219  0.77144990  0.0309171 0.2783133
+[1] "mean of feat 2"
+[1] -1.739001
+[1] "sd of feat 2"
+[1] 0.9055712
+[1] "maxnum is "
+[1] 5
+[1] "# of genes left after filtering:"
+[1]   63 2308
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+[1] "dim of scoring matrix is "
+[1] 2308    1
+[1] 2308
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+[1]  246  255  742  842 1003
+        var246    var255     var742   var842   var1003
+[1,] 1.6047470 -1.514582  0.7311171 1.553629 -3.231455
+[2,] 0.7924947 -1.701005  0.3808308 1.732505 -2.294617
+[3,] 1.5527410 -1.256319 -0.2871489 1.454747 -2.154165
+         var246    var255     var742     var842   var1003
+[1,] -2.5010360  1.165710  1.1040309 -0.3690368 -1.988505
+[2,] -0.5151684 -0.592759 -1.1605941  0.7715886 -2.928074
+[3,] -1.9330926 -1.027222 -0.7325119  0.9271515  1.000558
+[1] "numgenes selected:5"
+[1] "test acc:0.9"
+[1] "test AUC acc:0.944444444444445"
+[1] "10 fold train95.2380952380952"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2  3  4
+         1  7  1  0  0
+         2  0 22  0  0
+         3  0  0 12  0
+         4  1  0  0 20
+[1] "confusion matrix test"
+         test_y
+pred_test 1 2 3 4
+        1 3 1 0 0
+        2 0 4 0 0
+        3 0 0 6 0
+        4 0 1 0 5
+[1] "train acc:0.968253968253968"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2  3  4
+         1  7  1  0  0
+         2  0 22  0  0
+         3  0  0 12  0
+         4  1  0  0 20
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+Warning messages:
+1: In if (is.na(boostweight) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+2: In if (is.na(testm) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+3: In if (is.na(testclass) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+4: In mean.default(DS_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+5: In mean.default(DS_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+6: In mean.default(KI_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+> 
+> #1
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("limma","lasso","rfe","elasticnet", "f.test"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="none",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   63 2308
+[1]   63 2308
+[1] "length of factcols"
+[1] 0
+[1]   63 2308
+[1]   20 2308
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+V1 V2 V4 V6 
+ 3  2  4  2 
+Levels: 1 2 3 4
+[1] "orig train matrix"
+            var1      var2       var3       var4       var5        var6
+[1,]  0.77334370 -2.438405 -0.4825622 -2.7211350 -1.2170580  0.82780920
+[2,] -0.07817778 -2.415754  0.4127717 -2.8251460 -0.6262365  0.05448819
+[3,] -0.08446916 -1.649739 -0.2413075 -2.8752860 -0.8894054 -0.02747398
+[4,]  0.96561400 -2.380547  0.6252965 -1.7412560 -0.8453664  0.94968680
+[5,]  0.07566390 -1.728785  0.8526265  0.2726953 -1.8413700  0.32793590
+         var7        var8       var9     var10
+[1,] 1.342604  0.05704174  0.1335689 0.5654274
+[2,] 1.429498 -0.12024860  0.4567917 0.1590529
+[3,] 1.159300  0.01567648  0.1919418 0.4965847
+[4,] 1.093801  0.81973580 -0.2846201 0.9947322
+[5,] 1.251219  0.77144990  0.0309171 0.2783133
+[1] "orig train matrix"
+            var1      var2       var3       var4       var5        var6
+[1,]  0.77334370 -2.438405 -0.4825622 -2.7211350 -1.2170580  0.82780920
+[2,] -0.07817778 -2.415754  0.4127717 -2.8251460 -0.6262365  0.05448819
+[3,] -0.08446916 -1.649739 -0.2413075 -2.8752860 -0.8894054 -0.02747398
+[4,]  0.96561400 -2.380547  0.6252965 -1.7412560 -0.8453664  0.94968680
+[5,]  0.07566390 -1.728785  0.8526265  0.2726953 -1.8413700  0.32793590
+         var7        var8       var9     var10
+[1,] 1.342604  0.05704174  0.1335689 0.5654274
+[2,] 1.429498 -0.12024860  0.4567917 0.1590529
+[3,] 1.159300  0.01567648  0.1919418 0.4965847
+[4,] 1.093801  0.81973580 -0.2846201 0.9947322
+[5,] 1.251219  0.77144990  0.0309171 0.2783133
+[1] -0.4825622  0.4127717 -0.2413075
+[1] "norm train matrix"
+            var1      var2       var3       var4       var5        var6
+[1,]  0.77334370 -2.438405 -0.4825622 -2.7211350 -1.2170580  0.82780920
+[2,] -0.07817778 -2.415754  0.4127717 -2.8251460 -0.6262365  0.05448819
+[3,] -0.08446916 -1.649739 -0.2413075 -2.8752860 -0.8894054 -0.02747398
+[4,]  0.96561400 -2.380547  0.6252965 -1.7412560 -0.8453664  0.94968680
+[5,]  0.07566390 -1.728785  0.8526265  0.2726953 -1.8413700  0.32793590
+         var7        var8       var9     var10
+[1,] 1.342604  0.05704174  0.1335689 0.5654274
+[2,] 1.429498 -0.12024860  0.4567917 0.1590529
+[3,] 1.159300  0.01567648  0.1919418 0.4965847
+[4,] 1.093801  0.81973580 -0.2846201 0.9947322
+[5,] 1.251219  0.77144990  0.0309171 0.2783133
+[1] "mean of feat 2"
+[1] -1.739001
+[1] "sd of feat 2"
+[1] 0.9055712
+[1] "maxnum is "
+[1] 5
+[1] "# of genes left after filtering:"
+[1]   63 2308
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+genelist
+   1    2  246  255  842 1003 1389 1427 1954 1955 2050  836 1764  509 2198 2046 
+  35   12   10   10   10   10   10   10   10   10   10    9    9    8    7    6 
+ 248  129  742    3  589 1319  545  695  851  910 1387 2022 2166 
+   5    3    3    2    2    2    1    1    1    1    1    1    1 
+[1] "varselmethod"
+[1] "none"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+[1] "dim of scoring matrix is "
+[1] 2308    5
+[1] 2308
+[1] "DS index stage 1"
+[1] 0.46
+[1] "bestgenelist"
+ [1]    1    2    3  187  246  255  509  742  819  842  846 1003
+            var1      var2       var3    var187    var246    var255    var509
+[1,]  0.77334370 -2.438405 -0.4825622 -3.426515 1.6047470 -1.514582 -1.844528
+[2,] -0.07817778 -2.415754  0.4127717 -2.361274 0.7924947 -1.701005 -1.699363
+[3,] -0.08446916 -1.649739 -0.2413075 -2.259526 1.5527410 -1.256319 -1.478848
+         var742    var819   var842    var846   var1003
+[1,]  0.7311171 -2.108664 1.553629 -3.803169 -3.231455
+[2,]  0.3808308 -3.272804 1.732505 -3.083471 -2.294617
+[3,] -0.2871489 -2.767800 1.454747 -2.285728 -2.154165
+          var1       var2       var3     var187     var246    var255    var509
+[1,] 0.1395010 -1.1689275  0.5649728 -0.8549605 -2.5010360  1.165710 -1.367276
+[2,] 1.1642752 -2.0181583  1.1035335 -2.8949824 -0.5151684 -0.592759 -2.365525
+[3,] 0.8410929  0.2547197 -0.2087477  2.9578798 -1.9330926 -1.027222  2.815109
+         var742    var819     var842    var846   var1003
+[1,]  1.1040309 -1.657054 -0.3690368 -2.160218 -1.988505
+[2,] -1.1605941 -2.199126  0.7715886 -2.487711 -2.928074
+[3,] -0.7325119 -1.017493  0.9271515 -2.153303  1.000558
+[1] "numgenes selected:12"
+[1] "test acc:1"
+[1] "test AUC acc:1"
+[1] "10 fold train100"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2  3  4
+         1  8  0  0  0
+         2  0 23  0  0
+         3  0  0 12  0
+         4  0  0  0 20
+[1] "confusion matrix test"
+         test_y
+pred_test 1 2 3 4
+        1 3 0 0 0
+        2 0 6 0 0
+        3 0 0 6 0
+        4 0 0 0 5
+[1] "train acc:1"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2  3  4
+         1  8  0  0  0
+         2  0 23  0  0
+         3  0  0 12  0
+         4  0  0  0 20
+[1] "DS index stage 1"
+[1] 0.46
+[1] "KI index stage 1"
+[1] 0.4588276
+[[1]]
+[1] "var246"  "var255"  "var742"  "var842"  "var1003"
+
+[[2]]
+[1] "var1"   "var2"   "var246" "var255" "var842"
+
+[[3]]
+[1] "var187" "var246" "var509" "var819" "var846"
+
+[[4]]
+[1] "var1"   "var2"   "var3"   "var246" "var255"
+
+[[5]]
+[1] "var246"  "var255"  "var742"  "var842"  "var1003"
+
+
+ Iteration 1 :  Optimal value:  14.8 
+ Optimal List:   var2,var246,var742,var842,var1003 
+
+ Iteration 2 :  Optimal value:  14 
+ Optimal List:   var246,var742,var255,var842,var509 
+
+ Iteration 3 :  Optimal value:  13.2 
+ Optimal List:   var1,var246,var2,var255,var1003 
+
+ Iteration 4 :  Optimal value:  12.8 
+ Optimal List:   var1,var246,var255,var742,var842 
+
+ Iteration 5 :  Optimal value:  12.8 
+ Optimal List:   var246,var1,var255,var742,var842 
+
+ Iteration 6 :  Optimal value:  12.8 
+ Optimal List:   var246,var2,var255,var842,var742 
+
+ Iteration 7 :  Optimal value:  12.8 
+ Optimal List:   var246,var1,var255,var842,var742 
+
+ Iteration 8 :  Optimal value:  12.8 
+ Optimal List:   var246,var1,var255,var842,var1003 
+
+ Iteration 9 :  Optimal value:  12.8 
+ Optimal List:   var246,var1,var255,var742,var842 
+
+ Iteration 10 :  Optimal value:  12.8 
+ Optimal List:   var246,var1,var255,var842,var1003 
+
+ Iteration 11 :  Optimal value:  12.8 
+ Optimal List:   var246,var2,var255,var842,var742 
+[1] "test acc rank aggreg CE:0.95"
+[1] "test AUC acc rank aggreg CE:0.986111111111111"
+[1] "10 fold train rank aggreg res CE95.2380952380952"
+[1] "confusion matrix train 10 fold rank aggreg CE"
+            nci_y
+pred10foldRA  1  2  3  4
+           1  7  0  0  0
+           2  0 23  0  0
+           3  0  0 12  0
+           4  1  0  0 20
+[1] "Num itr RA CE"
+[1] 11
+[1] "Test BER aggreg CE is"
+[1] 0.9583333
+
+ Iteration 1 :  Optimal value:  13.2 
+ Optimal List:   var246,var2,var255,var842,var819 
+
+ Iteration 2 :  Optimal value:  13.2 
+ Optimal List:   var246,var2,var255,var842,var819 
+
+ Iteration 3 :  Optimal value:  13.2 
+ Optimal List:   var246,var2,var255,var842,var819 
+
+ Iteration 4 :  Optimal value:  13.2 
+ Optimal List:   var246,var2,var255,var842,var819 
+
+ Iteration 5 :  Optimal value:  12.8 
+ Optimal List:   var246,var1,var255,var2,var842 
+
+ Iteration 6 :  Optimal value:  13.2 
+ Optimal List:   var246,var2,var255,var842,var187 
+
+ Iteration 7 :  Optimal value:  13.6 
+ Optimal List:   var246,var255,var1,var2,var846 
+
+ Iteration 8 :  Optimal value:  13.2 
+ Optimal List:   var246,var255,var1,var842,var846 
+
+ Iteration 9 :  Optimal value:  13.2 
+ Optimal List:   var246,var255,var1,var842,var846 
+
+ Iteration 10 :  Optimal value:  13.2 
+ Optimal List:   var246,var255,var1,var842,var846 
+
+ Iteration 11 :  Optimal value:  13.2 
+ Optimal List:   var246,var255,var1,var842,var846 
+
+ Iteration 12 :  Optimal value:  13.2 
+ Optimal List:   var246,var255,var1,var842,var846 
+
+ Iteration 13 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var742 
+
+ Iteration 14 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var742 
+
+ Iteration 15 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 16 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 17 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 18 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 19 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 20 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 21 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 22 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 23 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 24 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 25 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 26 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 27 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 28 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 29 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 30 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 31 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 32 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 33 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 34 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 35 :  Optimal value:  12.8 
+ Optimal List:   var246,var1,var255,var842,var742 
+
+ Iteration 36 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 37 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 38 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 39 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 40 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 41 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 42 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 43 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+
+ Iteration 44 :  Optimal value:  12.8 
+ Optimal List:   var246,var255,var1,var842,var2 
+[1] "test acc rank aggreg GA:0.9"
+[1] "test AUC acc rank aggreg GA:0.916666666666667"
+[1] "10 fold train rank aggreg res GA96.8253968253968"
+[1] "confusion matrix train 10 fold rank aggreg GA"
+            nci_y
+pred10foldRA  1  2  3  4
+           1  8  0  0  0
+           2  0 22  0  1
+           3  0  0 12  0
+           4  0  1  0 19
+[1] "Num itr RA GA"
+[1] 45
+[1] "Test BER aggreg GA is"
+[1] 0.9166667
+There were 15 warnings (use warnings() to see them)
+> 
+> cma_feat_list<-colnames(trainm)
+> 
+> save(CMAres,file="CMAres.Rda")
+> write.table(cma_feat_list,file="selected_cma_feat_list.txt",sep="t",row.names=FALSE)
+> 
+> # modtraindata=modtrain, modtestdata=modtest, blindtest=testacc, modtrainclass=nci_y, modtestclass=test_y
+> #if(FALSE)
+> {
++ trainm<-CMAres$modtraindata
++ testm<-CMAres$modtestdata
++ trainclass<-CMAres$modtrainclass
++ testclass<-CMAres$modtestclass
++ learningsets<-CMAres$learningsets
++ }
+> 
+> if(FALSE)
++ {
++ trainclass<-trainm[,1] #CMAres$modtrainclass
++ testclass<-testm[,1] #CMAres$modtestclass
++ trainm<-trainm[,-c(1)] #CMAres$modtrainmata
++ testm<-testm[,-c(1)] #CMAres$modtestmata
++ 
++ }
+> 
+> d_dim<-dim(trainm)
+> 
+> print("Original dimension")
+[1] "Original dimension"
+> print(d_dim)
+[1] 63 12
+> 
+> #2 call run_pso function()
+> system.time(psores<-run_pso(outloc=outloc,trainm,trainclass,testm,testclass,transition_matrix,c1=2.05,
++ c2=2.05,
++ itr=10,
++ globalpso_maxitr=10,
++ global_max_itr=3,
++ num_part=20,
++ kname="radial",
++ errortype="BER",
++ weightA<-as.numeric(args[1]),
++ weightB<-as.numeric(args[2]),
++ weightC<-as.numeric(args[3]),
++ weightD<-as.numeric(args[4]),
++ featweight.max=0.01,
++ featweight.min=0.01,
++ numfolds=10,
++ followerprob=as.numeric(args[6]),
++ confusionprob=as.numeric(args[7]),
++ leaderprob=as.numeric(args[8]),
++ wmax=1,
++ wmin=1,
++ behavior_reset_itr=5,
++ maxitrreset=10,
++ num_neighbors=3,
++ minselect.pct=0.5,
++ evalMode="CV2",
++ minfitnessthresh=50,
++ maxnum=as.numeric(args[10]),minnum=3,inertia_method=args[5],particlebehav_method="randbased",constriction_factor=1,
++ select.global.best=TRUE,numnodes=4,evalFunc=eval_fit_kfold_diff,itr.terminate=FALSE,train.pct=as.numeric(args[11]),min.iter.select=1))
+[1] "c1: 2.05"
+[1] "c2: 2.05"
+[1] "itr: 10"
+[1] "globalpso_maxitr: 10"
+[1] "global_max_itr: 3"
+[1] "num_part: 20"
+[1] "kname: radial"
+[1] "errortype: BER"
+[1] "weightA: 0.7"
+[1] "weightB: 0"
+[1] "weightC: 0.05"
+[1] "weightD: 0.25"
+[1] "featweight.max: 0.01"
+[1] "featweight.min: 0.01"
+[1] "numfolds: 10"
+[1] "followerprob: 0.45"
+[1] "confusionprob: 0.2"
+[1] "leaderprob: 0.25"
+[1] "wmax: 1"
+[1] "wmin: 1"
+[1] "behavior_reset_itr: 5"
+[1] "maxitrreset: 10"
+[1] "num_neighbors: 3"
+[1] "minselect.pct: 0.5"
+[1] "minfitnessthresh: 50"
+[1] "maxnum: 5"
+[1] "minnum: 3"
+[1] "inertia_method: global"
+[1] "particlebehav_method: randbased"
+[1] "constriction_factor: 1"
+[1] "select.global.best: TRUE"
+[1] "train 10 fold"
+[1] 100
+[1] "here"
+[1] "s"
+[1] 44.1
+[1] 63 12
+[1] 10
+[1] "learning sets: 1"
+ [1] 27  1 61 49 55 52 31 42 53 12 28 22 45  4 46 14 18  6 57 63 16 51 15 24 33
+[26] 10  3 23 47 43 56 26 40 25  7  8 59 34 30 58 13 20 21  9
+[1] "Starting global iteration number : 1"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -63.00223
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -68.31794
+[1] "Best solution:"
+ [1] 0 1 0 0 0 0 0 0 0 0 1 0
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "Best fitness updated to:"
+[1] -69.12595
+[1] "Best solution:"
+ [1] 1 1 1 0 0 0 1 1 1 1 0 1
+[1] 8
+[1] "iteration number: "
+[1] 4
+[1] "Best fitness updated to:"
+[1] -69.41077
+[1] "Best solution:"
+ [1] 1 1 1 1 1 0 0 1 0 1 0 1
+[1] 8
+[1] "Minimum fitness threshold not reached after 4 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 5
+[1] "Minimum fitness threshold not reached after 5 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 6
+[1] "Minimum fitness threshold not reached after 6 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 7
+[1] "Minimum fitness threshold not reached after 7 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 8
+[1] "Best fitness updated to:"
+[1] -72.04618
+[1] "Best solution:"
+ [1] 1 1 0 1 1 0 1 1 1 0 0 1
+[1] 8
+[1] "Minimum fitness threshold not reached after 8 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 9
+[1] "Minimum fitness threshold not reached after 9 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 10
+[1] "Minimum fitness threshold not reached after 10 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 11
+[1] "Minimum fitness threshold not reached after 11 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 12
+[1] "Minimum fitness threshold not reached after 12 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 13
+[1] "Minimum fitness threshold not reached after 13 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 14
+[1] "Minimum fitness threshold not reached after 14 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 15
+[1] "Minimum fitness threshold not reached after 15 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 16
+[1] "Minimum fitness threshold not reached after 16 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 17
+[1] "Minimum fitness threshold not reached after 17 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 18
+[1] "Minimum fitness threshold not reached after 18 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 19
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 19 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 20
+[1] "Minimum fitness threshold not reached after 20 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 21
+[1] "Minimum fitness threshold not reached after 21 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 22
+[1] "Minimum fitness threshold not reached after 22 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 23
+[1] "Minimum fitness threshold not reached after 23 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 24
+[1] "Minimum fitness threshold not reached after 24 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 25
+[1] "Minimum fitness threshold not reached after 25 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 26
+[1] "Minimum fitness threshold not reached after 26 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 27
+[1] "Minimum fitness threshold not reached after 27 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 28
+[1] "Minimum fitness threshold not reached after 28 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 29
+[1] "Minimum fitness threshold not reached after 29 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 30
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 30 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 31
+[1] "Minimum fitness threshold not reached after 31 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 32
+[1] "Minimum fitness threshold not reached after 32 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 33
+[1] "Minimum fitness threshold not reached after 33 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 34
+[1] "Minimum fitness threshold not reached after 34 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 35
+[1] "Minimum fitness threshold not reached after 35 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 36
+[1] "Minimum fitness threshold not reached after 36 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 37
+[1] "Minimum fitness threshold not reached after 37 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 38
+[1] "Minimum fitness threshold not reached after 38 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 39
+[1] "Minimum fitness threshold not reached after 39 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 40
+[1] "Minimum fitness threshold not reached after 40 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 41
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 41 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 42
+[1] "Minimum fitness threshold not reached after 42 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 43
+[1] "Minimum fitness threshold not reached after 43 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 44
+[1] "Minimum fitness threshold not reached after 44 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 45
+[1] "Minimum fitness threshold not reached after 45 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 46
+[1] "Minimum fitness threshold not reached after 46 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 47
+[1] "Minimum fitness threshold not reached after 47 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 48
+[1] "Minimum fitness threshold not reached after 48 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 49
+[1] "Minimum fitness threshold not reached after 49 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 50
+[1] "Minimum fitness threshold not reached after 50 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 51
+[1] "Minimum fitness threshold not reached after 51 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 52
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 3
+[1] 11
+[1] "No change for 4 iterations. Exiting PSO."
+[1]  1  2  3  4  5  6 10 12
+[1] 1
+[1] "##################################"
+[1] "Results summary for itr:1"
+[1] "number of features selected using population mean"
+[1] 8
+[1] "number of features selected using current global best"
+[1] 8
+[1] "feat ind length"
+[1] 8
+[1] "best accuracy"
+[1] 72.04618
+[1] "test acc:1"
+[1] "##################################"
+[1] "learning sets: 2"
+ [1] 18 39  9 15 52  4 34 63 43  8 11 57  5 12 31 49  7 45 59 23 53 13 37 10 14
+[26] 26 41 30 62 17 38 61 50 58 55 21 35 25 44 36 24 46 27 40
+[1] "Starting global iteration number : 2"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -70.82743
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "Best fitness updated to:"
+[1] -73.76648
+[1] "Best solution:"
+ [1] 1 1 0 0 0 1 1 0 0 1 0 0
+[1] 5
+[1] "iteration number: "
+[1] 4
+[1] "Best fitness updated to:"
+[1] -75.65305
+[1] "Best solution:"
+ [1] 0 1 0 1 1 1 0 0 0 1 0 1
+[1] 6
+[1] "Minimum fitness threshold not reached after 4 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 5
+[1] "Best fitness updated to:"
+[1] -78.3465
+[1] "Best solution:"
+ [1] 1 1 1 1 1 1 1 1 0 1 0 1
+[1] 10
+[1] "Minimum fitness threshold not reached after 5 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 6
+[1] "Minimum fitness threshold not reached after 6 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 7
+[1] "Minimum fitness threshold not reached after 7 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 8
+[1] "Minimum fitness threshold not reached after 8 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 9
+[1] "Minimum fitness threshold not reached after 9 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 10
+[1] "Minimum fitness threshold not reached after 10 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 11
+[1] "Minimum fitness threshold not reached after 11 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 12
+[1] "Minimum fitness threshold not reached after 12 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 13
+[1] "Minimum fitness threshold not reached after 13 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 14
+[1] "Minimum fitness threshold not reached after 14 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 15
+[1] "Best fitness updated to:"
+[1] -78.9169
+[1] "Best solution:"
+ [1] 1 1 0 0 1 0 1 0 0 0 0 0
+[1] 4
+[1] "Minimum fitness threshold not reached after 15 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 16
+[1] "Minimum fitness threshold not reached after 16 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 17
+[1] "Minimum fitness threshold not reached after 17 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 18
+[1] "Minimum fitness threshold not reached after 18 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 19
+[1] "Minimum fitness threshold not reached after 19 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 20
+[1] "Minimum fitness threshold not reached after 20 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 21
+[1] "Minimum fitness threshold not reached after 21 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 22
+[1] "Minimum fitness threshold not reached after 22 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 23
+[1] "Minimum fitness threshold not reached after 23 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 24
+[1] "Minimum fitness threshold not reached after 24 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 25
+[1] "Minimum fitness threshold not reached after 25 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 26
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 26 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 27
+[1] "Best fitness updated to:"
+[1] -83.94009
+[1] "Best solution:"
+ [1] 1 1 0 1 1 0 1 0 0 0 0 1
+[1] 6
+[1] "Minimum fitness threshold not reached after 27 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 28
+[1] "Minimum fitness threshold not reached after 28 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 29
+[1] "Minimum fitness threshold not reached after 29 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 30
+[1] "Minimum fitness threshold not reached after 30 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 31
+[1] "Minimum fitness threshold not reached after 31 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 32
+[1] "Minimum fitness threshold not reached after 32 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 33
+[1] "Minimum fitness threshold not reached after 33 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 34
+[1] "Minimum fitness threshold not reached after 34 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 35
+[1] "Minimum fitness threshold not reached after 35 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 36
+[1] "Minimum fitness threshold not reached after 36 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 37
+[1] "Minimum fitness threshold not reached after 37 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 38
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 38 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 39
+[1] "Minimum fitness threshold not reached after 39 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 40
+[1] "Minimum fitness threshold not reached after 40 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 41
+[1] "Minimum fitness threshold not reached after 41 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 42
+[1] "Minimum fitness threshold not reached after 42 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 43
+[1] "Minimum fitness threshold not reached after 43 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 44
+[1] "Minimum fitness threshold not reached after 44 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 45
+[1] "Minimum fitness threshold not reached after 45 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 46
+[1] "Minimum fitness threshold not reached after 46 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 47
+[1] "Minimum fitness threshold not reached after 47 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 48
+[1] "Minimum fitness threshold not reached after 48 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 49
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 49 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 50
+[1] "Minimum fitness threshold not reached after 50 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 51
+[1] "Minimum fitness threshold not reached after 51 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 52
+[1] "Minimum fitness threshold not reached after 52 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 53
+[1] "Minimum fitness threshold not reached after 53 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 54
+[1] "Minimum fitness threshold not reached after 54 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 55
+[1] "Minimum fitness threshold not reached after 55 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 56
+[1] "Minimum fitness threshold not reached after 56 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 57
+[1] "Minimum fitness threshold not reached after 57 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 58
+[1] "Minimum fitness threshold not reached after 58 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 59
+[1] "Minimum fitness threshold not reached after 59 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 60
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 60 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 61
+[1] "Minimum fitness threshold not reached after 61 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 62
+[1] "Minimum fitness threshold not reached after 62 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 63
+[1] "Minimum fitness threshold not reached after 63 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 64
+[1] "Minimum fitness threshold not reached after 64 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 65
+[1] "Minimum fitness threshold not reached after 65 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 66
+[1] "Minimum fitness threshold not reached after 66 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 67
+[1] "Minimum fitness threshold not reached after 67 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 68
+[1] "Minimum fitness threshold not reached after 68 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 69
+[1] "Minimum fitness threshold not reached after 69 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 70
+[1] "Minimum fitness threshold not reached after 70 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 71
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 71 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 72
+[1] "Minimum fitness threshold not reached after 72 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 73
+[1] "Minimum fitness threshold not reached after 73 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 74
+[1] "Minimum fitness threshold not reached after 74 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 75
+[1] "Minimum fitness threshold not reached after 75 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 76
+[1] "Minimum fitness threshold not reached after 76 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 77
+[1] "Minimum fitness threshold not reached after 77 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 78
+[1] "Minimum fitness threshold not reached after 78 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 79
+[1] "Minimum fitness threshold not reached after 79 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 80
+[1] "Minimum fitness threshold not reached after 80 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 81
+[1] "Minimum fitness threshold not reached after 81 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 82
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 3
+[1] 12
+[1] "No change for 5 iterations. Exiting PSO."
+[1]  2  5  7 10 12
+[1] 2
+[1] "##################################"
+[1] "Results summary for itr:2"
+[1] "number of features selected using population mean"
+[1] 5
+[1] "number of features selected using current global best"
+[1] 5
+[1] "feat ind length"
+[1] 5
+[1] "best accuracy"
+[1] 83.94009
+[1] "test acc:0.947368421052632"
+[1] "##################################"
+[1] "learning sets: 3"
+ [1] 62 26 19  4 61  3  1 44 13 41 24 22 50 59 38 60  8 11 63 14  5 33 28 18 21
+[26] 30 56 58 35 39 34  9  2 45 43 29 51 52 49 15 42 57 54 31
+[1] "Starting global iteration number : 3"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -69.58261
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -73.24253
+[1] "Best solution:"
+ [1] 0 1 0 0 0 0 0 0 0 0 1 0
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "Best fitness updated to:"
+[1] -75.88224
+[1] "Best solution:"
+ [1] 0 0 0 0 1 0 0 0 0 1 1 1
+[1] 4
+[1] "iteration number: "
+[1] 4
+[1] "Minimum fitness threshold not reached after 4 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 5
+[1] "Best fitness updated to:"
+[1] -76.00864
+[1] "Best solution:"
+ [1] 0 0 1 1 1 1 1 0 0 1 1 1
+[1] 8
+[1] "Minimum fitness threshold not reached after 5 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 6
+[1] "Minimum fitness threshold not reached after 6 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 7
+[1] "Minimum fitness threshold not reached after 7 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 8
+[1] "Best fitness updated to:"
+[1] -76.57735
+[1] "Best solution:"
+ [1] 0 1 0 1 0 1 1 1 1 0 0 1
+[1] 7
+[1] "Minimum fitness threshold not reached after 8 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 9
+[1] "Minimum fitness threshold not reached after 9 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 10
+[1] "Minimum fitness threshold not reached after 10 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 11
+[1] "Minimum fitness threshold not reached after 11 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 12
+[1] "Minimum fitness threshold not reached after 12 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 13
+[1] "Minimum fitness threshold not reached after 13 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 14
+[1] "Minimum fitness threshold not reached after 14 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 15
+[1] "Best fitness updated to:"
+[1] -77.12326
+[1] "Best solution:"
+ [1] 1 0 0 1 1 0 1 0 1 1 0 1
+[1] 7
+[1] "Minimum fitness threshold not reached after 15 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 16
+[1] "Best fitness updated to:"
+[1] -77.45916
+[1] "Best solution:"
+ [1] 1 1 1 1 1 0 0 1 1 1 1 1
+[1] 10
+[1] "Minimum fitness threshold not reached after 16 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 17
+[1] "Minimum fitness threshold not reached after 17 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 18
+[1] "Minimum fitness threshold not reached after 18 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 19
+[1] "Minimum fitness threshold not reached after 19 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 20
+[1] "Minimum fitness threshold not reached after 20 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 21
+[1] "Minimum fitness threshold not reached after 21 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 22
+[1] "Minimum fitness threshold not reached after 22 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 23
+[1] "Minimum fitness threshold not reached after 23 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 24
+[1] "Minimum fitness threshold not reached after 24 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 25
+[1] "Minimum fitness threshold not reached after 25 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 26
+[1] "Minimum fitness threshold not reached after 26 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 27
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 27 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 28
+[1] "Minimum fitness threshold not reached after 28 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 29
+[1] "Minimum fitness threshold not reached after 29 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 30
+[1] "Minimum fitness threshold not reached after 30 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 31
+[1] "Minimum fitness threshold not reached after 31 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 32
+[1] "Minimum fitness threshold not reached after 32 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 33
+[1] "Minimum fitness threshold not reached after 33 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 34
+[1] "Minimum fitness threshold not reached after 34 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 35
+[1] "Minimum fitness threshold not reached after 35 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 36
+[1] "Minimum fitness threshold not reached after 36 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 37
+[1] "Minimum fitness threshold not reached after 37 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 38
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 38 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 39
+[1] "Minimum fitness threshold not reached after 39 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 40
+[1] "Minimum fitness threshold not reached after 40 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 41
+[1] "Minimum fitness threshold not reached after 41 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 42
+[1] "Minimum fitness threshold not reached after 42 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 43
+[1] "Minimum fitness threshold not reached after 43 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 44
+[1] "Minimum fitness threshold not reached after 44 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 45
+[1] "Minimum fitness threshold not reached after 45 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 46
+[1] "Minimum fitness threshold not reached after 46 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 47
+[1] "Minimum fitness threshold not reached after 47 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 48
+[1] "Minimum fitness threshold not reached after 48 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 49
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "iteration number: "
+[1] 50
+[1] "Minimum fitness threshold not reached after 50 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 3
+[1] 12
+[1] "No change for 4 iterations. Exiting PSO."
+ [1]  1  2  3  4  5  6  7  9 10 12
+[1] 3
+[1] "##################################"
+[1] "Results summary for itr:3"
+[1] "number of features selected using population mean"
+[1] 10
+[1] "number of features selected using current global best"
+[1] 10
+[1] "feat ind length"
+[1] 10
+[1] "best accuracy"
+[1] 77.45916
+[1] "test acc:1"
+[1] "##################################"
+[1] "learning sets: 4"
+ [1]  6 13 11 18 52 24 56 43 12 41 51 30  1 34 37 54 27  9  8 28 53 47  2 38 39
+[26]  4 55 29 46 15 23 10 26 61 21 19 20 16 42 63 44  5  7 57
+[1] "Starting global iteration number : 4"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -55.71151
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -60.60288
+[1] "Best solution:"
+ [1] 0 1 0 0 0 0 0 0 0 0 1 0
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "Best fitness updated to:"
+[1] -69.94758
+[1] "Best solution:"
+ [1] 0 1 1 0 1 0 0 1 0 0 0 1
+[1] 5
+[1] "iteration number: "
+[1] 4
+[1] "Minimum fitness threshold not reached after 4 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 5
+[1] "Minimum fitness threshold not reached after 5 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 6
+[1] "Minimum fitness threshold not reached after 6 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 7
+[1] "Minimum fitness threshold not reached after 7 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 8
+[1] "Best fitness updated to:"
+[1] -70.64784
+[1] "Best solution:"
+ [1] 1 0 1 1 1 0 0 1 0 1 0 1
+[1] 7
+[1] "Minimum fitness threshold not reached after 8 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 9
+[1] "Minimum fitness threshold not reached after 9 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 10
+[1] "Minimum fitness threshold not reached after 10 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 11
+[1] "Minimum fitness threshold not reached after 11 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 12
+[1] "Minimum fitness threshold not reached after 12 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 13
+[1] "Minimum fitness threshold not reached after 13 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 14
+[1] "Minimum fitness threshold not reached after 14 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 15
+[1] "Minimum fitness threshold not reached after 15 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 16
+[1] "Best fitness updated to:"
+[1] -73.09773
+[1] "Best solution:"
+ [1] 1 0 1 1 1 0 0 1 0 1 0 1
+[1] 7
+[1] "Minimum fitness threshold not reached after 16 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 17
+[1] "Minimum fitness threshold not reached after 17 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 18
+[1] "Minimum fitness threshold not reached after 18 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 19
+[1] "Minimum fitness threshold not reached after 19 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 20
+[1] "Minimum fitness threshold not reached after 20 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 21
+[1] "Minimum fitness threshold not reached after 21 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 22
+[1] "Minimum fitness threshold not reached after 22 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 23
+[1] "Minimum fitness threshold not reached after 23 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 24
+[1] "Minimum fitness threshold not reached after 24 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 25
+[1] "Minimum fitness threshold not reached after 25 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 26
+[1] "Minimum fitness threshold not reached after 26 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 27
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 3
+[1] 11
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 27 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 28
+[1] "Minimum fitness threshold not reached after 28 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 29
+[1] "Minimum fitness threshold not reached after 29 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 30
+[1] "Minimum fitness threshold not reached after 30 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 31
+[1] "Minimum fitness threshold not reached after 31 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 32
+[1] "Minimum fitness threshold not reached after 32 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 33
+[1] "Minimum fitness threshold not reached after 33 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 34
+[1] "Minimum fitness threshold not reached after 34 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 35
+[1] "Minimum fitness threshold not reached after 35 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 36
+[1] "Minimum fitness threshold not reached after 36 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 37
+[1] "Minimum fitness threshold not reached after 37 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 38
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 3
+[1] 11
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 38 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 39
+[1] "Minimum fitness threshold not reached after 39 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 40
+[1] "Minimum fitness threshold not reached after 40 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 41
+[1] "Minimum fitness threshold not reached after 41 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 42
+[1] "Minimum fitness threshold not reached after 42 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 43
+[1] "Minimum fitness threshold not reached after 43 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 44
+[1] "Minimum fitness threshold not reached after 44 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 45
+[1] "Minimum fitness threshold not reached after 45 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 46
+[1] "Minimum fitness threshold not reached after 46 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 47
+[1] "Minimum fitness threshold not reached after 47 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 48
+[1] "Minimum fitness threshold not reached after 48 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 49
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 3
+[1] 11
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 49 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 50
+[1] "Minimum fitness threshold not reached after 50 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 51
+[1] "Minimum fitness threshold not reached after 51 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 52
+[1] "Minimum fitness threshold not reached after 52 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 53
+[1] "Minimum fitness threshold not reached after 53 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 54
+[1] "Minimum fitness threshold not reached after 54 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 55
+[1] "Minimum fitness threshold not reached after 55 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 56
+[1] "Minimum fitness threshold not reached after 56 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 57
+[1] "Minimum fitness threshold not reached after 57 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 58
+[1] "Minimum fitness threshold not reached after 58 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 59
+[1] "Minimum fitness threshold not reached after 59 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 60
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 3
+[1] 11
+[1] "No change for 4 iterations. Exiting PSO."
+[1]  1  3  5  8 10 11 12
+[1] 4
+[1] "##################################"
+[1] "Results summary for itr:4"
+[1] "number of features selected using population mean"
+[1] 7
+[1] "number of features selected using current global best"
+[1] 7
+[1] "feat ind length"
+[1] 7
+[1] "best accuracy"
+[1] 73.09773
+[1] "test acc:0.947368421052632"
+[1] "##################################"
+[1] "learning sets: 5"
+ [1] 36 12 19 37 32 11  7 62 21 33 49 51 53 58 30 25  3 46 52 27 47 41 56 26 13
+[26] 55  6 22 54 40 61 28  8 57 50 35 29 10 43 39 14  4 18 44
+[1] "Starting global iteration number : 5"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -66.25805
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "Best fitness updated to:"
+[1] -72.6911
+[1] "Best solution:"
+ [1] 1 1 0 0 0 1 1 0 0 1 0 0
+[1] 5
+[1] "iteration number: "
+[1] 4
+[1] "Minimum fitness threshold not reached after 4 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 5
+[1] "Best fitness updated to:"
+[1] -75.14452
+[1] "Best solution:"
+ [1] 1 1 1 1 1 0 1 1 1 1 0 1
+[1] 10
+[1] "Minimum fitness threshold not reached after 5 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 6
+[1] "Minimum fitness threshold not reached after 6 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 7
+[1] "Minimum fitness threshold not reached after 7 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 8
+[1] "Minimum fitness threshold not reached after 8 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 9
+[1] "Minimum fitness threshold not reached after 9 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 10
+[1] "Minimum fitness threshold not reached after 10 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 11
+[1] "Minimum fitness threshold not reached after 11 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 12
+[1] "Minimum fitness threshold not reached after 12 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 13
+[1] "Best fitness updated to:"
+[1] -76.03568
+[1] "Best solution:"
+ [1] 1 1 1 0 0 1 0 1 1 0 1 1
+[1] 8
+[1] "Minimum fitness threshold not reached after 13 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 14
+[1] "Minimum fitness threshold not reached after 14 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 15
+[1] "Minimum fitness threshold not reached after 15 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 16
+[1] "Minimum fitness threshold not reached after 16 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 17
+[1] "Minimum fitness threshold not reached after 17 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 18
+[1] "Minimum fitness threshold not reached after 18 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 19
+[1] "Minimum fitness threshold not reached after 19 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 20
+[1] "Minimum fitness threshold not reached after 20 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 21
+[1] "Minimum fitness threshold not reached after 21 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 22
+[1] "Minimum fitness threshold not reached after 22 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 23
+[1] "Minimum fitness threshold not reached after 23 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 24
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 24 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 25
+[1] "Minimum fitness threshold not reached after 25 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 26
+[1] "Minimum fitness threshold not reached after 26 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 27
+[1] "Minimum fitness threshold not reached after 27 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 28
+[1] "Minimum fitness threshold not reached after 28 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 29
+[1] "Minimum fitness threshold not reached after 29 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 30
+[1] "Minimum fitness threshold not reached after 30 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 31
+[1] "Minimum fitness threshold not reached after 31 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 32
+[1] "Minimum fitness threshold not reached after 32 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 33
+[1] "Minimum fitness threshold not reached after 33 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 34
+[1] "Minimum fitness threshold not reached after 34 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 35
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 35 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 36
+[1] "Minimum fitness threshold not reached after 36 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 37
+[1] "Minimum fitness threshold not reached after 37 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 38
+[1] "Minimum fitness threshold not reached after 38 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 39
+[1] "Minimum fitness threshold not reached after 39 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 40
+[1] "Minimum fitness threshold not reached after 40 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 41
+[1] "Minimum fitness threshold not reached after 41 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 42
+[1] "Minimum fitness threshold not reached after 42 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 43
+[1] "Minimum fitness threshold not reached after 43 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 44
+[1] "Minimum fitness threshold not reached after 44 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 45
+[1] "Minimum fitness threshold not reached after 45 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 46
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 46 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 47
+[1] "Minimum fitness threshold not reached after 47 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 48
+[1] "Minimum fitness threshold not reached after 48 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 49
+[1] "Minimum fitness threshold not reached after 49 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 50
+[1] "Minimum fitness threshold not reached after 50 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 51
+[1] "Minimum fitness threshold not reached after 51 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 52
+[1] "Minimum fitness threshold not reached after 52 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 53
+[1] "Minimum fitness threshold not reached after 53 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 54
+[1] "Minimum fitness threshold not reached after 54 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 55
+[1] "Minimum fitness threshold not reached after 55 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 56
+[1] "Minimum fitness threshold not reached after 56 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 57
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 3
+[1] 12
+[1] "No change for 4 iterations. Exiting PSO."
+[1]  1  2  3  4  5  6  9 11 12
+[1] 5
+[1] "##################################"
+[1] "Results summary for itr:5"
+[1] "number of features selected using population mean"
+[1] 9
+[1] "number of features selected using current global best"
+[1] 9
+[1] "feat ind length"
+[1] 9
+[1] "best accuracy"
+[1] 76.03568
+[1] "test acc:1"
+[1] "##################################"
+[1] "learning sets: 6"
+ [1] 44  5 25 23 45 56 35 30 48 43 36 17 47 16  1 59 27 21 14  2 32 37 55 46 22
+[26]  3 26 39 15 61 58 28 11 50  9 38 20 49 10  4 51 42 18 24
+[1] "Starting global iteration number : 6"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -65.83427
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "Best fitness updated to:"
+[1] -72.73495
+[1] "Best solution:"
+ [1] 1 1 0 0 0 1 1 0 0 1 0 0
+[1] 5
+[1] "iteration number: "
+[1] 4
+[1] "Minimum fitness threshold not reached after 4 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 5
+[1] "Minimum fitness threshold not reached after 5 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 6
+[1] "Best fitness updated to:"
+[1] -72.86999
+[1] "Best solution:"
+ [1] 1 1 1 1 1 1 1 0 0 1 1 1
+[1] 10
+[1] "Minimum fitness threshold not reached after 6 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 7
+[1] "Minimum fitness threshold not reached after 7 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 8
+[1] "Minimum fitness threshold not reached after 8 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 9
+[1] "Minimum fitness threshold not reached after 9 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 10
+[1] "Minimum fitness threshold not reached after 10 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 11
+[1] "Minimum fitness threshold not reached after 11 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 12
+[1] "Minimum fitness threshold not reached after 12 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 13
+[1] "Minimum fitness threshold not reached after 13 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 14
+[1] "Minimum fitness threshold not reached after 14 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 15
+[1] "Best fitness updated to:"
+[1] -73.21737
+[1] "Best solution:"
+ [1] 1 0 1 1 1 0 1 1 1 1 1 1
+[1] 10
+[1] "Minimum fitness threshold not reached after 15 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 16
+[1] "Minimum fitness threshold not reached after 16 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 17
+[1] "Minimum fitness threshold not reached after 17 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 18
+[1] "Minimum fitness threshold not reached after 18 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 19
+[1] "Minimum fitness threshold not reached after 19 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 20
+[1] "Minimum fitness threshold not reached after 20 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 21
+[1] "Minimum fitness threshold not reached after 21 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 22
+[1] "Minimum fitness threshold not reached after 22 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 23
+[1] "Minimum fitness threshold not reached after 23 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 24
+[1] "Minimum fitness threshold not reached after 24 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 25
+[1] "Minimum fitness threshold not reached after 25 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 26
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 26 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 27
+[1] "Minimum fitness threshold not reached after 27 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 28
+[1] "Minimum fitness threshold not reached after 28 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 29
+[1] "Minimum fitness threshold not reached after 29 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 30
+[1] "Minimum fitness threshold not reached after 30 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 31
+[1] "Minimum fitness threshold not reached after 31 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 32
+[1] "Minimum fitness threshold not reached after 32 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 33
+[1] "Minimum fitness threshold not reached after 33 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 34
+[1] "Minimum fitness threshold not reached after 34 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 35
+[1] "Minimum fitness threshold not reached after 35 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 36
+[1] "Minimum fitness threshold not reached after 36 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 37
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 37 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 38
+[1] "Minimum fitness threshold not reached after 38 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 39
+[1] "Minimum fitness threshold not reached after 39 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 40
+[1] "Minimum fitness threshold not reached after 40 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 41
+[1] "Minimum fitness threshold not reached after 41 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 42
+[1] "Minimum fitness threshold not reached after 42 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 43
+[1] "Minimum fitness threshold not reached after 43 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 44
+[1] "Minimum fitness threshold not reached after 44 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 45
+[1] "Minimum fitness threshold not reached after 45 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 46
+[1] "Minimum fitness threshold not reached after 46 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 47
+[1] "Minimum fitness threshold not reached after 47 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 48
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 48 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 49
+[1] "Minimum fitness threshold not reached after 49 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 50
+[1] "Minimum fitness threshold not reached after 50 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 51
+[1] "Minimum fitness threshold not reached after 51 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 52
+[1] "Minimum fitness threshold not reached after 52 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 53
+[1] "Minimum fitness threshold not reached after 53 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 54
+[1] "Minimum fitness threshold not reached after 54 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 55
+[1] "Minimum fitness threshold not reached after 55 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 56
+[1] "Minimum fitness threshold not reached after 56 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 57
+[1] "Minimum fitness threshold not reached after 57 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 58
+[1] "Minimum fitness threshold not reached after 58 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 59
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 3
+[1] 12
+[1] "No change for 4 iterations. Exiting PSO."
+[1]  1  3  4  5  6  8  9 10 12
+[1] 6
+[1] "##################################"
+[1] "Results summary for itr:6"
+[1] "number of features selected using population mean"
+[1] 9
+[1] "number of features selected using current global best"
+[1] 9
+[1] "feat ind length"
+[1] 9
+[1] "best accuracy"
+[1] 73.21737
+[1] "test acc:0.947368421052632"
+[1] "##################################"
+[1] "learning sets: 7"
+ [1] 18 17 58 37  7  1 55 31 28 44  2 59 12 15 21 57 47 61 30 43  3 45 38 25 29
+[26] 41 20  6 49 36 53 39 56 24 19 40 22 51 34 42 16 54 27 14
+[1] "Starting global iteration number : 7"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -58.67839
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "Best fitness updated to:"
+[1] -60.77051
+[1] "Best solution:"
+ [1] 1 1 0 0 0 1 1 0 0 1 0 0
+[1] 5
+[1] "iteration number: "
+[1] 4
+[1] "Minimum fitness threshold not reached after 4 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 5
+[1] "Minimum fitness threshold not reached after 5 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 6
+[1] "Best fitness updated to:"
+[1] -61.23062
+[1] "Best solution:"
+ [1] 1 0 0 1 1 1 1 1 1 0 1 1
+[1] 9
+[1] "Minimum fitness threshold not reached after 6 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 7
+[1] "Best fitness updated to:"
+[1] -62.48888
+[1] "Best solution:"
+ [1] 1 1 0 1 1 0 1 1 1 1 0 1
+[1] 9
+[1] "Minimum fitness threshold not reached after 7 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 8
+[1] "Minimum fitness threshold not reached after 8 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 9
+[1] "Minimum fitness threshold not reached after 9 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 10
+[1] "Minimum fitness threshold not reached after 10 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 11
+[1] "Best fitness updated to:"
+[1] -64.39178
+[1] "Best solution:"
+ [1] 1 1 1 1 1 1 1 0 1 1 0 0
+[1] 9
+[1] "Minimum fitness threshold not reached after 11 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 12
+[1] "Best fitness updated to:"
+[1] -64.66663
+[1] "Best solution:"
+ [1] 0 1 1 0 0 1 1 1 1 0 1 1
+[1] 8
+[1] "Minimum fitness threshold not reached after 12 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 13
+[1] "Minimum fitness threshold not reached after 13 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 14
+[1] "Minimum fitness threshold not reached after 14 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 15
+[1] "Minimum fitness threshold not reached after 15 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 16
+[1] "Best fitness updated to:"
+[1] -65.45985
+[1] "Best solution:"
+ [1] 1 1 1 1 1 1 1 1 0 1 1 1
+[1] 11
+[1] "Minimum fitness threshold not reached after 16 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 17
+[1] "Best fitness updated to:"
+[1] -65.69874
+[1] "Best solution:"
+ [1] 1 1 0 0 1 0 0 1 1 1 1 1
+[1] 8
+[1] "Minimum fitness threshold not reached after 17 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 18
+[1] "Minimum fitness threshold not reached after 18 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 19
+[1] "Minimum fitness threshold not reached after 19 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 20
+[1] "Minimum fitness threshold not reached after 20 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 21
+[1] "Minimum fitness threshold not reached after 21 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 22
+[1] "Minimum fitness threshold not reached after 22 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 23
+[1] "Minimum fitness threshold not reached after 23 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 24
+[1] "Minimum fitness threshold not reached after 24 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 25
+[1] "Minimum fitness threshold not reached after 25 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 26
+[1] "Minimum fitness threshold not reached after 26 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 27
+[1] "Minimum fitness threshold not reached after 27 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 28
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 28 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 29
+[1] "Minimum fitness threshold not reached after 29 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 30
+[1] "Minimum fitness threshold not reached after 30 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 31
+[1] "Minimum fitness threshold not reached after 31 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 32
+[1] "Minimum fitness threshold not reached after 32 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 33
+[1] "Minimum fitness threshold not reached after 33 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 34
+[1] "Minimum fitness threshold not reached after 34 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 35
+[1] "Minimum fitness threshold not reached after 35 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 36
+[1] "Minimum fitness threshold not reached after 36 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 37
+[1] "Minimum fitness threshold not reached after 37 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 38
+[1] "Minimum fitness threshold not reached after 38 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 39
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 39 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 40
+[1] "Minimum fitness threshold not reached after 40 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 41
+[1] "Minimum fitness threshold not reached after 41 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 42
+[1] "Minimum fitness threshold not reached after 42 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 43
+[1] "Minimum fitness threshold not reached after 43 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 44
+[1] "Minimum fitness threshold not reached after 44 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 45
+[1] "Minimum fitness threshold not reached after 45 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 46
+[1] "Minimum fitness threshold not reached after 46 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 47
+[1] "Minimum fitness threshold not reached after 47 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 48
+[1] "Minimum fitness threshold not reached after 48 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 49
+[1] "Minimum fitness threshold not reached after 49 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 50
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 50 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 51
+[1] "Minimum fitness threshold not reached after 51 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 52
+[1] "Minimum fitness threshold not reached after 52 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 53
+[1] "Minimum fitness threshold not reached after 53 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 54
+[1] "Minimum fitness threshold not reached after 54 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 55
+[1] "Minimum fitness threshold not reached after 55 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 56
+[1] "Minimum fitness threshold not reached after 56 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 57
+[1] "Minimum fitness threshold not reached after 57 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 58
+[1] "Minimum fitness threshold not reached after 58 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 59
+[1] "Minimum fitness threshold not reached after 59 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 60
+[1] "Minimum fitness threshold not reached after 60 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 61
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 3
+[1] 12
+[1] "No change for 4 iterations. Exiting PSO."
+[1]  1  2  3  5  8  9 10 11 12
+[1] 7
+[1] "##################################"
+[1] "Results summary for itr:7"
+[1] "number of features selected using population mean"
+[1] 9
+[1] "number of features selected using current global best"
+[1] 9
+[1] "feat ind length"
+[1] 9
+[1] "best accuracy"
+[1] 65.69874
+[1] "test acc:1"
+[1] "##################################"
+[1] "learning sets: 8"
+ [1] 57 10 49 51 29 12 48 40 19  5 17 16  7 42 13 30 36 41 37 59  4 32 14 62 33
+[26] 39 63  9 34 44 58 31 21  6  2 24 23 43 27 50 11 53 47 20
+[1] "Starting global iteration number : 8"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -57.75162
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -60.85625
+[1] "Best solution:"
+ [1] 0 1 0 0 0 0 0 0 0 0 1 0
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "Best fitness updated to:"
+[1] -63.26133
+[1] "Best solution:"
+ [1] 1 0 1 0 1 1 0 0 0 1 0 0
+[1] 5
+[1] "Minimum fitness threshold not reached after 4 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 5
+[1] "Best fitness updated to:"
+[1] -63.8962
+[1] "Best solution:"
+ [1] 1 1 1 1 1 0 1 1 1 1 0 1
+[1] 10
+[1] "Minimum fitness threshold not reached after 5 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 6
+[1] "Best fitness updated to:"
+[1] -65.62992
+[1] "Best solution:"
+ [1] 1 0 0 1 1 1 1 1 1 0 0 0
+[1] 7
+[1] "Minimum fitness threshold not reached after 6 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 7
+[1] "Best fitness updated to:"
+[1] -67.92109
+[1] "Best solution:"
+ [1] 0 1 0 1 1 0 1 1 1 1 0 1
+[1] 8
+[1] "Minimum fitness threshold not reached after 7 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 8
+[1] "Minimum fitness threshold not reached after 8 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 9
+[1] "Minimum fitness threshold not reached after 9 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 10
+[1] "Minimum fitness threshold not reached after 10 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 11
+[1] "Minimum fitness threshold not reached after 11 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 12
+[1] "Minimum fitness threshold not reached after 12 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 13
+[1] "Minimum fitness threshold not reached after 13 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 14
+[1] "Best fitness updated to:"
+[1] -69.3104
+[1] "Best solution:"
+ [1] 1 1 0 0 1 1 0 1 0 1 1 1
+[1] 8
+[1] "Minimum fitness threshold not reached after 14 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 15
+[1] "Minimum fitness threshold not reached after 15 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 16
+[1] "Minimum fitness threshold not reached after 16 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 17
+[1] "Minimum fitness threshold not reached after 17 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 18
+[1] "Minimum fitness threshold not reached after 18 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 19
+[1] "Minimum fitness threshold not reached after 19 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 20
+[1] "Minimum fitness threshold not reached after 20 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 21
+[1] "Minimum fitness threshold not reached after 21 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 22
+[1] "Minimum fitness threshold not reached after 22 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 23
+[1] "Minimum fitness threshold not reached after 23 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 24
+[1] "Minimum fitness threshold not reached after 24 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 25
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 25 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 26
+[1] "Minimum fitness threshold not reached after 26 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 27
+[1] "Minimum fitness threshold not reached after 27 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 28
+[1] "Minimum fitness threshold not reached after 28 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 29
+[1] "Minimum fitness threshold not reached after 29 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 30
+[1] "Minimum fitness threshold not reached after 30 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 31
+[1] "Minimum fitness threshold not reached after 31 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 32
+[1] "Minimum fitness threshold not reached after 32 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 33
+[1] "Minimum fitness threshold not reached after 33 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 34
+[1] "Minimum fitness threshold not reached after 34 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 35
+[1] "Minimum fitness threshold not reached after 35 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 36
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 36 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 37
+[1] "Minimum fitness threshold not reached after 37 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 38
+[1] "Minimum fitness threshold not reached after 38 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 39
+[1] "Minimum fitness threshold not reached after 39 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 40
+[1] "Minimum fitness threshold not reached after 40 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 41
+[1] "Minimum fitness threshold not reached after 41 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 42
+[1] "Minimum fitness threshold not reached after 42 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 43
+[1] "Minimum fitness threshold not reached after 43 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 44
+[1] "Minimum fitness threshold not reached after 44 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 45
+[1] "Minimum fitness threshold not reached after 45 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 46
+[1] "Minimum fitness threshold not reached after 46 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 47
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 47 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 48
+[1] "Minimum fitness threshold not reached after 48 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 49
+[1] "Minimum fitness threshold not reached after 49 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 50
+[1] "Minimum fitness threshold not reached after 50 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 51
+[1] "Minimum fitness threshold not reached after 51 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 52
+[1] "Minimum fitness threshold not reached after 52 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 53
+[1] "Minimum fitness threshold not reached after 53 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 54
+[1] "Minimum fitness threshold not reached after 54 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 55
+[1] "Minimum fitness threshold not reached after 55 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 56
+[1] "Minimum fitness threshold not reached after 56 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 57
+[1] "Minimum fitness threshold not reached after 57 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 58
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 3
+[1] 12
+[1] "No change for 4 iterations. Exiting PSO."
+[1]  1  2  5  6  8  9 10 11 12
+[1] 8
+[1] "##################################"
+[1] "Results summary for itr:8"
+[1] "number of features selected using population mean"
+[1] 9
+[1] "number of features selected using current global best"
+[1] 9
+[1] "feat ind length"
+[1] 9
+[1] "best accuracy"
+[1] 69.3104
+[1] "test acc:1"
+[1] "##################################"
+[1] "learning sets: 9"
+ [1] 44 47 37 50  6 24 11 48 16 29 14 34 35 46 28 45 62 19 61 17 59 40 63 49 56
+[26] 13 36 31 53 22 39 54 23 55 12 27  3 51 60 25  8 32 18 41
+[1] "Starting global iteration number : 9"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -77.03071
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "Best fitness updated to:"
+[1] -79.29067
+[1] "Best solution:"
+ [1] 1 1 0 0 0 1 1 0 0 1 0 0
+[1] 5
+[1] "iteration number: "
+[1] 4
+[1] "Best fitness updated to:"
+[1] -81.69806
+[1] "Best solution:"
+ [1] 1 1 0 1 0 0 1 1 1 1 0 1
+[1] 8
+[1] "Minimum fitness threshold not reached after 4 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 5
+[1] "Minimum fitness threshold not reached after 5 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 6
+[1] "Minimum fitness threshold not reached after 6 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 7
+[1] "Minimum fitness threshold not reached after 7 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 8
+[1] "Minimum fitness threshold not reached after 8 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 9
+[1] "Minimum fitness threshold not reached after 9 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 10
+[1] "Best fitness updated to:"
+[1] -81.74649
+[1] "Best solution:"
+ [1] 1 1 0 1 1 0 1 0 1 1 1 1
+[1] 9
+[1] "Minimum fitness threshold not reached after 10 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 11
+[1] "Minimum fitness threshold not reached after 11 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 12
+[1] "Minimum fitness threshold not reached after 12 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 13
+[1] "Best fitness updated to:"
+[1] -81.90416
+[1] "Best solution:"
+ [1] 1 1 0 1 1 0 1 1 1 1 1 1
+[1] 10
+[1] "Minimum fitness threshold not reached after 13 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 14
+[1] "Best fitness updated to:"
+[1] -82.6825
+[1] "Best solution:"
+ [1] 1 1 0 1 1 0 1 1 1 1 1 1
+[1] 10
+[1] "Minimum fitness threshold not reached after 14 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 15
+[1] "Minimum fitness threshold not reached after 15 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 16
+[1] "Minimum fitness threshold not reached after 16 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 17
+[1] "Minimum fitness threshold not reached after 17 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 18
+[1] "Minimum fitness threshold not reached after 18 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 19
+[1] "Minimum fitness threshold not reached after 19 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 20
+[1] "Minimum fitness threshold not reached after 20 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 21
+[1] "Minimum fitness threshold not reached after 21 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 22
+[1] "Minimum fitness threshold not reached after 22 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 23
+[1] "Minimum fitness threshold not reached after 23 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 24
+[1] "Minimum fitness threshold not reached after 24 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 25
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 25 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 26
+[1] "Minimum fitness threshold not reached after 26 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 27
+[1] "Minimum fitness threshold not reached after 27 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 28
+[1] "Minimum fitness threshold not reached after 28 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 29
+[1] "Minimum fitness threshold not reached after 29 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 30
+[1] "Minimum fitness threshold not reached after 30 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 31
+[1] "Minimum fitness threshold not reached after 31 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 32
+[1] "Minimum fitness threshold not reached after 32 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 33
+[1] "Minimum fitness threshold not reached after 33 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 34
+[1] "Minimum fitness threshold not reached after 34 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 35
+[1] "Minimum fitness threshold not reached after 35 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 36
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 36 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 37
+[1] "Minimum fitness threshold not reached after 37 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 38
+[1] "Minimum fitness threshold not reached after 38 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 39
+[1] "Minimum fitness threshold not reached after 39 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 40
+[1] "Minimum fitness threshold not reached after 40 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 41
+[1] "Minimum fitness threshold not reached after 41 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 42
+[1] "Minimum fitness threshold not reached after 42 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 43
+[1] "Minimum fitness threshold not reached after 43 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 44
+[1] "Minimum fitness threshold not reached after 44 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 45
+[1] "Minimum fitness threshold not reached after 45 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 46
+[1] "Minimum fitness threshold not reached after 46 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 47
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "iteration number: "
+[1] 48
+[1] "Minimum fitness threshold not reached after 48 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 3
+[1] 12
+[1] "No change for 4 iterations. Exiting PSO."
+[1]  1  2  4  5  7  8  9 10 12
+[1] 9
+[1] "##################################"
+[1] "Results summary for itr:9"
+[1] "number of features selected using population mean"
+[1] 9
+[1] "number of features selected using current global best"
+[1] 9
+[1] "feat ind length"
+[1] 9
+[1] "best accuracy"
+[1] 82.6825
+[1] "test acc:0.947368421052632"
+[1] "##################################"
+[1] "learning sets: 10"
+ [1] 58 48 62 20 10 50 56 40 36 42 49 60 24 45 43 26 27 35 57 11 15 63  3 12 19
+[26] 16  4  9 59 25 52 38  2 37 14 23 18  5 61  7 28 46 53  1
+[1] "Starting global iteration number : 10"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -61.29751
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -61.99487
+[1] "Best solution:"
+ [1] 0 1 0 0 0 0 0 0 0 0 1 0
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "Best fitness updated to:"
+[1] -66.76179
+[1] "Best solution:"
+ [1] 0 1 1 0 1 0 0 1 0 0 0 1
+[1] 5
+[1] "iteration number: "
+[1] 4
+[1] "Best fitness updated to:"
+[1] -72.00136
+[1] "Best solution:"
+ [1] 1 0 0 0 0 0 1 1 1 1 1 0
+[1] 6
+[1] "Minimum fitness threshold not reached after 4 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 5
+[1] "Minimum fitness threshold not reached after 5 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 6
+[1] "Minimum fitness threshold not reached after 6 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 7
+[1] "Minimum fitness threshold not reached after 7 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 8
+[1] "Minimum fitness threshold not reached after 8 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 9
+[1] "Minimum fitness threshold not reached after 9 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 10
+[1] "Minimum fitness threshold not reached after 10 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 11
+[1] "Best fitness updated to:"
+[1] -72.88046
+[1] "Best solution:"
+ [1] 1 1 1 0 0 0 1 1 0 0 0 1
+[1] 6
+[1] "Minimum fitness threshold not reached after 11 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 12
+[1] "Minimum fitness threshold not reached after 12 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 13
+[1] "Minimum fitness threshold not reached after 13 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 14
+[1] "Minimum fitness threshold not reached after 14 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 15
+[1] "Minimum fitness threshold not reached after 15 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 16
+[1] "Minimum fitness threshold not reached after 16 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 17
+[1] "Minimum fitness threshold not reached after 17 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 18
+[1] "Minimum fitness threshold not reached after 18 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 19
+[1] "Minimum fitness threshold not reached after 19 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 20
+[1] "Minimum fitness threshold not reached after 20 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 21
+[1] "Minimum fitness threshold not reached after 21 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 22
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 3
+[1] 11
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 22 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 23
+[1] "Minimum fitness threshold not reached after 23 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 24
+[1] "Minimum fitness threshold not reached after 24 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 25
+[1] "Minimum fitness threshold not reached after 25 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 26
+[1] "Minimum fitness threshold not reached after 26 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 27
+[1] "Minimum fitness threshold not reached after 27 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 28
+[1] "Minimum fitness threshold not reached after 28 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 29
+[1] "Minimum fitness threshold not reached after 29 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 30
+[1] "Minimum fitness threshold not reached after 30 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 31
+[1] "Minimum fitness threshold not reached after 31 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 32
+[1] "Minimum fitness threshold not reached after 32 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 33
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 3
+[1] 11
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "Minimum fitness threshold not reached after 33 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 34
+[1] "Minimum fitness threshold not reached after 34 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 35
+[1] "Minimum fitness threshold not reached after 35 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 36
+[1] "Minimum fitness threshold not reached after 36 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 37
+[1] "Minimum fitness threshold not reached after 37 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 38
+[1] "Minimum fitness threshold not reached after 38 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 39
+[1] "Minimum fitness threshold not reached after 39 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 40
+[1] "Minimum fitness threshold not reached after 40 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 41
+[1] "Minimum fitness threshold not reached after 41 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 42
+[1] "Minimum fitness threshold not reached after 42 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 43
+[1] "Minimum fitness threshold not reached after 43 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 44
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 3
+[1] 12
+ [1] 3 3 2 4 2 3 2 3 2 3 4 1 3 1 2 2 2 3 2 2
+[1] "iteration number: "
+[1] 45
+[1] "Minimum fitness threshold not reached after 45 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 3
+[1] 12
+[1] "No change for 4 iterations. Exiting PSO."
+[1]  1  2  3  5  6  8  9 10 12
+[1] 10
+[1] "##################################"
+[1] "Results summary for itr:10"
+[1] "number of features selected using population mean"
+[1] 9
+[1] "number of features selected using current global best"
+[1] 9
+[1] "feat ind length"
+[1] 9
+[1] "best accuracy"
+[1] 72.88046
+[1] "test acc:1"
+[1] "##################################"
+[1] "testacc"
+ [1] 1.0000000 0.9473684 1.0000000 0.9473684 1.0000000 0.9473684 1.0000000
+ [8] 1.0000000 0.9473684 1.0000000
+[1] 0.9789474
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.9474  0.9474  1.0000  0.9789  1.0000  1.0000 
+[1] 0.02717883
+      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
+ [1,]    1    0    1    1    1    1    1    1    1     1
+ [2,]    1    1    1    0    1    0    1    1    1     1
+ [3,]    1    0    1    1    1    1    1    0    0     1
+ [4,]    1    0    1    0    1    1    0    0    1     0
+ [5,]    1    1    1    1    1    1    1    1    1     1
+ [6,]    1    0    1    0    1    1    0    1    0     1
+ [7,]    0    1    1    0    0    0    0    0    1     0
+ [8,]    0    0    0    1    0    1    1    1    1     1
+ [9,]    0    0    1    0    1    1    1    1    1     1
+[10,]    1    1    1    1    0    1    1    1    1     1
+[11,]    0    0    0    1    1    0    1    1    0     0
+[12,]    1    1    1    1    1    1    1    1    1     1
+[1] "dim of scoring matrix is "
+[1] 12 10
+[1] "DS index stage 2"
+[1] 0.7337088
+[1] "KI index stage 2"
+[1] -Inf
+[1] 1
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+   3.00    5.75    7.00    7.00    9.00   10.00 
+[1] "Number of features selected in 2 iterations:"
+[1] 12
+[1] 1 1 1 1
+[1] 1 1 1 1
+[1] 0.0000000 0.1304348 0.0000000 0.0500000
+[1] 0.0000000 0.1304348 0.0000000 0.0500000
+[1] 0.0451087 0.0000000 0.7391304 0.2500000 0.4000000
+[1] 0.0451087 0.0000000 0.7391304 0.2500000 0.4000000
+[1] 0.2868478 0.0000000 0.9130435 0.0000000 0.1500000
+[1] 0.2868478 0.0000000 0.9130435 0.0000000 0.1500000
+[1] 1 1 1 1
+[1] 1 1 1 1
+[1] "accuracy: 100 num_feat:12 fitness:76.5922986240663"
+[1] -76.5923
+[1] "Number of features selected in 3 iterations:"
+[1] 12
+[1] 1 1 1 1
+[1] 1 1 1 1
+[1] 0.0000000 0.1304348 0.0000000 0.0500000
+[1] 0.0000000 0.1304348 0.0000000 0.0500000
+[1] 0.0451087 0.0000000 0.7391304 0.2500000 0.4000000
+[1] 0.0451087 0.0000000 0.7391304 0.2500000 0.4000000
+[1] 0.2868478 0.0000000 0.9130435 0.0000000 0.1500000
+[1] 0.2868478 0.0000000 0.9130435 0.0000000 0.1500000
+[1] 1 1 1 1
+[1] 1 1 1 1
+[1] "accuracy: 100 num_feat:12 fitness:76.5922986240663"
+[1] -76.5923
+[1] "Number of features selected in 4 iterations:"
+[1] 11
+[1] 1 1 1 1
+[1] 1 1 1 1
+[1] 0.00000000 0.08695652 0.00000000 0.05000000
+[1] 0.00000000 0.08695652 0.00000000 0.05000000
+[1] 0.03423913 0.00000000 0.69565217 0.25000000 0.40000000
+[1] 0.03423913 0.00000000 0.69565217 0.25000000 0.40000000
+[1] 0.2759783 0.0000000 0.8695652 0.0000000 0.1500000
+[1] 0.2759783 0.0000000 0.8695652 0.0000000 0.1500000
+[1] 1 1 1 1
+[1] 1 1 1 1
+[1] "accuracy: 95.5622050135537 num_feat:11 fitness:72.830306194674"
+[1] -72.83031
+[1] "Number of features selected in 5 iterations:"
+[1] 10
+[1] 1 1 1 1
+[1] 1 1 1 1
+[1] 0.0000000 0.1304348 0.0000000 0.0500000
+[1] 0.0000000 0.1304348 0.0000000 0.0500000
+[1] 0.0451087 0.0000000 0.7391304 0.2500000 0.3500000
+[1] 0.0451087 0.0000000 0.7391304 0.2500000 0.3500000
+[1] 0.2768478 0.0000000 0.8695652 0.0000000 0.2000000
+[1] 0.2768478 0.0000000 0.8695652 0.0000000 0.2000000
+[1] 1 1 1 1
+[1] 1 1 1 1
+[1] "accuracy: 95.5622050135537 num_feat:10 fitness:72.6838649442837"
+[1] -72.68386
+[1] "Number of features selected in 6 iterations:"
+[1] 9
+[1] 1 1 1 1
+[1] 1 1 1 1
+[1] 0.000000 0.173913 0.000000 0.050000
+[1] 0.000000 0.173913 0.000000 0.050000
+[1] 0.05597826 0.00000000 0.73913043 0.41666667 0.35000000
+[1] 0.05597826 0.00000000 0.73913043 0.41666667 0.35000000
+[1] 0.3123551 0.0000000 0.8695652 0.0000000 0.2000000
+[1] 0.3123551 0.0000000 0.8695652 0.0000000 0.2000000
+[1] 1 1 1 1
+[1] 1 1 1 1
+[1] "accuracy: 100 num_feat:9 fitness:77.6247237953144"
+[1] -77.62472
+[1] "Number of features selected in 7 iterations:"
+[1] 7
+[1] 1 1 1 1
+[1] 1 1 1 1
+[1] 0.0000000 0.2608696 0.0000000 0.0500000
+[1] 0.0000000 0.2608696 0.0000000 0.0500000
+[1] 0.07771739 0.00000000 0.69565217 0.41666667 0.40000000
+[1] 0.07771739 0.00000000 0.69565217 0.41666667 0.40000000
+[1] 0.3180072 0.0000000 0.6086957 0.0000000 0.2500000
+[1] 0.3180072 0.0000000 0.6086957 0.0000000 0.2500000
+[1] 1.0000000 0.9565217 1.0000000 1.0000000
+[1] 1.0000000 0.9565217 1.0000000 1.0000000
+[1] "accuracy: 92.3622335533286 num_feat:7 fitness:66.7336135436552"
+[1] -66.73361
+[1] "Number of features selected in 8 iterations:"
+[1] 5
+[1] 1 1 1 1
+[1] 1 1 1 1
+[1] 0.00000000 0.04347826 0.00000000 0.15000000
+[1] 0.00000000 0.04347826 0.00000000 0.15000000
+[1] 0.04836957 0.00000000 0.82608696 0.50000000 0.40000000
+[1] 0.04836957 0.00000000 0.82608696 0.50000000 0.40000000
+[1] 0.3548913 0.0000000 0.6086957 0.0000000 0.1000000
+[1] 0.3548913 0.0000000 0.6086957 0.0000000 0.1000000
+[1] 1.0000000 0.9565217 0.9166667 1.0000000
+[1] 1.0000000 0.9565217 0.9166667 1.0000000
+[1] "accuracy: 94.9026241459503 num_feat:5 fitness:69.5226741168314"
+[1] -69.52267
+[1] "Number of features selected in 9 iterations:"
+[1] 4
+[1] 1 1 1 1
+[1] 1 1 1 1
+[1] 0.00000000 0.04347826 0.00000000 0.05000000
+[1] 0.00000000 0.04347826 0.00000000 0.05000000
+[1] 0.02336957 0.00000000 0.95652174 0.58333333 0.35000000
+[1] 0.02336957 0.00000000 0.95652174 0.58333333 0.35000000
+[1] 0.38264493 0.00000000 0.47826087 0.08333333 0.25000000
+[1] 0.38264493 0.00000000 0.47826087 0.08333333 0.25000000
+[1] 1.0000000 1.0000000 0.9166667 0.9500000
+[1] 1.0000000 1.0000000 0.9166667 0.9500000
+[1] "accuracy: 90.148683394305 num_feat:4 fitness:62.0277563330777"
+[1] -62.02776
+[1] "Number of features selected in 10 iterations:"
+[1] 2
+[1] "accuracy: 1 num_feat:2 fitness:-100"
+[1] 100
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.9474  0.9474  1.0000  0.9789  1.0000  1.0000 
+[1] "Number of features selected in 6 iterations:"
+[1] 9
+[1] "Modified train 10 fold accuracy using train data is "
+[1] 100
+[1] "Modified train accuracy is "
+[1] 1
+[1] "train confusion matrix is "
+          trainclass
+pred_train  1  2  3  4
+         1  8  0  0  0
+         2  0 23  0  0
+         3  0  0 12  0
+         4  0  0  0 20
+[1] "Train dimension is "
+[1] 63  9
+[1] "Test dimension is "
+[1] 20  9
+[1] "Test confusion matrix is "
+    
+pred 1 2 3 4
+   1 3 0 0 0
+   2 0 6 0 0
+   3 0 0 6 0
+   4 0 0 0 5
+[1] "Test acc is "
+[1] 1
+[1] "train 10 fold"
+[1] 100
+[1] "Test confusion matrix is "
+    
+pred 1 2 3 4
+   1 3 0 0 0
+   2 0 6 0 0
+   3 0 0 6 0
+   4 0 0 0 5
+[1] "Test acc is "
+[1] 1
+[1] "Test AUC:"
+[1] 1
+[1] "Train acc is "
+[1] 1
+[1] "# of features after CMA:"
+NULL
+[1] "# of features after PSO:"
+[1] 63 10
+    user   system  elapsed 
+  48.558    7.911 5877.527 
+There were 50 or more warnings (use warnings() to see the first 50)
+> 
+> feat_ind<-psores$bestfeatlist
+> feat_names<-psores$bestfeatnames
+> 
+> scoringmatrix<-as.data.frame(psores$scoringmatrix)
+> print(scoringmatrix)
+   V1 V2 V3 V4 V5 V6 V7 V8 V9 V10
+1   1  0  1  1  1  1  1  1  1   1
+2   1  1  1  0  1  0  1  1  1   1
+3   1  0  1  1  1  1  1  0  0   1
+4   1  0  1  0  1  1  0  0  1   0
+5   1  1  1  1  1  1  1  1  1   1
+6   1  0  1  0  1  1  0  1  0   1
+7   0  1  1  0  0  0  0  0  1   0
+8   0  0  0  1  0  1  1  1  1   1
+9   0  0  1  0  1  1  1  1  1   1
+10  1  1  1  1  0  1  1  1  1   1
+11  0  0  0  1  1  0  1  1  0   0
+12  1  1  1  1  1  1  1  1  1   1
+> print(feat_names[feat_ind])
+[1] "var1"    "var2"    "var3"    "var246"  "var255"  "var742"  "var819" 
+[8] "var842"  "var1003"
+> 
+> save(psores,file="psores.Rda")
+> print("Complete")
+[1] "Complete"
+> 

@@ -1,0 +1,50 @@
+Loading required package: class
+Loading required package: Biobase
+Loading required package: BiocGenerics
+
+Attaching package: ‘BiocGenerics’
+
+The following object(s) are masked from ‘package:stats’:
+
+    xtabs
+
+The following object(s) are masked from ‘package:base’:
+
+    anyDuplicated, cbind, colnames, duplicated, eval, Filter, Find,
+    get, intersect, lapply, Map, mapply, mget, order, paste, pmax,
+    pmax.int, pmin, pmin.int, Position, rbind, Reduce, rep.int,
+    rownames, sapply, setdiff, table, tapply, union, unique
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+
+Attaching package: ‘CMA’
+
+The following object(s) are masked from ‘package:e1071’:
+
+    tune
+
+Loading required package: KernSmooth
+KernSmooth 2.23 loaded
+Copyright M. P. Wand 1997-2009
+randomForest 4.6-7
+Type rfNews() to see new features/changes/bug fixes.
+
+Attaching package: ‘randomForest’
+
+The following object(s) are masked from ‘package:Biobase’:
+
+    combine
+
+The following object(s) are masked from ‘package:BiocGenerics’:
+
+    combine
+
+Loading required package: lattice
+Loaded glmnet 1.9-3
+
+There were 24 warnings (use warnings() to see them)

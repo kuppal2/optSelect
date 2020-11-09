@@ -1,0 +1,685 @@
+
+R version 3.4.0 (2017-04-21) -- "You Stupid Darkness"
+Copyright (C) 2017 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> #.libPaths("/home/kuppal3/karan_libs/Rlibs")
+> library(snow)
+> library(e1071)
+> library(yaImpute)
+
+Attaching package: ‘yaImpute’
+
+The following object is masked from ‘package:e1071’:
+
+    impute
+
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+> library(bioDist)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘parallel’
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, clusterSplit, makeCluster, parApply,
+    parCapply, parLapply, parRapply, parSapply, splitIndices,
+    stopCluster
+
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following object is masked from ‘package:pROC’:
+
+    var
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parRapply, parSapply
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, cbind, colMeans, colnames,
+    colSums, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+    grepl, intersect, is.unsorted, lapply, lengths, Map, mapply, match,
+    mget, order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rowMeans, rownames, rowSums, sapply, setdiff, sort,
+    table, tapply, union, unique, unsplit, which, which.max, which.min
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: KernSmooth
+KernSmooth 2.23 loaded
+Copyright M. P. Wand 1997-2009
+> #library(CMA, lib="/home/kuppal3/karan_libs/Rlibs/")
+> library(RankAggreg)
+> library(CMA)
+
+Attaching package: ‘CMA’
+
+The following object is masked from ‘package:pROC’:
+
+    roc
+
+The following object is masked from ‘package:e1071’:
+
+    tune
+
+> library(expm)
+Loading required package: Matrix
+
+Attaching package: ‘expm’
+
+The following object is masked from ‘package:Matrix’:
+
+    expm
+
+> library(plyr)
+
+Attaching package: ‘plyr’
+
+The following object is masked from ‘package:CMA’:
+
+    join
+
+> library(doParallel)
+Loading required package: foreach
+Loading required package: iterators
+> cl<-makeCluster(1)
+> 
+> 
+> args<-commandArgs(trailingOnly=TRUE)
+> 
+> #dirloc<-"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/"
+> #sname<-paste("/home/stu/kuppal3/Research/Feature_selection/Rcode/versionnov2014/OCFS_",args[9],".R",sep="")
+> 
+> sname<-paste("/home/kuppal2/Documents/Projects/xmsPANDA/Other/scripts/OCFS_",args[9],".R",sep="")
+> source(sname)
+> print(sname)
+[1] "/home/kuppal2/Documents/Projects/xmsPANDA/Other/scripts/OCFS_vfeb817_v5C_2018_v12.R"
+> 
+> dirloc<-"/home/kuppal2/Documents/Projects/xmsPANDA/Other/Datasets/GSE19711/"
+> setwd(dirloc)
+> 
+> 
+> 
+> outloc<-paste(dirloc,"/OCFSvmay2415_Ovarian",args[9],"/",sep="")
+> 
+> 
+> sname<-paste(dirloc,"OvarianCancer.Rda",sep="")
+> load(sname)
+> 
+> trainm<-OvarianCancer$X
+> testm<-OvarianCancer$Xt
+> trainclass<-OvarianCancer$Y #PCRvsRD
+> testclass<-OvarianCancer$Yt #PCRvsRD
+> 
+> trainm<-apply(trainm,2,as.numeric)
+> testm<-apply(testm,2,as.numeric)
+> 
+> trainm<-cbind(trainclass,trainm)
+> testm<-cbind(testclass,testm)
+> 
+> trainm<-na.omit(trainm)
+> testm<-na.omit(testm)
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/home/kuppal2/Documents/Projects/xmsPANDA/Other/Datasets/GSE19711//OCFSvmay2415_Ovarianvfeb817_v5C_2018_v12' already exists
+> setwd(outloc)
+> 
+> 
+> trainm<-as.matrix(trainm)
+> testm<-as.matrix(testm)
+> trainclass<-trainm[,1] #CMAres$modtrainclass
+> testclass<-testm[,1] #CMAres$modtestclass
+> trainm<-trainm[,-c(1)] #CMAres$modtrainmata
+> testm<-testm[,-c(1)] #CMAres$modtestmata
+> 
+> #a: Confusions
+> #b: Neighbors
+> #c: Global
+> #d: Death
+> 
+> a<-c(0.25,0.25,0.25,0.25)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0.25,0.25,0.5,0)
+> d<-c(0.9,0.1,0,0.1)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0,0.5,0.5,0)
+> d<-c(0.9,0.1,0,0)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.2,0.3,0.4,0.1)
+> c<-c(0,0.4,0.4,0.2)
+> d<-c(0.9,0.1,0,0)
+> 
+> transition_matrix<-rbind(a,b,c,d)
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/home/kuppal2/Documents/Projects/xmsPANDA/Other/Datasets/GSE19711//OCFSvmay2415_Ovarianvfeb817_v5C_2018_v12' already exists
+> setwd(outloc)
+> temp2=t(trainm)
+> temp2=apply(temp2, 2, function(x){which(x=="MD")})
+> temp2=unlist(temp2)
+> temp2=unique(temp2)
+> if(length(temp2)>1)
++ {
++ 	trainm=trainm[,-c(temp2)]
++ 
++ 	rm(temp2)
++ }
+> 
+> boostweight=rep(0,dim(trainm)[2])
+> 
+> print("max num")
+[1] "max num"
+> print(as.numeric(args[10]))
+[1] 5
+> 
+> #if(FALSE)
+> {
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("limma"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("lasso"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("rfe"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("elasticnet"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ if(FALSE){
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("rf"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ }
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("f.test"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ }
+[1] "dim of trainm is "
+[1]   378 27578
+[1]   378 27578
+[1] "length of factcols"
+[1] 0
+[1]   378 27578
+[1]   162 27578
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 2 2 2 2
+Levels: 1 2
+[1] "orig train matrix"
+     cg00000292 cg00002426 cg00003994 cg00005847 cg00006414 cg00007981
+[1,]      0.790      0.765      0.083      0.147      0.091      0.045
+[2,]      0.795      0.853      0.064      0.133      0.076      0.028
+[3,]      0.810      0.855      0.071      0.148      0.135      0.021
+[4,]      0.838      0.852      0.080      0.168      0.101      0.029
+[5,]      0.782      0.845      0.057      0.138      0.064      0.037
+     cg00008493 cg00008713 cg00009407 cg00010193
+[1,]      0.962      0.032      0.062      0.697
+[2,]      0.956      0.034      0.079      0.607
+[3,]      0.952      0.037      0.058      0.586
+[4,]      0.962      0.035      0.070      0.608
+[5,]      0.951      0.034      0.075      0.569
+[1] "orig train matrix"
+     cg00000292 cg00002426 cg00003994 cg00005847 cg00006414 cg00007981
+[1,]      0.790      0.765      0.083      0.147      0.091      0.045
+[2,]      0.795      0.853      0.064      0.133      0.076      0.028
+[3,]      0.810      0.855      0.071      0.148      0.135      0.021
+[4,]      0.838      0.852      0.080      0.168      0.101      0.029
+[5,]      0.782      0.845      0.057      0.138      0.064      0.037
+     cg00008493 cg00008713 cg00009407 cg00010193
+[1,]      0.962      0.032      0.062      0.697
+[2,]      0.956      0.034      0.079      0.607
+[3,]      0.952      0.037      0.058      0.586
+[4,]      0.962      0.035      0.070      0.608
+[5,]      0.951      0.034      0.075      0.569
+[1] 0.083 0.064 0.071
+[1] "norm train matrix"
+     cg00000292 cg00002426 cg00003994 cg00005847 cg00006414 cg00007981
+[1,]      0.790      0.765      0.083      0.147      0.091      0.045
+[2,]      0.795      0.853      0.064      0.133      0.076      0.028
+[3,]      0.810      0.855      0.071      0.148      0.135      0.021
+[4,]      0.838      0.852      0.080      0.168      0.101      0.029
+[5,]      0.782      0.845      0.057      0.138      0.064      0.037
+     cg00008493 cg00008713 cg00009407 cg00010193
+[1,]      0.962      0.032      0.062      0.697
+[2,]      0.956      0.034      0.079      0.607
+[3,]      0.952      0.037      0.058      0.586
+[4,]      0.962      0.035      0.070      0.608
+[5,]      0.951      0.034      0.075      0.569
+[1] "mean of feat 2"
+[1] 0.8129524
+[1] "sd of feat 2"
+[1] 0.09281371
+[1] "maxnum is "
+[1] 5
+[1] "# of genes left after filtering:"
+[1]   378 27578
+GeneSelection: iteration 1 
+
+Attaching package: ‘limma’
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    plotMA
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "backward"
+[1] "limma:5:80.008152449337"
+[1] "limma:5:80.008152449337 : 4"
+[1] "limma:4:78.2281261925333"
+[1] "limma:5:80.008152449337 : 3"
+[1] "dim of scoring matrix is "
+[1] 27578     1
+[1] 27578
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+[1]  2205  9565 23053 25623 27416
+     cg02181506 cg09624565 cg23090046 cg25634666 cg27485921
+[1,]      0.173      0.255      0.464      0.290      0.297
+[2,]      0.132      0.201      0.394      0.233      0.199
+[3,]      0.191      0.271      0.485      0.302      0.259
+     cg02181506 cg09624565 cg23090046 cg25634666 cg27485921
+[1,]      0.207      0.428      0.602      0.411      0.375
+[2,]      0.152      0.201      0.372      0.205      0.183
+[3,]      0.248      0.341      0.534      0.418      0.341
+[1] "numgenes selected:5"
+[1] "test acc:0.654320987654321"
+[1] "test AUC acc:0.657051282051282"
+[1] "10 fold train66.6666666666667"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold   1   2
+         1 159  71
+         2  37 111
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 57 35
+        2 21 49
+[1] "train acc:0.714285714285714"
+[1] "confusion matrix train"
+          nci_y
+pred_train   1   2
+         1 159  71
+         2  37 111
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   378 27578
+[1]   378 27578
+[1] "length of factcols"
+[1] 0
+[1]   378 27578
+[1]   162 27578
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 2 2 2 2
+Levels: 1 2
+[1] "orig train matrix"
+     cg00000292 cg00002426 cg00003994 cg00005847 cg00006414 cg00007981
+[1,]      0.790      0.765      0.083      0.147      0.091      0.045
+[2,]      0.795      0.853      0.064      0.133      0.076      0.028
+[3,]      0.810      0.855      0.071      0.148      0.135      0.021
+[4,]      0.838      0.852      0.080      0.168      0.101      0.029
+[5,]      0.782      0.845      0.057      0.138      0.064      0.037
+     cg00008493 cg00008713 cg00009407 cg00010193
+[1,]      0.962      0.032      0.062      0.697
+[2,]      0.956      0.034      0.079      0.607
+[3,]      0.952      0.037      0.058      0.586
+[4,]      0.962      0.035      0.070      0.608
+[5,]      0.951      0.034      0.075      0.569
+[1] "orig train matrix"
+     cg00000292 cg00002426 cg00003994 cg00005847 cg00006414 cg00007981
+[1,]      0.790      0.765      0.083      0.147      0.091      0.045
+[2,]      0.795      0.853      0.064      0.133      0.076      0.028
+[3,]      0.810      0.855      0.071      0.148      0.135      0.021
+[4,]      0.838      0.852      0.080      0.168      0.101      0.029
+[5,]      0.782      0.845      0.057      0.138      0.064      0.037
+     cg00008493 cg00008713 cg00009407 cg00010193
+[1,]      0.962      0.032      0.062      0.697
+[2,]      0.956      0.034      0.079      0.607
+[3,]      0.952      0.037      0.058      0.586
+[4,]      0.962      0.035      0.070      0.608
+[5,]      0.951      0.034      0.075      0.569
+[1] 0.083 0.064 0.071
+[1] "norm train matrix"
+     cg00000292 cg00002426 cg00003994 cg00005847 cg00006414 cg00007981
+[1,]      0.790      0.765      0.083      0.147      0.091      0.045
+[2,]      0.795      0.853      0.064      0.133      0.076      0.028
+[3,]      0.810      0.855      0.071      0.148      0.135      0.021
+[4,]      0.838      0.852      0.080      0.168      0.101      0.029
+[5,]      0.782      0.845      0.057      0.138      0.064      0.037
+     cg00008493 cg00008713 cg00009407 cg00010193
+[1,]      0.962      0.032      0.062      0.697
+[2,]      0.956      0.034      0.079      0.607
+[3,]      0.952      0.037      0.058      0.586
+[4,]      0.962      0.035      0.070      0.608
+[5,]      0.951      0.034      0.075      0.569
+[1] "mean of feat 2"
+[1] 0.8129524
+[1] "sd of feat 2"
+[1] 0.09281371
+[1] "maxnum is "
+[1] 5
+[1] "# of genes left after filtering:"
+[1]   378 27578
+GeneSelection: iteration 1 
+Loaded glmnet 2.0-16
+
+
+Attaching package: ‘glmnet’
+
+The following object is masked from ‘package:pROC’:
+
+    auc
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+genelist
+16787 14822  6156 24507 22968  9386 15282 21447   684   778  2016  2849  3106 
+   12    10     8     8     6     4     4     4     2     2     2     2     2 
+ 6391  6651  7330  7741  9215 15132 17601 18483 19284 19607 20063 22451 23494 
+    2     2     2     2     2     2     2     2     2     2     2     2     2 
+23770 24224 25697 27332 
+    2     2     2     2 
+[1] "varselmethod"
+[1] "backward"
+[1] "lasso:5:65.4243106371805"
+[1] "lasso:5:65.4243106371805 : 4"
+[1] "lasso:4:65.6792287417766"
+[1] "lasso:4:65.6792287417766 : 3"
+[1] "dim of scoring matrix is "
+[1] 27578     1
+[1] 27578
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+[1]  6156 14822 16787 24507
+     cg06197006 cg14822966 cg16743781 cg24532669
+[1,]      0.029      0.039      0.024      0.034
+[2,]      0.026      0.046      0.019      0.039
+[3,]      0.024      0.043      0.024      0.033
+     cg06197006 cg14822966 cg16743781 cg24532669
+[1,]      0.023      0.040      0.021      0.056
+[2,]      0.030      0.030      0.022      0.042
+[3,]      0.030      0.037      0.019      0.047
+[1] "numgenes selected:4"
+[1] "test acc:0.549382716049383"
+[1] "test AUC acc:0.548992673992674"
+[1] "10 fold train62.1693121693122"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold   1   2
+         1 126  49
+         2  70 133
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 42 37
+        2 36 47
+[1] "train acc:0.685185185185185"
+[1] "confusion matrix train"
+          nci_y
+pred_train   1   2
+         1 126  49
+         2  70 133
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   378 27578
+[1]   378 27578
+[1] "length of factcols"
+[1] 0
+[1]   378 27578
+[1]   162 27578
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 2 2 2 2
+Levels: 1 2
+[1] "orig train matrix"
+     cg00000292 cg00002426 cg00003994 cg00005847 cg00006414 cg00007981
+[1,]      0.790      0.765      0.083      0.147      0.091      0.045
+[2,]      0.795      0.853      0.064      0.133      0.076      0.028
+[3,]      0.810      0.855      0.071      0.148      0.135      0.021
+[4,]      0.838      0.852      0.080      0.168      0.101      0.029
+[5,]      0.782      0.845      0.057      0.138      0.064      0.037
+     cg00008493 cg00008713 cg00009407 cg00010193
+[1,]      0.962      0.032      0.062      0.697
+[2,]      0.956      0.034      0.079      0.607
+[3,]      0.952      0.037      0.058      0.586
+[4,]      0.962      0.035      0.070      0.608
+[5,]      0.951      0.034      0.075      0.569
+[1] "orig train matrix"
+     cg00000292 cg00002426 cg00003994 cg00005847 cg00006414 cg00007981
+[1,]      0.790      0.765      0.083      0.147      0.091      0.045
+[2,]      0.795      0.853      0.064      0.133      0.076      0.028
+[3,]      0.810      0.855      0.071      0.148      0.135      0.021
+[4,]      0.838      0.852      0.080      0.168      0.101      0.029
+[5,]      0.782      0.845      0.057      0.138      0.064      0.037
+     cg00008493 cg00008713 cg00009407 cg00010193
+[1,]      0.962      0.032      0.062      0.697
+[2,]      0.956      0.034      0.079      0.607
+[3,]      0.952      0.037      0.058      0.586
+[4,]      0.962      0.035      0.070      0.608
+[5,]      0.951      0.034      0.075      0.569
+[1] 0.083 0.064 0.071
+[1] "norm train matrix"
+     cg00000292 cg00002426 cg00003994 cg00005847 cg00006414 cg00007981
+[1,]      0.790      0.765      0.083      0.147      0.091      0.045
+[2,]      0.795      0.853      0.064      0.133      0.076      0.028
+[3,]      0.810      0.855      0.071      0.148      0.135      0.021
+[4,]      0.838      0.852      0.080      0.168      0.101      0.029
+[5,]      0.782      0.845      0.057      0.138      0.064      0.037
+     cg00008493 cg00008713 cg00009407 cg00010193
+[1,]      0.962      0.032      0.062      0.697
+[2,]      0.956      0.034      0.079      0.607
+[3,]      0.952      0.037      0.058      0.586
+[4,]      0.962      0.035      0.070      0.608
+[5,]      0.951      0.034      0.075      0.569
+[1] "mean of feat 2"
+[1] 0.8129524
+[1] "sd of feat 2"
+[1] 0.09281371
+[1] "maxnum is "
+[1] 5
+[1] "# of genes left after filtering:"
+[1]   378 27578
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 

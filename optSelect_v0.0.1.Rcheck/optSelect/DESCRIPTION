@@ -1,0 +1,14 @@
+Package: optSelect
+Type: Package
+Title: optSelect: an R package for ensemble feature selection and
+        stabil-ity assessment
+Version: 0.0.1
+Date: 2020-11-01
+Author: Karan Uppal
+Maintainer: Karan Uppal <kuppal3gt@gmail.com>
+Description: optSelect, a multi agent-based stochastic optimization approach for ensemble feature selection. Stage one involves function perturbation, where ranked list of features are generated using different feature selection methods and stage two involves data perturbation, where feature selection is performed within randomly selected learning sets of the training data. The agents are assigned to different behavior states and move according to a binary PSO algorithm. A multi-objective fitness function is used to evaluate the classifica-tion accuracy of the agents. 
+License: GPL2.0
+LazyLoad: yes
+Depends: R (>= 3.0),
+        snow,e1071,yaImpute,pROC,bioDist,RankAggreg,CMA,expm
+Built: R 3.6.3; ; 2020-11-09 08:40:33 UTC; unix

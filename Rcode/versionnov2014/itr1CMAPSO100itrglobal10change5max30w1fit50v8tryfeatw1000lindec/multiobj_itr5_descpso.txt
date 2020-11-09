@@ -1,0 +1,2 @@
+"Iteration #"	"Inertia"	"Number of features"	"CV best"	"Permuted CV best"	"Global best fitness"	"Current best fitness"	"Number of features in current best agent"	"Number of features in global best"	"Number of features in local best"
+1	0.98	44	78.5338032875326	-Inf	11164.1363746251	11164.1363746251	20	44	44

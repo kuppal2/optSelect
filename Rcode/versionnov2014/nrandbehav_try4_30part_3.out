@@ -1,0 +1,1893 @@
+
+R version 3.1.2 (2014-10-31) -- "Pumpkin Helmet"
+Copyright (C) 2014 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> #.libPaths("/home/stu/kuppal3/karan_libs/Rlibs")
+> library(snow)
+> library(e1071)
+> library(yaImpute)
+
+Attaching package: ‘yaImpute’
+
+The following object is masked from ‘package:e1071’:
+
+    impute
+
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+> library(bioDist)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘parallel’
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, clusterSplit, makeCluster, parApply,
+    parCapply, parLapply, parRapply, parSapply, splitIndices,
+    stopCluster
+
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parRapply, parSapply
+
+The following object is masked from ‘package:stats’:
+
+    xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, as.vector, cbind, colnames,
+    do.call, duplicated, eval, evalq, Filter, Find, get, intersect,
+    is.unsorted, lapply, Map, mapply, match, mget, order, paste, pmax,
+    pmax.int, pmin, pmin.int, Position, rank, rbind, Reduce, rep.int,
+    rownames, sapply, setdiff, sort, table, tapply, union, unique,
+    unlist, unsplit
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: KernSmooth
+KernSmooth 2.23 loaded
+Copyright M. P. Wand 1997-2009
+> #library(CMA, lib="/home/stu/kuppal3/karan_libs/Rlibs/")
+> 
+> library(CMA)
+
+Attaching package: ‘CMA’
+
+The following object is masked from ‘package:pROC’:
+
+    roc
+
+The following object is masked from ‘package:e1071’:
+
+    tune
+
+> library(expm)
+Loading required package: Matrix
+
+Attaching package: ‘expm’
+
+The following object is masked from ‘package:Matrix’:
+
+    expm
+
+> 
+> cl<-makeCluster(20)
+> 
+> #source("/home/stu/kuppal3/Research/Feature_selection/Rcode/versionjuly12013/svm_cv_v1.1.R")
+> 
+> source("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014/OCFS_vnov262014.R")
+> 
+> 
+> #source("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014/svm_cv_v1.1.R")
+> 
+> #source("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014/performCMA_consensus_tenfold_ber_nominal_lungheart_train_test_nov172014_backward.R")
+> 
+> if(FALSE){
++ trainy<-read.csv("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/arcene_train.labels", header=FALSE)
++ testy<-read.csv("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/arcene_valid.labels", header=FALSE)
++ trainm<-read.table("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/arcene_train.data", sep=" ",header=FALSE)
++ testm<-read.table("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/arcene_valid.data", sep=" ",header=FALSE)
++ }
+> 
+> #/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/khan.xtest
+> 
+> #/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/khan.xtest
+> trainy<-read.table("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014//khan.ytrain", header=FALSE)
+> testy<-read.table("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014//khan.ytest", header=FALSE)
+> 
+> trainy<-t(trainy)
+> testy<-t(testy)
+> 
+> #trainm<-read.table("/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/khan.xtrain", sep=" ",header=FALSE)
+> #testm<-read.table("/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/khan.xtest", sep=" ",header=FALSE)
+> 
+> 
+> trainm<-read.table("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014//khan.xtrain")
+> 
+> testm<-read.table("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014//khan.xtest")
+> 
+> trainm<-t(trainm) #[,-c(10001)]
+> testm<-t(testm) #[,-c(10001)]
+> trainm<-cbind(trainy,trainm)
+> testm<-cbind(testy,testm)
+> 
+> trainm<-na.omit(trainm)
+> testm<-na.omit(testm)
+> 
+> #outloc<-"/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/minpres2union_pso1000f0.25c0.25_backwardfalse_cvfoldthres0.7itr4w1/"
+> #outloc<-"/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/itr1cmapso100_best90pctf0.3c0.1behav0.2w1_0920eval10foldVIP_minpres_all2/"
+> #trainm<-read.csv("/home/stu/kuppal3/Research/SpectF_data/SPECTF.train", header=FALSE)
+> #outloc<-"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/itr6_allmethods_minmethods1_ttestfilt_backwardsel_pso10/"
+> 
+> 
+> trainm<-read.csv("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014/SPECTF.train", header=FALSE)
+> testm<-read.csv("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014/SPECTF.test", header=FALSE)
+> 
+> 
+> outloc<-"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014//CMAPSO100itrgmax1maxitr30fit70featw100to0.08_rankbehavf0.35l0.35c0.15100itr_randtopol/"
+> 
+> 
+> 
+> #trainy<-trainm[,c(1)]
+> #testy<-testm[,c(1)]
+> #a: Confusions
+> #b: Neighbors
+> #c: Global
+> #d: Death
+> 
+> a<-c(0.25,0.25,0.25,0.25)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0.25,0.25,0.5,0)
+> d<-c(0.9,0.1,0,0.1)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0,0.5,0.5,0)
+> d<-c(0.9,0.1,0,0)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.2,0.3,0.4,0.1)
+> c<-c(0,0.4,0.4,0.2)
+> d<-c(0.9,0.1,0,0)
+> 
+> transition_matrix<-rbind(a,b,c,d)
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014//CMAPSO100itrgmax1maxitr30fit70featw100to0.08_rankbehavf0.35l0.35c0.15100itr_randtopol' already exists
+> setwd(outloc)
+> temp2=t(trainm)
+> temp2=apply(temp2, 2, function(x){which(x=="MD")})
+> temp2=unlist(temp2)
+> temp2=unique(temp2)
+> if(length(temp2)>1)
++ {
++ 	trainm=trainm[,-c(temp2)]
++ 
++ 	rm(temp2)
++ }
+> 
+> 
+> #1
+> CMAres<-performCMA(trainm, testm, outloc,
++ maxnum=0.5,
++ minnum=1,
++ stepitr=1,
++ gsmethods=c("rf","rfe"), #,"limma","lasso","elasticnet","kruskal.test","f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ percentTest=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none", 
++ tolerance=0.1,
++ maxitrs=100,
++ removeindex=c(0),
++ classindex=1,
++ numfacts=0,
++ upclasssep=1,
++ dclasssep=-1,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ backward.sel=TRUE,
++ scheme_val="one-vs-all",
++ iter_learn=5)
+[1] "classindex is "
+[1] 1
+[1] "dim of trainm is "
+[1] 80 45
+NULL
+[1] 80 45
+[1] "length of factcols"
+[1] 0
+[1] 80 44
+[1] 187  44
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 1 1 1 1
+Levels: 0 1
+[1] "orig train matrix"
+     V2 V3 V4 V5 V6 V7 V8 V9 V10 V11
+[1,] 59 52 70 67 73 66 72 61  58  52
+[2,] 72 62 69 67 78 82 74 65  69  63
+[3,] 71 62 70 64 67 64 79 65  70  69
+[4,] 69 71 70 78 61 63 67 65  59  59
+[5,] 70 66 61 66 61 58 69 69  72  68
+[1] "orig train matrix"
+     V2 V3 V4 V5 V6 V7 V8 V9 V10 V11
+[1,] 59 52 70 67 73 66 72 61  58  52
+[2,] 72 62 69 67 78 82 74 65  69  63
+[3,] 71 62 70 64 67 64 79 65  70  69
+[4,] 69 71 70 78 61 63 67 65  59  59
+[5,] 70 66 61 66 61 58 69 69  72  68
+[1] 70 69 70
+[1] "norm train matrix"
+     V2 V3 V4 V5 V6 V7 V8 V9 V10 V11
+[1,] 59 52 70 67 73 66 72 61  58  52
+[2,] 72 62 69 67 78 82 74 65  69  63
+[3,] 71 62 70 64 67 64 79 65  70  69
+[4,] 69 71 70 78 61 63 67 65  59  59
+[5,] 70 66 61 66 61 58 69 69  72  68
+[1] "mean of feat 2"
+[1] 67.55
+[1] "sd of feat 2"
+[1] 6.88403
+[1] "maxnum is "
+[1] 22
+[1] "# of genes left after filtering:"
+[1] 80 44
+GeneSelection: iteration 1 
+randomForest 4.6-10
+Type rfNews() to see new features/changes/bug fixes.
+
+Attaching package: ‘randomForest’
+
+The following object is masked from ‘package:Biobase’:
+
+    combine
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    combine
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 11 
+GeneSelection: iteration 12 
+GeneSelection: iteration 13 
+GeneSelection: iteration 14 
+GeneSelection: iteration 15 
+GeneSelection: iteration 16 
+GeneSelection: iteration 17 
+GeneSelection: iteration 18 
+GeneSelection: iteration 19 
+GeneSelection: iteration 20 
+GeneSelection: iteration 21 
+GeneSelection: iteration 22 
+GeneSelection: iteration 23 
+GeneSelection: iteration 24 
+GeneSelection: iteration 25 
+GeneSelection: iteration 26 
+GeneSelection: iteration 27 
+GeneSelection: iteration 28 
+GeneSelection: iteration 29 
+GeneSelection: iteration 30 
+GeneSelection: iteration 31 
+GeneSelection: iteration 32 
+GeneSelection: iteration 33 
+GeneSelection: iteration 34 
+GeneSelection: iteration 35 
+GeneSelection: iteration 36 
+GeneSelection: iteration 37 
+GeneSelection: iteration 38 
+GeneSelection: iteration 39 
+GeneSelection: iteration 40 
+GeneSelection: iteration 41 
+GeneSelection: iteration 42 
+GeneSelection: iteration 43 
+GeneSelection: iteration 44 
+GeneSelection: iteration 45 
+GeneSelection: iteration 46 
+GeneSelection: iteration 47 
+GeneSelection: iteration 48 
+GeneSelection: iteration 49 
+GeneSelection: iteration 50 
+[1] "rf:22:83.75"
+[1] "rf:22:83.75"
+[1] "rf:21:83.75"
+[1] "rf:21:83.75"
+[1] "rf:20:83.75"
+[1] "rf:20:83.75"
+[1] "rf:19:82.5"
+[1] "rf:20:83.75"
+[1] "rf:18:82.5"
+[1] "rf:20:83.75"
+[1] "rf:17:81.25"
+[1] "rf:20:83.75"
+[1] "rf:16:85"
+[1] "rf:16:85"
+[1] "rf:15:81.25"
+[1] "rf:16:85"
+[1] "rf:14:83.75"
+[1] "rf:16:85"
+[1] "rf:13:82.5"
+[1] "rf:16:85"
+[1] "rf:12:85"
+[1] "rf:12:85"
+[1] "rf:11:83.75"
+[1] "rf:12:85"
+[1] "rf:10:86.25"
+[1] "rf:10:86.25"
+[1] "rf:9:86.25"
+[1] "rf:9:86.25"
+[1] "rf:8:87.5"
+[1] "rf:8:87.5"
+[1] "rf:7:85"
+[1] "rf:8:87.5"
+[1] "rf:6:87.5"
+[1] "rf:6:87.5"
+[1] "rf:5:87.5"
+[1] "rf:5:87.5"
+[1] "rf:4:77.5"
+[1] "rf:5:87.5"
+[1] "rf:3:77.5"
+[1] "rf:5:87.5"
+[1] "rf:2:75"
+[1] "rf:5:87.5"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 11 
+GeneSelection: iteration 12 
+GeneSelection: iteration 13 
+GeneSelection: iteration 14 
+GeneSelection: iteration 15 
+GeneSelection: iteration 16 
+GeneSelection: iteration 17 
+GeneSelection: iteration 18 
+GeneSelection: iteration 19 
+GeneSelection: iteration 20 
+GeneSelection: iteration 21 
+GeneSelection: iteration 22 
+GeneSelection: iteration 23 
+GeneSelection: iteration 24 
+GeneSelection: iteration 25 
+GeneSelection: iteration 26 
+GeneSelection: iteration 27 
+GeneSelection: iteration 28 
+GeneSelection: iteration 29 
+GeneSelection: iteration 30 
+GeneSelection: iteration 31 
+GeneSelection: iteration 32 
+GeneSelection: iteration 33 
+GeneSelection: iteration 34 
+GeneSelection: iteration 35 
+GeneSelection: iteration 36 
+GeneSelection: iteration 37 
+GeneSelection: iteration 38 
+GeneSelection: iteration 39 
+GeneSelection: iteration 40 
+GeneSelection: iteration 41 
+GeneSelection: iteration 42 
+GeneSelection: iteration 43 
+GeneSelection: iteration 44 
+GeneSelection: iteration 45 
+GeneSelection: iteration 46 
+GeneSelection: iteration 47 
+GeneSelection: iteration 48 
+GeneSelection: iteration 49 
+GeneSelection: iteration 50 
+[1] "rfe:22:81.25"
+[1] "rfe:22:81.25"
+[1] "rfe:21:78.75"
+[1] "rfe:22:81.25"
+[1] "rfe:20:78.75"
+[1] "rfe:22:81.25"
+[1] "rfe:19:80"
+[1] "rfe:22:81.25"
+[1] "rfe:18:77.5"
+[1] "rfe:22:81.25"
+[1] "rfe:17:78.75"
+[1] "rfe:22:81.25"
+[1] "rfe:16:78.75"
+[1] "rfe:22:81.25"
+[1] "rfe:15:83.75"
+[1] "rfe:15:83.75"
+[1] "rfe:14:80"
+[1] "rfe:15:83.75"
+[1] "rfe:13:80"
+[1] "rfe:15:83.75"
+[1] "rfe:12:80"
+[1] "rfe:15:83.75"
+[1] "rfe:11:81.25"
+[1] "rfe:15:83.75"
+[1] "rfe:10:81.25"
+[1] "rfe:15:83.75"
+[1] "rfe:9:80"
+[1] "rfe:15:83.75"
+[1] "rfe:8:78.75"
+[1] "rfe:15:83.75"
+[1] "rfe:7:81.25"
+[1] "rfe:15:83.75"
+[1] "rfe:6:77.5"
+[1] "rfe:15:83.75"
+[1] "rfe:5:82.5"
+[1] "rfe:15:83.75"
+[1] "rfe:4:81.25"
+[1] "rfe:15:83.75"
+[1] "rfe:3:86.25"
+[1] "rfe:3:86.25"
+[1] "rfe:2:78.75"
+[1] "rfe:3:86.25"
+[1] "dim of scoring matrix is "
+[1] 44  2
+[1] 44
+[1] "bestgenelist"
+[1]  4 26 28 30 40
+     V5 V27 V29 V31 V41
+[1,] 67  64  54  54  62
+[2,] 67  69  70  69  73
+[3,] 64  37  68  59  55
+     V5 V27 V29 V31 V41
+[1,] 78  70  67  67  77
+[2,] 71  60  66  64  66
+[3,] 67  57  53  60  54
+[1] "numgenes selected:5"
+[1] "test acc:0.684491978609626"
+[1] "test AUC acc:0.737209302325581"
+[1] "10 fold train85"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  0  1
+         0 39  6
+         1  1 34
+[1] "confusion matrix test"
+         test_y
+pred_test   0   1
+        0  12  56
+        1   3 116
+[1] "train acc:0.9125"
+[1] "confusion matrix train"
+          nci_y
+pred_train  0  1
+         0 39  6
+         1  1 34
+> 
+> 
+> 
+> 
+> cma_feat_list<-colnames(trainm)
+> 
+> write.table(cma_feat_list,file="selected_cma_feat_list.txt",sep="t",row.names=FALSE)
+> 
+> if(FALSE)
++ {
++ trainm<-CMAres$modtrainmata
++ testm<-CMAres$modtestmata
++ trainclass<-CMAres$modtrainclass
++ testclass<-CMAres$modtestclass
++ }
+> 
+> #if(FALSE)
+> {
++ trainclass<-trainm[,1] #CMAres$modtrainclass
++ testclass<-testm[,1] #CMAres$modtestclass
++ trainm<-trainm[,-c(1)] #CMAres$modtrainmata
++ testm<-testm[,-c(1)] #CMAres$modtestmata
++ 
++ }
+> 
+> d_dim<-dim(trainm)
+> 
+> print("Original dimension")
+[1] "Original dimension"
+> print(d_dim)
+[1] 80 44
+> 
+> #2
+> psores<-run_pso(trainm,trainclass,transition_matrix,c1=2.05,
++ c2=2.05,
++ itr=10,
++ globalpso_maxitr=1,
++ global_max_itr=30,
++ num_part=30,
++ kname="radial",
++ errortype="BER",
++ accuracyweight=5,
++ featweight.max=0.12,
++ featweight.min=0.06,
++ numfolds=10,
++ followerprob=0.6,
++ confusionprob=0.1,
++ leaderprob=0.2,
++ wmax=1,
++ wmin=0.4,
++ behavior_reset_itr=1,
++ maxitrreset=5,
++ num_neighbors=3,
++ minselect.pct=1,
++ bootstrap_val=FALSE,
++ minfitnessthresh=50,
++ maxnum=0.5,minnum=5,inertia_method="rankbased",particlebehav_method="randbased",select.global.best=TRUE,numnodes=20)
+ [1] 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+[39] 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[77] 0 0 0 0
+[1] 80 44
+[1] "iteration number: "
+[1] 1
+[1] "agent_behavior"
+ [1] 4 3 2 2 3 4 2 1 2 2 2 2 2 3 2 2 2 4 3 2 2 2 2 2 2 2 2 2 1 2
+ [1]  -99.61357  -61.20652 -121.68263  -91.40809 -101.61195  -90.68924
+ [7]  -95.16245 -114.70457 -127.67843  -68.24384 -102.19461 -101.37087
+[13]  -96.44354 -123.28158  -72.77413 -100.03869  -99.55479  -96.35212
+[19] -118.92549  -65.74819 -122.32133  -84.79554  -99.94524 -132.22334
+[25]  -85.61256  -49.73765 -137.62061 -124.08708  -74.11610  -85.17719
+ [1] 76.50178 75.05170 77.12770 77.04941 75.47930 74.52905 73.81237 76.71496
+ [9] 75.14186 74.98372 75.51150 76.24831 73.81825 77.69857 76.02180 78.47004
+[17] 76.57039 76.64079 77.10666 77.81506 77.84777 75.99921 76.19485 77.17308
+[25] 75.30617 74.15483 77.00088 76.70283 76.78581 78.16367
+ [1] 54.29907 60.53040 50.51117 56.48779 52.87691 54.11120 52.49988 51.49405
+ [9] 47.32617 59.05496 52.79258 53.69414 52.24955 50.76226 59.18698 56.18231
+[17] 54.37943 55.09036 51.04156 62.38542 51.10351 56.76010 53.92581 48.44841
+[25] 55.90366 61.92730 47.19676 49.60542 59.68259 58.84824
+ [1] 44 44 44 44 44 44 44 44 44 44 44 44 44 44 44 44 44 44 44 44 44 44 44 44 44
+[26] 44 44 44 44 44
+[1] "global fitness updated to :"
+[1] -137.6206
+[1] -137.6206
+[1] "min fit index"
+[1] 27
+[1] 27
+[1] "global best num features updated to"
+[1] 44
+[1] "CV error"
+[1] 77.00088
+[1] "CVperm error"
+[1] 47.19676
+[1] 44
+Target points completed: 
+		
+[1] 30  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    2    3    0    0    0
+[2,]    1    2    3    0    0    0
+[3,]    1    2    3    0    0    0
+[4,]    1    2    3    0    0    0
+[5,]    1    2    3    0    0    0
+[6,]    1    2    3    0    0    0
+[1] "nearest neighbors are "
+[1] 1 2 3
+[1] "nearest neighbors are "
+[1] 1 2 3
+[1] "nearest neighbors are "
+[1] 1 2 3
+[1] "nearest neighbors are "
+[1] 1 2 3
+[1] "nearest neighbors are "
+[1] 1 2 3
+[1] "nearest neighbors are "
+[1] 1 2 3
+[1] "nearest neighbors are "
+[1] 1 2 3
+[1] "nearest neighbors are "
+[1] 1 2 3
+[1] "nearest neighbors are "
+[1] 1 2 3
+[1] "nearest neighbors are "
+[1] 1 2 3
+[1] "nearest neighbors are "
+[1] 1 2 3
+[1] "nearest neighbors are "
+[1] 1 2 3
+[1] "nearest neighbors are "
+[1] 1 2 3
+[1] "nearest neighbors are "
+[1] 1 2 3
+[1] "nearest neighbors are "
+[1] 1 2 3
+[1] "nearest neighbors are "
+[1] 1 2 3
+[1] "nearest neighbors are "
+[1] 1 2 3
+[1] "nearest neighbors are "
+[1] 1 2 3
+[1] "nearest neighbors are "
+[1] 1 2 3
+[1] "nearest neighbors are "
+[1] 1 2 3
+[1] "nearest neighbors are "
+[1] 1 2 3
+[1] "global no change :0"
+[1] "fitness :-137.62061491393"
+[1] "iteration number: "
+[1] 2
+[1] "agent_behavior"
+ [1] 2 2 2 2 2 2 1 1 2 1 3 1 2 2 2 2 2 2 3 4 2 3 2 2 4 2 2 3 3 2
+ [1] -133.23715 -145.63249 -105.93760 -135.02598  -95.09834  -92.79375
+ [7]  -62.80940 -135.31392 -117.27639  -91.57709  -80.38282  -90.78400
+[13]  -87.43163  -91.89824  -63.59814 -125.28150  -94.32313  -82.41821
+[19]  -83.91222 -132.25146  -68.72998  -84.42416  -86.21340  -49.29480
+[25] -129.83983  -98.85937 -141.98536  -75.71267  -82.05678  -93.06071
+ [1] 73.24027 74.27339 69.75800 74.66115 76.19951 73.47694 68.63835 73.78073
+ [9] 82.05505 75.40268 68.47926 70.08772 72.00332 71.61421 74.15792 78.55225
+[17] 70.98547 75.95621 74.46566 70.79701 70.58895 74.26319 70.60144 67.52158
+[25] 74.11116 78.11908 78.15953 74.99759 60.73248 73.97781
+ [1] 45.16920 45.14689 48.57048 47.65595 56.00166 53.78910 56.07647 46.71795
+ [9] 58.59977 57.08726 52.40270 51.93092 54.51699 53.23456 61.43829 52.26868
+[17] 52.12084 59.47257 56.55412 44.34672 56.84295 57.37835 53.35876 57.66262
+[25] 48.14319 58.34720 49.76246 58.72596 44.32112 54.23657
+ [1] 29 22 22 12 24 23 18 10 16 19 13 17 18 16 22 25 20 22 23 19 18 16 22 13 16
+[26] 17 17 23 12 23
+[1] "global fitness updated to :"
+[1] -145.6325
+[1] -145.6325
+[1] "min fit index"
+[1] 2
+[1] 2
+[1] "global best num features updated to"
+[1] 22
+[1] "CV error"
+[1] 74.27339
+[1] "CVperm error"
+[1] 45.14689
+[1] 22
+Target points completed: 
+		
+[1] 30  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   28   25    0   14   15
+[2,]    2   12   15    0   11   14
+[3,]    3   30   12    0    9   13
+[4,]    4   12   24    0   15   15
+[5,]    5   12   15    0   17   18
+[6,]    6   15   23    0   17   17
+[1] "nearest neighbors are "
+[1]  1 28 25
+[1] "nearest neighbors are "
+[1]  2 12 15
+[1] "nearest neighbors are "
+[1]  3 30 12
+[1] "nearest neighbors are "
+[1]  4 12 24
+[1] "nearest neighbors are "
+[1]  5 12 15
+[1] "nearest neighbors are "
+[1]  6 15 23
+[1] "nearest neighbors are "
+[1]  9 20 21
+[1] "nearest neighbors are "
+[1] 13 24 22
+[1] "nearest neighbors are "
+[1] 14 20 17
+[1] "nearest neighbors are "
+[1] 15 10  2
+[1] "nearest neighbors are "
+[1] 16  1  6
+[1] "nearest neighbors are "
+[1] 17 18 21
+[1] "nearest neighbors are "
+[1] 18 17 26
+[1] "nearest neighbors are "
+[1] 21  9  3
+[1] "nearest neighbors are "
+[1] 23 28  3
+[1] "nearest neighbors are "
+[1] 24  4 13
+[1] "nearest neighbors are "
+[1] 26 15  4
+[1] "nearest neighbors are "
+[1] 27 12 20
+[1] "nearest neighbors are "
+[1] 30  3 24
+[1] "global no change :0"
+[1] "fitness :-145.632493652826"
+[1] "iteration number: "
+[1] 3
+[1] "agent_behavior"
+ [1] 4 2 2 2 2 2 2 3 1 2 2 2 1 3 2 2 1 3 3 2 2 4 1 2 2 2 4 2 2 2
+ [1]  -53.87061  -91.25272  -89.52505  -76.70796  -96.83139 -121.01673
+ [7]  -59.93799  -93.02215  -70.44963  -97.53389 -151.12247 -129.61128
+[13]  -82.45550  -85.41307 -124.86933 -128.01659  -67.60278 -112.24989
+[19] -133.05481  -43.44741 -106.48838  -59.60218 -135.70665 -102.75832
+[25]  -95.74671  -59.45974  -89.70840  -76.47912 -143.92434 -116.62750
+ [1] 67.32977 67.49134 75.98817 70.25295 70.17587 76.65675 70.97131 69.56785
+ [9] 74.08382 68.55999 77.55544 71.50621 72.37109 72.64348 74.63330 73.60471
+[17] 71.87830 74.76118 76.19063 72.89847 78.44093 72.26377 74.03200 72.77486
+[25] 71.87974 70.60996 73.72936 72.38984 74.46693 72.85906
+ [1] 56.55565 49.24079 56.87770 54.91136 50.80959 52.45340 57.82462 50.96342
+ [9] 58.55662 49.05322 45.98641 45.58395 55.87999 54.21632 48.54670 48.00140
+[17] 58.35775 51.05938 48.46694 63.09626 55.89144 59.04515 46.89067 50.87865
+[25] 52.73039 58.71801 54.72132 55.98129 45.68207 48.42083
+ [1] 20 19 26 20 22 21 25 14 31 20 29 20 22 29 24 21 21 27 24 24 27 28 22 29 18
+[26] 22 23 24 20 24
+[1] "global fitness updated to :"
+[1] -151.1225
+[1] -151.1225
+[1] "min fit index"
+[1] 11
+[1] 11
+[1] "global best num features updated to"
+[1] 29
+[1] "CV error"
+[1] 77.55544
+[1] "CVperm error"
+[1] 45.98641
+[1] 29
+Target points completed: 
+		
+[1] 30  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   17    3    0   17   18
+[2,]    2   17    1    0   16   19
+[3,]    3    7   28    0   15   16
+[4,]    4   29   22    0   12   14
+[5,]    5   18   27    0   15   15
+[6,]    6   10   13    0   17   17
+[1] "nearest neighbors are "
+[1]  2 17  1
+[1] "nearest neighbors are "
+[1]  3  7 28
+[1] "nearest neighbors are "
+[1]  4 29 22
+[1] "nearest neighbors are "
+[1]  5 18 27
+[1] "nearest neighbors are "
+[1]  6 10 13
+[1] "nearest neighbors are "
+[1]  7 17  3
+[1] "nearest neighbors are "
+[1] 10  8  6
+[1] "nearest neighbors are "
+[1] 11  9 19
+[1] "nearest neighbors are "
+[1] 12  7 17
+[1] "nearest neighbors are "
+[1] 15 23 11
+[1] "nearest neighbors are "
+[1] 16 28  5
+[1] "nearest neighbors are "
+[1] 20 27  8
+[1] "nearest neighbors are "
+[1] 21  9 22
+[1] "nearest neighbors are "
+[1] 24 27 30
+[1] "nearest neighbors are "
+[1] 25 17  7
+[1] "nearest neighbors are "
+[1] 26 24 28
+[1] "nearest neighbors are "
+[1] 28 16  3
+[1] "nearest neighbors are "
+[1] 29  4 19
+[1] "nearest neighbors are "
+[1] 30 24  3
+[1] "global no change :0"
+[1] "fitness :-151.122469652414"
+[1] "iteration number: "
+[1] 4
+[1] "agent_behavior"
+ [1] 4 2 2 2 1 2 2 2 2 3 2 3 2 1 1 2 3 2 2 3 4 4 3 3 1 3 2 2 3 4
+ [1] -128.36245  -42.27027  -87.43324 -121.03687 -147.71064 -152.80535
+ [7] -104.32872  -97.52726 -110.45979  -83.06948  -34.38283 -119.53327
+[13] -135.53361 -135.03829 -160.57403  -93.19005  -83.44991 -138.80483
+[19]  -87.62638 -107.67146 -123.02699 -143.71607  -33.69808  -43.43253
+[25] -136.11108  -93.30676  -99.52429 -103.49349 -124.57156  -54.42603
+ [1] 77.79487 75.22564 74.75498 70.10402 75.74679 77.25184 74.28928 73.00667
+ [9] 76.19971 77.78479 69.60935 76.37019 78.10863 78.47681 78.92196 74.63862
+[17] 73.67898 81.78216 69.92429 75.98510 76.99194 76.97288 68.57377 67.87311
+[25] 76.58075 73.43837 70.00658 78.25973 74.46621 68.45162
+ [1] 50.98784 65.63705 56.22106 45.89665 44.80830 46.69077 52.15808 52.41030
+ [9] 53.01684 61.17089 61.38006 51.32899 51.00191 50.24733 45.71625 54.95333
+[17] 55.94173 52.93029 51.39538 54.45081 51.20836 47.00785 61.83415 59.18660
+[25] 48.26762 53.77338 48.92354 56.55740 49.55190 56.38823
+ [1] 26 26 24 14 32 18 29 25 25 20 31 26 22 28 25 24 24 25 23 21 27 28 22 22 25
+[26] 23 27 23 21 27
+[1] "global fitness updated to :"
+[1] -160.574
+[1] -160.574
+[1] "min fit index"
+[1] 15
+[1] 15
+[1] "global best num features updated to"
+[1] 25
+[1] "CV error"
+[1] 78.92196
+[1] "CVperm error"
+[1] 45.71625
+[1] 25
+Target points completed: 
+		
+[1] 30  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    2    7    0   16   17
+[2,]    2    1   18    0   16   17
+[3,]    3   19    8    0   15   17
+[4,]    4   20   26    0   17   17
+[5,]    5    8   17    0   15   18
+[6,]    6   24    1    0   14   18
+[1] "nearest neighbors are "
+[1]  2  1 18
+[1] "nearest neighbors are "
+[1]  3 19  8
+[1] "nearest neighbors are "
+[1]  4 20 26
+[1] "nearest neighbors are "
+[1]  6 24  1
+[1] "nearest neighbors are "
+[1]  7 26 11
+[1] "nearest neighbors are "
+[1]  8 20  5
+[1] "nearest neighbors are "
+[1]  9 11 18
+[1] "nearest neighbors are "
+[1] 11 22  9
+[1] "nearest neighbors are "
+[1] 13 19  3
+[1] "nearest neighbors are "
+[1] 16 30 19
+[1] "nearest neighbors are "
+[1] 18  9 20
+[1] "nearest neighbors are "
+[1] 19  3 13
+[1] "nearest neighbors are "
+[1] 27  9 29
+[1] "nearest neighbors are "
+[1] 28 26  2
+[1] "global no change :0"
+[1] "fitness :-160.574032920141"
+[1] "iteration number: "
+[1] 5
+[1] "agent_behavior"
+ [1] 2 4 1 3 4 2 2 2 4 2 2 2 2 2 2 2 2 2 2 2 4 2 2 1 2 2 2 3 2 2
+ [1]  -89.43014  -88.58342 -103.39517 -138.71644  -81.22272  -88.97855
+ [7] -108.18429  -93.31244 -142.70174  -43.75274 -119.91671  -60.60813
+[13] -122.03012  -81.56904 -125.99860  -94.31643  -87.08906 -104.84041
+[19] -103.97341 -119.20919  -87.59334  -66.65072 -135.42480  -91.80138
+[25]  -85.60140  -86.69096 -146.27299  -81.01558  -79.04438  -97.02851
+ [1] 75.07121 75.15643 74.70819 75.14995 70.01103 69.16508 74.82786 77.96826
+ [9] 75.39155 70.19859 78.31290 76.06325 75.28815 69.88686 81.54494 76.87606
+[17] 74.73798 72.68631 77.46082 72.36574 75.34316 71.96192 78.69298 73.78768
+[25] 74.70151 76.01969 74.52657 76.06998 73.84660 74.70968
+ [1] 55.87609 57.43974 53.00643 47.40666 53.76649 51.36937 51.96372 59.30578
+ [9] 45.91029 61.44804 54.32955 63.94162 49.85940 53.57305 56.34522 58.01278
+[17] 57.32017 50.65459 56.66614 47.50118 56.80176 57.40450 50.66711 54.11831
+[25] 56.51759 57.74059 45.27197 58.63959 58.03773 54.32216
+ [1] 32 20 25 21 19 21 30 17 23 19 19 15 25 20 15 20 21 26 19 25 25 30 23 32 26
+[26] 23 21 30 20 24
+[1] "No change"
+[1] 1
+[1] "Max itr reset"
+[1] 5
+Target points completed: 
+		
+[1] 30  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    7   28    0   10   10
+[2,]    2   18   10    0   16   17
+[3,]    3   19    4    0   16   18
+[4,]    4    8   10    0   14   16
+[5,]    5   30   16    0   17   19
+[6,]    6   16   10    0   15   16
+[1] "nearest neighbors are "
+[1]  1  7 28
+[1] "nearest neighbors are "
+[1]  6 16 10
+[1] "nearest neighbors are "
+[1]  7  1 28
+[1] "nearest neighbors are "
+[1]  8  4 11
+[1] "nearest neighbors are "
+[1] 10  4  6
+[1] "nearest neighbors are "
+[1] 11  8 26
+[1] "nearest neighbors are "
+[1] 12  9 14
+[1] "nearest neighbors are "
+[1] 13 19 22
+[1] "nearest neighbors are "
+[1] 14 12 21
+[1] "nearest neighbors are "
+[1] 15 20 28
+[1] "nearest neighbors are "
+[1] 16  6  7
+[1] "nearest neighbors are "
+[1] 17 11  2
+[1] "nearest neighbors are "
+[1] 18  2  9
+[1] "nearest neighbors are "
+[1] 19  3 13
+[1] "nearest neighbors are "
+[1] 20 15  1
+[1] "nearest neighbors are "
+[1] 22 27 24
+[1] "nearest neighbors are "
+[1] 23 29 30
+[1] "nearest neighbors are "
+[1] 25  8  4
+[1] "nearest neighbors are "
+[1] 26 30 11
+[1] "nearest neighbors are "
+[1] 27 22  9
+[1] "nearest neighbors are "
+[1] 29  8 13
+[1] "nearest neighbors are "
+[1] 30 26  5
+[1] "global no change :0"
+[1] "fitness :-160.574032920141"
+[1] "iteration number: "
+[1] 6
+[1] "agent_behavior"
+ [1] 3 2 1 2 1 2 2 2 2 3 3 1 2 1 4 2 2 2 2 3 2 2 2 2 2 3 2 1 4 3
+ [1] -115.36767 -112.31168 -124.36419 -133.30215 -149.47311  -74.78810
+ [7] -184.78542  -88.09249 -104.73057  -58.36357 -129.71627 -129.76001
+[13] -119.83517 -128.88507 -117.97457 -129.24522 -125.85382  -98.81072
+[19] -114.46884  -70.16671  -90.60719  -76.48157 -119.25239  -69.55754
+[25]  -69.79550 -137.79468  -92.36133  -83.68258  -40.81714  -82.48721
+ [1] 75.94942 70.05971 77.52181 77.86808 78.15168 71.07906 81.65474 71.91016
+ [9] 74.14801 72.08444 79.15970 76.78624 70.57886 79.98360 71.46417 76.63814
+[17] 76.65649 75.62091 72.91645 76.46438 74.19731 73.54100 78.53927 70.25751
+[25] 71.70139 75.36936 72.91984 72.94515 72.78819 72.65365
+ [1] 51.80680 47.59737 51.77079 50.25310 47.30252 56.12144 43.78129 53.29894
+ [9] 52.09462 59.53355 52.30009 49.95606 46.61183 53.29023 46.95289 49.87273
+[17] 50.26391 55.85877 49.02995 62.43103 54.85405 58.24469 53.77243 55.39146
+[25] 57.74229 47.81043 53.53121 55.13954 64.62476 55.08712
+ [1] 28 22 23 25 25 20 24 26 29 23 24 23 16 24 24 24 32 20 26 19 32 20 24 25 18
+[26] 21 24 28 20 28
+[1] "global fitness updated to :"
+[1] -184.7854
+[1] -184.7854
+[1] "min fit index"
+[1] 7
+[1] 7
+[1] "global best num features updated to"
+[1] 24
+[1] "CV error"
+[1] 81.65474
+[1] "CVperm error"
+[1] 43.78129
+[1] 24
+Target points completed: 
+		
+[1] 30  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    9    6    0   15   18
+[2,]    2   17   25    0   14   16
+[3,]    3   10   24    0   16   18
+[4,]    4    5    9    0   18   18
+[5,]    5   12   17    0   16   17
+[6,]    6   10   15    0   13   16
+[1] "nearest neighbors are "
+[1]  2 17 25
+[1] "nearest neighbors are "
+[1] 4 5 9
+[1] "nearest neighbors are "
+[1]  6 10 15
+[1] "nearest neighbors are "
+[1]  7 12 18
+[1] "nearest neighbors are "
+[1]  8 30 25
+[1] "nearest neighbors are "
+[1] 9 1 8
+[1] "nearest neighbors are "
+[1] 13 12 15
+[1] "nearest neighbors are "
+[1] 16 10 21
+[1] "nearest neighbors are "
+[1] 17  2 30
+[1] "nearest neighbors are "
+[1] 18  5  9
+[1] "nearest neighbors are "
+[1] 19 21 15
+[1] "nearest neighbors are "
+[1] 21 19  1
+[1] "nearest neighbors are "
+[1] 22 19 12
+[1] "nearest neighbors are "
+[1] 23 24 19
+[1] "nearest neighbors are "
+[1] 24 14 23
+[1] "nearest neighbors are "
+[1] 25  2  8
+[1] "nearest neighbors are "
+[1] 27  6 14
+[1] "global no change :0"
+[1] "fitness :-184.785420895535"
+[1] "iteration number: "
+[1] 7
+[1] "agent_behavior"
+ [1] 3 2 2 2 2 2 2 3 3 2 4 4 2 3 2 3 4 2 2 3 3 4 2 2 2 2 2 2 2 1
+ [1] -123.74082  -88.75355 -143.60933 -130.83323 -103.80922  -66.83341
+ [7]  -71.01048  -85.09261 -109.67982 -116.14603 -111.46071  -76.47518
+[13]  -85.16326 -107.01517 -100.14058 -104.46851 -120.55003 -117.31413
+[19]  -81.99421  -81.51715  -89.45726  -61.10047  -73.39983 -124.09050
+[25] -137.45352 -116.29673 -106.70300  -65.86867  -63.40218 -163.40925
+ [1] 74.49133 72.82939 77.22967 80.17283 76.49345 68.24296 75.57956 73.55749
+ [9] 75.89388 74.87109 74.50407 67.43651 76.91525 76.48501 74.20792 70.33977
+[17] 79.32794 76.36567 72.55147 72.05104 75.17702 72.33183 70.44570 77.68014
+[25] 77.98734 71.87383 73.18326 74.14573 75.92790 74.04496
+ [1] 49.74316 54.15687 47.69236 54.00618 54.80979 54.87628 61.37747 56.53896
+ [9] 53.95792 51.64188 51.39647 52.14147 58.99623 55.08197 53.22253 49.44607
+[17] 54.26066 52.90284 56.15263 55.74761 56.47011 59.18992 55.76573 51.97568
+[25] 49.57482 48.61448 51.84266 60.15654 62.21928 41.36311
+ [1] 20 26 23 22 26 20 22 19 21 21 23 14 25 17 27 22 27 21 19 22 23 26 22 25 26
+[26] 14 22 23 29 21
+[1] "No change"
+[1] 1
+[1] "Max itr reset"
+[1] 5
+Target points completed: 
+		
+[1] 30  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   12    9    0   16   17
+[2,]    2   16    5    0   14   16
+[3,]    3    9   13    0   16   16
+[4,]    4   13    7    0   17   18
+[5,]    5   29   15    0   13   15
+[6,]    6    2    8    0   16   17
+[1] "nearest neighbors are "
+[1]  2 16  5
+[1] "nearest neighbors are "
+[1]  3  9 13
+[1] "nearest neighbors are "
+[1]  4 13  7
+[1] "nearest neighbors are "
+[1]  5 29 15
+[1] "nearest neighbors are "
+[1] 6 2 8
+[1] "nearest neighbors are "
+[1]  7 13  8
+[1] "nearest neighbors are "
+[1] 10 16 27
+[1] "nearest neighbors are "
+[1] 13  7  3
+[1] "nearest neighbors are "
+[1] 15  5  3
+[1] "nearest neighbors are "
+[1] 18  8 20
+[1] "nearest neighbors are "
+[1] 19  9 11
+[1] "nearest neighbors are "
+[1] 23 24 11
+[1] "nearest neighbors are "
+[1] 24 23  3
+[1] "nearest neighbors are "
+[1] 25 10 21
+[1] "nearest neighbors are "
+[1] 26 18 20
+[1] "nearest neighbors are "
+[1] 27 10  8
+[1] "nearest neighbors are "
+[1] 28  9 11
+[1] "nearest neighbors are "
+[1] 29  5 18
+[1] "global no change :0"
+[1] "fitness :-184.785420895535"
+[1] "iteration number: "
+[1] 8
+[1] "agent_behavior"
+ [1] 2 2 1 4 4 2 3 2 2 2 4 2 2 2 2 2 3 3 3 2 2 2 2 2 2 2 2 2 3 2
+ [1] -104.90409  -82.40423 -117.66297 -141.19693 -128.37191 -100.95998
+ [7]  -96.68752  -80.84881 -106.61789 -118.76016  -88.48410  -97.76534
+[13]  -78.10351 -124.39580 -101.43341 -147.77049 -136.13307 -140.67129
+[19] -101.50683 -144.22834 -113.73497 -109.66137  -86.04047  -98.47519
+[25]  -64.22776 -120.38451  -97.38796  -82.30384 -100.18994  -65.03216
+ [1] 76.00111 73.57927 73.87431 77.12485 77.11036 74.13500 71.44968 73.51961
+ [9] 77.26610 77.81327 74.76412 75.04054 74.60130 78.01714 76.89110 76.85655
+[17] 78.52007 79.56023 74.26615 78.79231 74.11311 77.29119 74.78972 78.81429
+[25] 66.03784 79.71624 73.34284 74.87647 78.45931 70.05073
+ [1] 55.02029 57.09842 49.58898 48.88547 51.43598 53.15755 51.35944 56.56439
+ [9] 55.18979 53.30851 56.05275 54.47293 58.98060 52.18889 55.78624 46.41881
+[17] 50.47527 50.60779 52.95024 49.94664 50.44975 54.60619 56.82890 58.36652
+[25] 53.19228 55.63934 53.04707 57.59752 57.66860 57.04430
+ [1] 20 20 23 22 22 24 23 24 23 23 31 31 19 29 25 27 25 25 31 22 28 23 23 23 17
+[26] 21 25 25 23 15
+[1] "No change"
+[1] 2
+[1] "Max itr reset"
+[1] 5
+Target points completed: 
+		
+[1] 30  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    5    6    0   18   18
+[2,]    2    5   18    0   14   17
+[3,]    3   27   13    0   16   18
+[4,]    4    7   14    0   17   19
+[5,]    5    2   16    0   14   17
+[6,]    6   10   22    0   17   17
+[1] "nearest neighbors are "
+[1] 1 5 6
+[1] "nearest neighbors are "
+[1]  2  5 18
+[1] "nearest neighbors are "
+[1]  6 10 22
+[1] "nearest neighbors are "
+[1]  8 27  7
+[1] "nearest neighbors are "
+[1]  9 14 12
+[1] "nearest neighbors are "
+[1] 10 23 18
+[1] "nearest neighbors are "
+[1] 12 28  9
+[1] "nearest neighbors are "
+[1] 13  3 18
+[1] "nearest neighbors are "
+[1] 14 16  9
+[1] "nearest neighbors are "
+[1] 15 11 28
+[1] "nearest neighbors are "
+[1] 16 14 21
+[1] "nearest neighbors are "
+[1] 20 24  7
+[1] "nearest neighbors are "
+[1] 21 16 19
+[1] "nearest neighbors are "
+[1] 22  9  6
+[1] "nearest neighbors are "
+[1] 23 10 26
+[1] "nearest neighbors are "
+[1] 24 20  9
+[1] "nearest neighbors are "
+[1] 25  9 20
+[1] "nearest neighbors are "
+[1] 26 23 10
+[1] "nearest neighbors are "
+[1] 27  8  3
+[1] "nearest neighbors are "
+[1] 28 12  9
+[1] "nearest neighbors are "
+[1] 30 16  6
+[1] "global no change :0"
+[1] "fitness :-184.785420895535"
+[1] "iteration number: "
+[1] 9
+[1] "agent_behavior"
+ [1] 2 2 1 2 1 2 2 2 3 1 3 2 1 1 2 2 2 2 3 1 2 2 1 2 2 4 2 2 3 1
+ [1] -119.13103 -114.77443 -147.67795  -72.81792  -92.67363  -92.60753
+ [7] -120.87667 -134.75782  -80.70192 -100.60447  -89.84026  -48.62763
+[13]  -98.18462 -155.05612  -60.22453 -105.80084  -91.30543  -96.60033
+[19]  -84.76574 -111.98508 -104.44197  -91.42856 -108.68780  -65.68331
+[25]  -93.71894 -134.23847 -161.24357 -119.91322  -38.86297 -114.63336
+ [1] 76.68221 76.71540 75.81497 73.51313 71.02974 71.51545 75.48409 77.43523
+ [9] 72.40061 72.12475 77.82349 64.61749 70.99799 76.34328 68.83373 71.45597
+[17] 70.43234 72.13287 76.02135 74.81409 72.40925 73.87866 80.39592 73.41982
+[25] 74.09770 77.51316 79.07255 76.23695 68.97101 79.69513
+ [1] 51.95601 52.95051 46.27938 58.94955 51.56501 52.99394 50.55875 50.48367
+ [9] 55.54022 51.25385 59.07544 54.89197 50.64107 45.33206 56.03883 49.51581
+[17] 51.39126 52.06281 59.06821 51.57708 50.80085 54.78294 57.96836 59.35316
+[25] 54.66392 49.94546 46.82384 51.38431 60.47841 56.07845
+ [1] 30 27 16 20 31 17 25 17 24 25 26 19 24 20 25 26 26 25 20 28 24 27 23 31 23
+[26] 24 20 29 24 23
+[1] "No change"
+[1] 3
+[1] "Max itr reset"
+[1] 5
+Target points completed: 
+		
+[1] 30  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   19    5    0   16   17
+[2,]    2   10   14    0   16   17
+[3,]    3    6   12    0   15   17
+[4,]    4   12   14    0   15   18
+[5,]    5   22    1    0   16   17
+[6,]    6    3   12    0   15   18
+[1] "nearest neighbors are "
+[1]  1 19  5
+[1] "nearest neighbors are "
+[1]  2 10 14
+[1] "nearest neighbors are "
+[1]  4 12 14
+[1] "nearest neighbors are "
+[1]  6  3 12
+[1] "nearest neighbors are "
+[1]  7 30 16
+[1] "nearest neighbors are "
+[1]  8 27  2
+[1] "nearest neighbors are "
+[1] 12  4 15
+[1] "nearest neighbors are "
+[1] 15 17 12
+[1] "nearest neighbors are "
+[1] 16  5  7
+[1] "nearest neighbors are "
+[1] 17 15  1
+[1] "nearest neighbors are "
+[1] 18  1 14
+[1] "nearest neighbors are "
+[1] 21  7 18
+[1] "nearest neighbors are "
+[1] 22  5  4
+[1] "nearest neighbors are "
+[1] 24 28 23
+[1] "nearest neighbors are "
+[1] 25 19  1
+[1] "nearest neighbors are "
+[1] 27  8  9
+[1] "nearest neighbors are "
+[1] 28 24 30
+[1] "global no change :0"
+[1] "fitness :-184.785420895535"
+[1] "iteration number: "
+[1] 10
+[1] "agent_behavior"
+ [1] 2 2 2 2 2 2 3 3 2 2 3 2 4 2 2 1 2 2 3 3 4 4 2 2 2 2 2 2 3 2
+ [1] -125.80877  -70.07096  -54.48342  -69.51282  -99.72915  -88.05924
+ [7] -105.17575 -133.77277 -103.77281  -99.37246 -123.08806 -100.69811
+[13]  -84.35078  -60.43157  -94.51703  -86.33038 -129.75139 -161.93317
+[19]  -95.56259  -87.17466 -120.83415  -90.91845 -130.53341 -143.30655
+[25]  -74.33152  -70.13271 -103.52860 -132.04130 -165.52975  -61.24740
+ [1] 75.68796 72.84223 75.82693 71.68643 71.42234 69.81904 73.17897 75.63610
+ [9] 73.18821 72.90583 75.09447 72.61105 72.65690 67.97154 77.62897 72.02981
+[17] 71.97028 79.17414 74.17485 73.02903 76.75045 77.25008 72.05455 70.66104
+[25] 75.69329 77.56712 74.01678 77.73829 75.35410 69.29318
+ [1] 49.84439 58.20076 64.93025 57.78387 51.47651 52.20719 52.14382 48.88154
+ [9] 52.43365 53.03134 49.76776 51.76234 55.78675 55.88523 58.72556 54.13646
+[17] 46.02000 46.78751 55.06233 55.59410 52.58362 58.38457 45.94786 41.31791
+[25] 60.14517 62.74967 53.31106 50.48458 41.56633 57.04370
+ [1] 25 23 18 18 14 22 21 20 19 17 26 26 20 21 20 23 20 19 21 21 21 25 12 25 25
+[26] 29 19 31 25 16
+[1] "No change"
+[1] 4
+[1] "Max itr reset"
+[1] 5
+Target points completed: 
+		
+[1] 30  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   16   18    0   16   16
+[2,]    2    7    9    0   16   16
+[3,]    3   20   22    0   15   17
+[4,]    4    5    8    0   18   18
+[5,]    5   10    9    0   15   17
+[6,]    6    8   15    0   16   18
+[1] "nearest neighbors are "
+[1]  1 16 18
+[1] "nearest neighbors are "
+[1] 2 7 9
+[1] "nearest neighbors are "
+[1]  3 20 22
+[1] "nearest neighbors are "
+[1] 4 5 8
+[1] "nearest neighbors are "
+[1]  5 10  9
+[1] "nearest neighbors are "
+[1]  6  8 15
+[1] "nearest neighbors are "
+[1]  9  2 10
+[1] "nearest neighbors are "
+[1] 10 16  5
+[1] "nearest neighbors are "
+[1] 12 29 13
+[1] "nearest neighbors are "
+[1] 14 18  9
+[1] "nearest neighbors are "
+[1] 15 29  7
+[1] "nearest neighbors are "
+[1] 17 10  1
+[1] "nearest neighbors are "
+[1] 18 14  1
+[1] "nearest neighbors are "
+[1] 23 21  4
+[1] "nearest neighbors are "
+[1] 24 29 15
+[1] "nearest neighbors are "
+[1] 25  1 18
+[1] "nearest neighbors are "
+[1] 26 28  3
+[1] "nearest neighbors are "
+[1] 27  3 10
+[1] "nearest neighbors are "
+[1] 28 26 18
+[1] "nearest neighbors are "
+[1] 30  3 12
+[1] "global no change :0"
+[1] "fitness :-184.785420895535"
+[1] "iteration number: "
+[1] 11
+[1] "agent_behavior"
+ [1] 2 2 2 2 2 3 2 4 3 3 4 2 4 2 2 2 2 3 2 3 2 2 2 2 3 2 1 2 2 2
+ [1] -119.79844 -115.88979 -159.86813  -19.68168  -93.75881 -101.01876
+ [7] -104.64873  -63.18244 -116.35798  -99.59135 -122.65389  -87.92265
+[13] -126.95808 -115.59645  -79.52689  -89.42339 -102.83182 -116.59240
+[19] -148.89320 -175.00120  -64.35014 -135.29501 -113.40685 -106.18980
+[25]  -92.89217  -81.38222  -47.87281  -85.84500  -89.37249  -81.70443
+ [1] 77.35892 74.80543 80.40634 67.31174 71.60382 75.67896 81.56885 71.72771
+ [9] 75.18388 72.54171 74.94783 72.88767 76.47129 75.37703 73.64072 74.11187
+[17] 71.49623 71.79149 74.32031 78.99077 72.45668 75.79651 74.83442 77.03365
+[25] 77.53407 71.62087 69.10541 75.61424 74.87890 75.08997
+ [1] 52.47196 51.62748 48.43272 62.74814 52.17024 55.47520 60.63911 59.09122
+ [9] 51.91229 51.88707 49.78978 55.30314 50.39786 52.25774 57.08079 56.22720
+[17] 50.19350 47.76392 43.83258 43.99053 58.74120 48.00115 51.47123 55.05932
+[25] 58.27381 55.34443 58.84903 57.57251 57.00440 58.74908
+ [1] 34 20 18 23 25 22 19 17 22 27 23 21 25 20 24 14 27 26 26 21 31 27 25 27 25
+[26] 20 25 32 22 22
+[1] "No change"
+[1] 5
+[1] "Max itr reset"
+[1] 5
+Target points completed: 
+		
+[1] 30  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   28   17    0   14   15
+[2,]    2   26   16    0   14   16
+[3,]    3    4    5    0   15   17
+[4,]    4    3    8    0   15   18
+[5,]    5   10   22    0   16   16
+[6,]    6    5    2    0   17   18
+[1] "nearest neighbors are "
+[1]  1 28 17
+[1] "nearest neighbors are "
+[1]  2 26 16
+[1] "nearest neighbors are "
+[1] 3 4 5
+[1] "nearest neighbors are "
+[1] 4 3 8
+[1] "nearest neighbors are "
+[1]  5 10 22
+[1] "nearest neighbors are "
+[1]  7 20 16
+[1] "nearest neighbors are "
+[1] 12  9 10
+[1] "nearest neighbors are "
+[1] 14 29 12
+[1] "nearest neighbors are "
+[1] 15 24 13
+[1] "nearest neighbors are "
+[1] 16  7  8
+[1] "nearest neighbors are "
+[1] 17  1 22
+[1] "nearest neighbors are "
+[1] 19 26 13
+[1] "nearest neighbors are "
+[1] 21 10 28
+[1] "nearest neighbors are "
+[1] 22  5 17
+[1] "nearest neighbors are "
+[1] 23  4 21
+[1] "nearest neighbors are "
+[1] 24  1 12
+[1] "nearest neighbors are "
+[1] 26  2 19
+[1] "nearest neighbors are "
+[1] 28  1 10
+[1] "nearest neighbors are "
+[1] 29 10 14
+[1] "nearest neighbors are "
+[1] 30 10 20
+[1] "global no change :0"
+[1] "fitness :-184.785420895535"
+[1] "Minimum fitness threshold not reached after 11 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 12
+[1] "agent_behavior"
+ [1] 4 4 3 2 2 2 4 2 2 2 2 2 1 2 2 3 3 2 2 2 2 2 3 2 1 3 4 3 2 3
+ [1] -109.66995 -103.96299  -55.38823 -110.50197 -136.68024 -106.93039
+ [7] -113.57646 -113.15386 -111.60420  -78.04967 -105.21104  -99.39799
+[13]  -82.19039 -132.67507  -95.97241  -88.97915 -164.31230  -52.84026
+[19] -102.80312 -136.80157  -99.95699 -102.48095 -150.43123 -136.28092
+[25] -126.44299 -100.22083  -77.89766 -113.22402 -119.88987  -73.66279
+ [1] 71.91867 70.52767 67.91124 73.06744 76.58398 73.45488 80.35886 74.67906
+ [9] 74.20077 73.02398 77.85285 72.70964 71.39802 81.00670 73.36394 65.58047
+[17] 78.81333 69.88976 71.71916 81.79904 71.29412 76.58371 79.01585 73.80330
+[25] 76.69095 74.99611 74.64255 69.64446 72.49608 73.11346
+ [1] 49.98468 49.73507 56.83360 50.96704 49.24794 52.06880 56.72721 51.13192
+ [9] 51.87993 56.45950 55.89428 52.83004 53.96721 54.47168 53.25309 47.78464
+[17] 44.99632 59.32171 50.20399 54.43872 50.42454 55.01843 48.92960 46.54712
+[25] 51.40235 54.95194 59.06302 46.99966 48.51811 57.50272
+ [1] 19 21 19 19 21 22 24 24 18 25 24 21 26 21 24 22 25 18 25 20 23 28 22 22 22
+[26] 21 19 19 20 23
+[1] "No change"
+[1] 6
+[1] "Max itr reset"
+[1] 5
+[1] "RE-INITIALIZING..."
+Target points completed: 
+		
+[1] 30  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   23    9    0   17   19
+[2,]    2   30   13    0   16   17
+[3,]    3   29    4    0   15   16
+[4,]    4   15    3    0   15   16
+[5,]    5    8   13    0   17   17
+[6,]    6   20   10    0   16   17
+[1] "nearest neighbors are "
+[1]  1 23  9
+[1] "nearest neighbors are "
+[1]  2 30 13
+[1] "nearest neighbors are "
+[1]  4 15  3
+[1] "nearest neighbors are "
+[1]  6 20 10
+[1] "nearest neighbors are "
+[1]  8  5 25
+[1] "nearest neighbors are "
+[1]  9 14 13
+[1] "nearest neighbors are "
+[1] 10  7 12
+[1] "nearest neighbors are "
+[1] 12 10 16
+[1] "nearest neighbors are "
+[1] 14  9 11
+[1] "nearest neighbors are "
+[1] 15  4 29
+[1] "nearest neighbors are "
+[1] 16 12 10
+[1] "nearest neighbors are "
+[1] 17 11 20
+[1] "nearest neighbors are "
+[1] 18 30 20
+[1] "nearest neighbors are "
+[1] 20 11 10
+[1] "nearest neighbors are "
+[1] 21 15 16
+[1] "nearest neighbors are "
+[1] 25 22 17
+[1] "nearest neighbors are "
+[1] 28 24 10
+[1] "nearest neighbors are "
+[1] 29 30  3
+[1] "global no change :1"
+[1] "fitness :-184.785420895535"
+[1] "iteration number: "
+[1] 13
+[1] "agent_behavior"
+ [1] 4 2 4 2 2 2 2 3 2 4 3 2 4 2 2 2 1 3 2 4 2 2 1 2 4 3 3 1 2 3
+ [1] -106.14897 -129.04953  -69.81405  -99.41682  -93.93816  -52.04309
+ [7] -133.36218 -136.17924  -82.93183 -122.45429  -89.66355  -93.73230
+[13] -122.68755 -136.49308 -113.56755 -104.94076  -65.84720  -79.29851
+[19] -116.17334  -78.73295  -91.13680 -121.14958 -126.26570 -124.17219
+[25]  -36.92687 -105.01039  -77.38545  -77.09164  -74.83569 -107.48811
+ [1] 73.77029 76.66741 71.93619 76.63752 73.16477 71.42760 73.69795 78.89726
+ [9] 77.22450 74.64265 69.82908 66.31838 74.91989 73.97642 71.64739 75.81006
+[17] 70.04890 75.65676 79.28382 71.40313 71.84375 76.69261 77.32764 73.35334
+[25] 71.27089 75.32897 73.58827 75.51990 74.17516 76.36708
+ [1] 52.54050 50.85750 57.97338 55.79688 54.37714 60.17216 45.95779 50.74096
+ [9] 59.57041 50.15179 51.89637 46.72510 49.42511 45.68371 48.93388 53.90145
+[17] 55.88537 58.83978 56.04915 54.80972 52.65911 51.35815 51.00678 47.45118
+[25] 62.92824 53.33280 57.11709 59.10748 58.21393 53.69128
+ [1] 16 19 22 26 19 23 29 25 29 20 21 23 26 27 22 25 27 26 19 23 26 30 29 29 26
+[26] 27 27 27 27 32
+[1] "No change"
+[1] 1
+[1] "Max itr reset"
+[1] 5
+Target points completed: 
+		
+[1] 30  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   16   17    0   17   19
+[2,]    2   20   10    0   16   17
+[3,]    3   18   23    0   12   15
+[4,]    4    6    7    0   17   19
+[5,]    5   25   11    0   17   20
+[6,]    6   12   26    0   16   16
+[1] "nearest neighbors are "
+[1]  2 20 10
+[1] "nearest neighbors are "
+[1] 4 6 7
+[1] "nearest neighbors are "
+[1]  5 25 11
+[1] "nearest neighbors are "
+[1]  6 12 26
+[1] "nearest neighbors are "
+[1]  7 24 22
+[1] "nearest neighbors are "
+[1]  9 27  2
+[1] "nearest neighbors are "
+[1] 12  6 10
+[1] "nearest neighbors are "
+[1] 14 17 10
+[1] "nearest neighbors are "
+[1] 15 13  8
+[1] "nearest neighbors are "
+[1] 16 24 28
+[1] "nearest neighbors are "
+[1] 19 20 15
+[1] "nearest neighbors are "
+[1] 21 24 14
+[1] "nearest neighbors are "
+[1] 22 24  7
+[1] "nearest neighbors are "
+[1] 24 21 22
+[1] "nearest neighbors are "
+[1] 29 18 13
+[1] "global no change :1"
+[1] "fitness :-184.785420895535"
+[1] "iteration number: "
+[1] 14
+[1] "agent_behavior"
+ [1] 3 4 3 2 3 3 3 1 2 1 1 1 3 2 3 4 2 4 2 2 2 2 2 4 1 2 1 2 1 1
+ [1]  -44.21833 -110.11855  -94.07246 -110.76226  -92.21868 -113.33938
+ [7] -138.84728  -98.88412 -110.15635 -103.25481 -107.50206 -105.44930
+[13] -105.48784  -79.20698 -101.06165 -104.47943 -117.41051 -112.97309
+[19]  -92.39189 -119.32553  -72.40104  -91.21554 -133.90283  -90.68386
+[25] -127.47318 -118.68360 -157.37162 -128.83872  -97.40789 -124.16509
+ [1] 74.66355 73.59233 77.03335 80.12587 69.40510 77.38027 76.05406 73.83659
+ [9] 71.79537 73.49428 75.50214 75.54978 76.40294 67.46247 74.07754 72.27375
+[17] 72.67506 71.61595 73.54308 77.58146 72.12207 77.05071 74.92861 74.03593
+[25] 76.85558 75.40396 81.52625 67.18076 72.57643 73.38652
+ [1] 64.64989 50.68225 57.22613 56.87433 50.96136 53.86149 48.28460 54.05977
+ [9] 48.91319 51.85059 54.00173 53.53810 54.48992 50.77017 53.04975 51.37786
+[17] 49.19295 48.20587 55.06471 52.90090 56.75549 57.88579 48.14805 55.89915
+[25] 50.47458 51.66724 49.23647 41.41301 52.24394 48.55350
+ [1] 33 25 28 31 15 24 20 20 24 28 21 26 23 24 23 18 15 23 21 23 25 26 15 18 25
+[26] 17 23 19 24 22
+[1] "No change"
+[1] 2
+[1] "Max itr reset"
+[1] 5
+Target points completed: 
+		
+[1] 30  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   10   21    0   15   16
+[2,]    2    8   12    0   15   15
+[3,]    3   27    6    0   17   18
+[4,]    4   20    9    0   14   15
+[5,]    5   20   23    0   18   18
+[6,]    6   12    2    0   12   17
+[1] "nearest neighbors are "
+[1]  4 20  9
+[1] "nearest neighbors are "
+[1]  9 26  4
+[1] "nearest neighbors are "
+[1] 14 25 13
+[1] "nearest neighbors are "
+[1] 17 16  7
+[1] "nearest neighbors are "
+[1] 19  8 16
+[1] "nearest neighbors are "
+[1] 20  4 17
+[1] "nearest neighbors are "
+[1] 21 22  7
+[1] "nearest neighbors are "
+[1] 22 21  4
+[1] "nearest neighbors are "
+[1] 23 15  5
+[1] "nearest neighbors are "
+[1] 26 16  9
+[1] "nearest neighbors are "
+[1] 28  7  5
+[1] "global no change :1"
+[1] "fitness :-184.785420895535"
+[1] "iteration number: "
+[1] 15
+[1] "agent_behavior"
+ [1] 2 2 2 3 2 3 3 3 1 3 1 2 1 2 4 3 2 3 2 2 1 4 2 2 1 3 4 2 2 2
+ [1] -120.49668 -138.85000  -94.46622  -79.10614 -128.37218  -88.87133
+ [7] -124.76753 -136.51909 -134.22136  -95.01042  -62.85350  -37.53328
+[13] -117.72842 -140.54858 -178.75342  -93.09530 -108.84022  -95.34045
+[19] -127.18111  -85.09375  -89.04977 -105.13100  -99.06385  -97.62876
+[25]  -62.82583 -151.04248  -76.43300  -85.00401 -110.54363 -127.16007
+ [1] 77.18247 79.24077 75.92108 70.04511 78.04539 73.53003 74.94347 76.41279
+ [9] 74.07793 74.28412 69.98780 65.44187 75.87136 74.40350 80.95013 77.08232
+[17] 70.83544 74.51928 75.64262 73.59510 72.64315 73.47480 78.97017 75.06451
+[25] 71.31906 83.81239 71.50292 74.12758 74.65474 78.37599
+ [1] 53.08313 50.61850 56.17556 54.22388 52.37095 54.97168 49.13769 49.10897
+ [9] 46.44957 54.49794 57.41710 57.93521 51.50749 46.29378 45.19945 57.47462
+[17] 49.06740 54.36029 50.20640 56.57635 54.83319 52.44860 58.30513 54.41376
+[25] 57.96981 53.60390 56.21632 57.12678 52.54601 52.94398
+ [1] 19 25 25 19 22 23 25 17 23 23 19 19 24 22 19 29 20 32 21 19 22 19 25 33 23
+[26] 19 16 15 21 21
+[1] "No change"
+[1] 3
+[1] "Max itr reset"
+[1] 5
+Target points completed: 
+		
+[1] 30  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    5   21    0   17   17
+[2,]    2   12   29    0   16   18
+[3,]    3    4    7    0   16   18
+[4,]    4   10    3    0   12   16
+[5,]    5    6   28    0   15   15
+[6,]    6   23    5    0   14   15
+[1] "nearest neighbors are "
+[1]  1  5 21
+[1] "nearest neighbors are "
+[1]  2 12 29
+[1] "nearest neighbors are "
+[1] 3 4 7
+[1] "nearest neighbors are "
+[1]  5  6 28
+[1] "nearest neighbors are "
+[1] 12  2 20
+[1] "nearest neighbors are "
+[1] 14 16 25
+[1] "nearest neighbors are "
+[1] 17  9 14
+[1] "nearest neighbors are "
+[1] 19 20 21
+[1] "nearest neighbors are "
+[1] 20 19 11
+[1] "nearest neighbors are "
+[1] 23  6  7
+[1] "nearest neighbors are "
+[1] 24 18 16
+[1] "nearest neighbors are "
+[1] 28 26  5
+[1] "nearest neighbors are "
+[1] 29 13  2
+[1] "nearest neighbors are "
+[1] 30 14  1
+[1] "global no change :1"
+[1] "fitness :-184.785420895535"
+[1] "iteration number: "
+[1] 16
+[1] "agent_behavior"
+ [1] 3 3 2 3 2 3 4 2 1 2 1 2 2 2 2 2 2 4 2 2 2 2 2 3 2 1 2 2 2 1
+ [1]  -75.94027  -79.37227 -105.97516 -101.38483  -59.00168  -34.77684
+ [7]  -94.90834 -102.74769  -66.00294  -78.96472  -66.94820  -99.90873
+[13] -103.00136  -93.44994 -105.00434 -126.71240 -108.39059 -150.17667
+[19]  -95.76034  -96.28062  -95.71271 -124.53606 -113.51731  -75.71634
+[25] -114.95318 -165.42724 -108.06763 -102.05032  -92.71733 -125.82225
+ [1] 75.12331 71.08792 74.71196 73.99468 74.86977 69.98620 74.06113 77.39204
+ [9] 73.02400 72.60927 71.40871 74.18924 71.46977 74.69647 79.00544 78.78298
+[17] 72.29959 72.90526 77.20385 70.55725 69.21690 77.54871 79.19382 70.18808
+[25] 74.73453 78.24771 76.72975 73.77366 69.66475 78.15381
+ [1] 59.08435 55.21347 53.51693 53.71771 62.25125 62.27811 54.16310 56.05705
+ [9] 59.82342 56.81633 58.01907 54.20750 50.86949 55.05739 57.18640 53.44050
+[17] 49.86875 42.86993 58.05179 50.54840 50.07436 51.72514 56.49035 54.16117
+[25] 51.74390 44.34408 54.33077 53.36360 51.12128 52.98936
+ [1] 26 20 22 22 25 23 28 24 18 18 13 22 20 29 25 22 23 22 22 23 20 28 22 27 14
+[26] 25 24 19 13 19
+[1] "No change"
+[1] 4
+[1] "Max itr reset"
+[1] 5
+Target points completed: 
+		
+[1] 30  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    2    7    0   14   14
+[2,]    2    1    4    0   14   14
+[3,]    3   18   30    0   16   17
+[4,]    4    2   10    0   14   14
+[5,]    5   17    2    0   14   17
+[6,]    6   13   23    0   17   17
+[1] "nearest neighbors are "
+[1]  3 18 30
+[1] "nearest neighbors are "
+[1]  5 17  2
+[1] "nearest neighbors are "
+[1]  8  4 26
+[1] "nearest neighbors are "
+[1] 10  4 23
+[1] "nearest neighbors are "
+[1] 12 17 30
+[1] "nearest neighbors are "
+[1] 13 25  1
+[1] "nearest neighbors are "
+[1] 14 26  7
+[1] "nearest neighbors are "
+[1] 15  1  9
+[1] "nearest neighbors are "
+[1] 16 25 11
+[1] "nearest neighbors are "
+[1] 17  9  5
+[1] "nearest neighbors are "
+[1] 19  1  2
+[1] "nearest neighbors are "
+[1] 20 11 24
+[1] "nearest neighbors are "
+[1] 21 24 16
+[1] "nearest neighbors are "
+[1] 22  7  8
+[1] "nearest neighbors are "
+[1] 23  7 10
+[1] "nearest neighbors are "
+[1] 25 13 16
+[1] "nearest neighbors are "
+[1] 27 17 29
+[1] "nearest neighbors are "
+[1] 28 18 26
+[1] "nearest neighbors are "
+[1] 29  2 16
+[1] "global no change :1"
+[1] "fitness :-184.785420895535"
+[1] "iteration number: "
+[1] 17
+[1] "agent_behavior"
+ [1] 1 2 3 2 4 2 3 2 1 2 2 2 2 1 3 1 2 2 3 2 3 2 4 4 1 2 2 3 3 3
+ [1]  -90.12546 -103.96759  -80.06584  -90.41987  -80.84562 -100.13645
+ [7] -118.38974 -142.88657 -116.35338  -93.45205 -115.14514  -89.75987
+[13] -176.31251 -137.10835  -83.34543  -95.40895 -123.65391  -99.12552
+[19]  -40.59324 -138.38949  -86.85581 -111.90784 -117.05234 -115.35346
+[25] -134.22360  -43.82954  -96.83011 -134.09624  -91.81323 -153.51382
+ [1] 73.71220 75.16071 74.33582 75.70598 73.21135 70.78460 77.91900 76.34651
+ [9] 74.47688 71.88361 72.08648 73.23732 76.44842 76.00704 77.19004 73.22758
+[17] 76.72206 73.98156 72.92275 72.94651 72.34490 77.02400 80.22922 79.89471
+[25] 76.27455 68.77857 75.83704 77.59813 73.22636 74.32543
+ [1] 55.68711 54.36720 58.32265 56.77519 56.28950 50.75731 54.24105 47.76919
+ [9] 51.20620 52.47183 49.05745 54.40717 41.18592 47.83265 59.76822 53.39306
+[17] 51.99127 53.30964 63.95728 45.26861 54.18964 53.79561 56.81875 56.82402
+[25] 48.67710 60.01267 56.47102 49.99479 54.07963 43.62266
+ [1] 17 19 17 27 24 21 21 20 16 23 20 28 22 24 24 24 19 27 27 21 25 27 18 20 24
+[26] 20 20 25 25 17
+[1] "No change"
+[1] 5
+[1] "Max itr reset"
+[1] 5
+Target points completed: 
+		
+[1] 30  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   11   26    0   17   17
+[2,]    2   13   22    0   13   16
+[3,]    3   24   26    0   17   17
+[4,]    4   20   13    0   16   17
+[5,]    5   12   23    0   16   16
+[6,]    6   21   22    0   16   16
+[1] "nearest neighbors are "
+[1]  2 13 22
+[1] "nearest neighbors are "
+[1]  4 20 13
+[1] "nearest neighbors are "
+[1]  6 21 22
+[1] "nearest neighbors are "
+[1]  8 20 25
+[1] "nearest neighbors are "
+[1] 10  2  4
+[1] "nearest neighbors are "
+[1] 11  1 30
+[1] "nearest neighbors are "
+[1] 12  5 11
+[1] "nearest neighbors are "
+[1] 13  2 25
+[1] "nearest neighbors are "
+[1] 17  9 16
+[1] "nearest neighbors are "
+[1] 18 14 21
+[1] "nearest neighbors are "
+[1] 20  8  4
+[1] "nearest neighbors are "
+[1] 22 16  2
+[1] "nearest neighbors are "
+[1] 26  1  3
+[1] "nearest neighbors are "
+[1] 27 16  6
+[1] "global no change :1"
+[1] "fitness :-184.785420895535"
+[1] "iteration number: "
+[1] 18
+[1] "agent_behavior"
+ [1] 2 4 2 2 2 1 1 4 3 2 3 1 2 2 3 4 1 3 2 4 3 2 3 2 4 2 2 1 1 2
+ [1] -135.96300 -112.44263 -120.92022 -128.26710  -92.43634 -145.54799
+ [7] -106.34305 -108.23346 -118.31548  -76.17766  -72.19459  -82.38402
+[13]  -62.07681  -85.71787  -83.96830 -169.64624 -118.66161 -116.21087
+[19] -100.26681  -99.19964 -114.13507 -118.71035 -126.94856  -67.78689
+[25]  -84.83356  -79.47614 -118.14628  -75.09897 -123.59981 -111.55495
+ [1] 80.45055 73.38419 74.02573 79.65480 73.96533 78.48084 74.91895 74.91331
+ [9] 71.05414 73.01552 77.45262 69.83209 72.35453 75.28704 72.51335 83.30158
+[17] 72.88832 75.15872 77.09734 76.82756 78.14625 74.31286 75.59217 70.85590
+[25] 70.85152 68.80976 76.95997 73.93447 79.13129 80.40407
+ [1] 53.25795 50.89566 49.84169 53.16138 54.72806 48.68124 52.90035 52.54662
+ [9] 47.39105 57.77999 63.01370 53.35528 59.93917 58.14347 55.02969 49.37233
+[17] 48.46600 51.91655 56.32398 56.23763 54.62924 49.88079 49.33246 56.42853
+[25] 53.88481 52.91453 53.33072 58.10468 54.41132 58.09308
+ [1] 18 22 20 28 25 23 25 24 19 22 22 14 21 16 23 18 23 19 24 25 23 23 29 29 16
+[26] 21 18 27 21 22
+[1] "No change"
+[1] 6
+[1] "Max itr reset"
+[1] 5
+[1] "RE-INITIALIZING..."
+Target points completed: 
+		
+[1] 30  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   17    8    0   13   14
+[2,]    2   17   26    0   17   17
+[3,]    3   26    6    0   13   15
+[4,]    4   28   30    0   13   14
+[5,]    5   25   12    0   15   19
+[6,]    6    3   17    0   15   16
+[1] "nearest neighbors are "
+[1]  1 17  8
+[1] "nearest neighbors are "
+[1]  2 17 26
+[1] "nearest neighbors are "
+[1]  3 26  6
+[1] "nearest neighbors are "
+[1]  6  3 17
+[1] "nearest neighbors are "
+[1]  8  1 17
+[1] "nearest neighbors are "
+[1] 10  4  2
+[1] "nearest neighbors are "
+[1] 12 18 25
+[1] "nearest neighbors are "
+[1] 13 25  7
+[1] "nearest neighbors are "
+[1] 14 24 25
+[1] "nearest neighbors are "
+[1] 18  3 12
+[1] "nearest neighbors are "
+[1] 19 20  6
+[1] "nearest neighbors are "
+[1] 20 19  8
+[1] "nearest neighbors are "
+[1] 21 26 29
+[1] "nearest neighbors are "
+[1] 23 30  7
+[1] "nearest neighbors are "
+[1] 24 14  7
+[1] "nearest neighbors are "
+[1] 27 26 16
+[1] "nearest neighbors are "
+[1] 29  7 21
+[1] "nearest neighbors are "
+[1] 30 23  4
+[1] "global no change :2"
+[1] "fitness :-184.785420895535"
+[1] "iteration number: "
+[1] 19
+[1] "agent_behavior"
+ [1] 2 2 4 2 1 2 4 2 2 2 2 3 2 2 2 2 4 2 2 2 3 2 2 3 3 1 3 2 2 3

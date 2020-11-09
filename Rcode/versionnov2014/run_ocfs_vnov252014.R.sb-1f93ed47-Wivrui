@@ -1,0 +1,212 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1343\cocoasubrtf160
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww21720\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+
+\f0\fs24 \cf0 \
+#.libPaths("/home/stu/kuppal3/karan_libs/Rlibs")\
+library(snow)\
+library(e1071)\
+library(yaImpute)\
+library(pROC)\
+library(bioDist)\
+#library(CMA, lib="/home/stu/kuppal3/karan_libs/Rlibs/")\
+\
+library(CMA)\
+library(expm)\
+\
+cl<-makeCluster(20)\
+\
+#source("/home/stu/kuppal3/Research/Feature_selection/Rcode/versionjuly12013/svm_cv_v1.1.R")\
+\
+\
+source("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014/svm_cv_v1.1.R")\
+\
+source("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014/performCMA_consensus_tenfold_ber_nominal_lungheart_train_test_nov172014_backward.R")\
+\
+\
+#source("performCMA_consensus_tenfold_ber_nominal_lungheart_train_test_sep192012_backward.R")\
+#datafile<-read.csv("/home/stu/kuppal3/Research/Heart_data/data_nominal.csv", na.strings="", sep=",", header=TRUE)\
+\
+#datafile<-read.csv("/home/stu/kuppal3/Research/Lung_cancer_sequences/Data_may172009/orderednominal/luca_no_missing_1056feats_nominal_ordered_events.csv", na.strings="", sep=",", header=TRUE)\
+#datafile<-read.csv("/home/stu/kuppal3/Research/Lung_cancer_sequences/Data_may172009/count_lung_cancer_len1to8_patterns_normbylengthmult1000_withevents.csv", na.strings="", sep=",", header=TRUE)\
+\
+#outloc<-"/home/stu/kuppal3/Research/Lung_cancer_sequences/Data_may172009/regression/PSO_reg_results/itr2/"\
+\
+#datafile=read.csv("/home/stu/kuppal3/Research/Lung_cancer_sequences/Data_may172009/LuCa_RLGS_Features_modified_051409_update_withevents.csv", sep=",", header=TRUE)\
+\
+#outloc<-"/home/stu/kuppal3/Research/Heart_data/Output/CMA_PSO_results/itr4_ms_parallel_IMT/"\
+\
+#traind<-read.csv("/home/stu/kuppal3/Research/Feature_selection/Datasets/ARCENE/arcene_train.data")\
+#testd<-read.csv("/home/stu/kuppal3/Research/Feature_selection/Datasets/ARCENE/arcene_valid.data")\
+if(FALSE)\{\
+trainy<-read.csv("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/arcene_train.labels", header=FALSE)\
+testy<-read.csv("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/arcene_valid.labels", header=FALSE)\
+traind<-read.table("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/arcene_train.data", sep=" ",header=FALSE)\
+testd<-read.table("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/arcene_valid.data", sep=" ",header=FALSE)\
+\}\
+\
+#/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/khan.xtest\
+\
+#/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/khan.xtest\
+trainy<-read.table("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014//khan.ytrain", header=FALSE)\
+testy<-read.table("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014//khan.ytest", header=FALSE)\
+\
+trainy<-t(trainy)\
+testy<-t(testy)\
+\
+#traind<-read.table("/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/khan.xtrain", sep=" ",header=FALSE)\
+#testd<-read.table("/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/khan.xtest", sep=" ",header=FALSE)\
+\
+\
+traind<-read.table("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014//khan.xtrain")\
+\
+testd<-read.table("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014//khan.xtest")\
+\
+traind<-t(traind) #[,-c(10001)]\
+testd<-t(testd) #[,-c(10001)]\
+traind<-cbind(trainy,traind)\
+testd<-cbind(testy,testd)\
+\
+traind<-na.omit(traind)\
+testd<-na.omit(testd)\
+\
+#outloc<-"/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/minpres2union_pso1000f0.25c0.25_backwardfalse_cvfoldthres0.7itr4w1/"\
+#outloc<-"/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/itr1cmapso100_best90pctf0.3c0.1behav0.2w1_0920eval10foldVIP_minpres_all2/"\
+#traind<-read.csv("/home/stu/kuppal3/Research/SpectF_data/SPECTF.train", header=FALSE)\
+#outloc<-"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/itr6_allmethods_minmethods1_ttestfilt_backwardsel_pso10/"\
+\
+\
+traind<-read.csv("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014/SPECTF.train", header=FALSE)\
+testd<-read.csv("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014/SPECTF.test", header=FALSE)\
+\
+\
+outloc<-"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014//CMAPSO100itrgmax1maxitr30fit70featw100to0.08_rankbehavf0.35l0.35c0.151itr_randtopol/"\
+\
+\
+\
+#trainy<-traind[,c(1)]\
+#testy<-testd[,c(1)]\
+#a: Confusions\
+#b: Neighbors\
+#c: Global\
+#d: Death\
+\
+a<-c(0.25,0.25,0.25,0.25)\
+b<-c(0.3,0.1,0.4,0.1)\
+c<-c(0.25,0.25,0.5,0)\
+d<-c(0.9,0.1,0,0.1)\
+\
+a<-c(0,0.4,0.1,0.5)\
+b<-c(0.3,0.1,0.4,0.1)\
+c<-c(0,0.5,0.5,0)\
+d<-c(0.9,0.1,0,0)\
+\
+a<-c(0,0.4,0.1,0.5)\
+b<-c(0.2,0.3,0.4,0.1)\
+c<-c(0,0.4,0.4,0.2)\
+d<-c(0.9,0.1,0,0)\
+\
+transition_matrix<-rbind(a,b,c,d)\
+\
+\
+dir.create(outloc)\
+setwd(outloc)\
+temp2=t(traind)\
+temp2=apply(temp2, 2, function(x)\{which(x=="MD")\})\
+temp2=unlist(temp2)\
+temp2=unique(temp2)\
+if(length(temp2)>1)\
+\{\
+	traind=traind[,-c(temp2)]\
+\
+	rm(temp2)\
+\}\
+\
+\
+#1\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+\cf0 CMAres<-performCMA(traind, testd, outloc,minfeats=2,\
+maxgenes=2000,\
+mingenes=1,\
+stepitr=1,\
+methods=c("rf","rfe","limma","lasso","elasticnet","kruskal.test","f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),\
+percentTest=0.40,\
+kname="radial",\
+maxitrs=100,\
+removeindex=c(0),\
+norm_method="none", \
+evalmethod="10 fold",\
+classindex=1,\
+maxfacts=0,\
+percentTest=0.40,\
+kname="radial",\
+upclasssep=1,\
+dclasssep=-1,\
+tolerance=0.1,\
+accWeight=1,\
+featWeight=0.06,\
+minpresent=1,\
+maxfeats=1000,\
+maxfeatspercent=0.5,\
+evalmethod="CV",\
+numfolds=10,\
+CVfoldthresh=0.7,\
+backward.sel=TRUE,\
+scheme_val="one-vs-all",\
+iter_learn=100)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+\cf0 \
+\
+#if(FALSE)\
+\{\
+trainm<-CMAres$modtraindata\
+testm<-CMAres$modtestdata\
+trainclass<-CMAres$modtrainclass\
+testclass<-CMAres$modtestclass\
+\}\
+\
+cma_feat_list<-colnames(trainm)\
+\
+write.table(cma_feat_list,file="selected_cma_feat_list.txt",sep="\\t",row.names=FALSE)\
+\
+#if(FALSE)\
+\{\
+trainm<-traind[,-c(1)] #CMAres$modtraindata\
+testm<-testd[,-c(1)] #CMAres$modtestdata\
+trainclass<-traind[,1] #CMAres$modtrainclass\
+testclass<-testd[,1] #CMAres$modtestclass\
+\}\
+\
+d_dim<-dim(trainm)\
+\
+print("Original dimension")\
+print(d_dim)\
+\
+#2\
+scoring_matrix<-run_pso(trainm,trainclass,transition_matrix,c1=2.05,\
+c2=2.05,\
+itr=10,\
+globalpso_maxitr=1,\
+global_max_itr=3,\
+num_part=30,\
+kname="radial",\
+errortype="BER",\
+accuracyweight=5,\
+featweight.max=10,\
+featweight.min=0.08,\
+k=10,\
+followerprob=0.35,\
+confusionprob=0.15,\
+leaderprob=0.35,\
+wmax=1,\
+wmin=(-1),\
+behavior_reset_itr=1,\
+maxitrreset=5,\
+num_neighbors=5,\
+max_num_feats=5,\
+minselect.pct=0.8,\
+bootstrap_val=FALSE,\
+minfitnessthresh=50,\
+max_num_feats=44)}

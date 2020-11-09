@@ -1,0 +1,3 @@
+"RSD.thresh"	"Number of features left after RSD filtering"	"Number of significant features"	"BER-accuracy"	"BER permuted accuracy"	"Score"	"Expected_False_Positives"
+3	22258	1182	66.4476495726496	50	659476.49	NA
+5	20884	1126	65.4476495726496	50	649476.48	NA

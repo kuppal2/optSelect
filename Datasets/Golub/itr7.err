@@ -1,0 +1,39 @@
+Loading required package: class
+Loading required package: Biobase
+
+Welcome to Bioconductor
+
+  Vignettes contain introductory material. To view, type
+  'openVignette()'. To cite Bioconductor, see
+  'citation("Biobase")' and for packages 'citation(pkgname)'.
+
+
+Attaching package: 'CMA'
+
+The following object(s) are masked from 'package:e1071':
+
+    tune
+
+Warning messages:
+1: replacing previous import 'Compare' when loading 'Biobase' 
+2: replacing previous import 'coerce' when loading 'Biobase' 
+3: replacing previous import 'initialize' when loading 'Biobase' 
+4: replacing previous import 'show' when loading 'Biobase' 
+Loading required package: KernSmooth
+KernSmooth 2.23 loaded
+Copyright M. P. Wand 1997-2009
+Warning messages:
+1: replacing previous import 'Compare' when loading 'Biobase' 
+2: replacing previous import 'coerce' when loading 'Biobase' 
+3: replacing previous import 'initialize' when loading 'Biobase' 
+4: replacing previous import 'show' when loading 'Biobase' 
+Warning message:
+In dir.create(parentoutloc) :
+  '/home/stu/kuppal3/Research/Feature_selection/Datasets/Golub' already exists
+Loading required package: lattice
+Error in dyn.load(file, DLLpath = DLLpath, ...) : 
+  unable to load shared object '/opt/local/lib/R/site-library/Matrix/libs/Matrix.so':
+  libgfortran.so.1: cannot open shared object file: No such file or directory
+Error in do.call("glmnet", args = ll) : could not find function "glmnet"
+Calls: performCMA ... GeneSelection -> GeneSelection -> selfun -> selfun -> do.call
+Execution halted

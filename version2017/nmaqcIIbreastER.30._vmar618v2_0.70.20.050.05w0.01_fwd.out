@@ -1,0 +1,2317 @@
+
+R version 3.2.2 (2015-08-14) -- "Fire Safety"
+Copyright (C) 2015 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> #.libPaths("/home/kuppal3/karan_libs/Rlibs")
+> library(snow)
+Warning message:
+package ‘snow’ was built under R version 3.2.5 
+> library(e1071)
+Warning message:
+package ‘e1071’ was built under R version 3.2.5 
+> library(yaImpute)
+
+Attaching package: ‘yaImpute’
+
+The following object is masked from ‘package:e1071’:
+
+    impute
+
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+Warning message:
+package ‘pROC’ was built under R version 3.2.5 
+> library(bioDist)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘parallel’
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, clusterSplit, makeCluster, parApply,
+    parCapply, parLapply, parRapply, parSapply, splitIndices,
+    stopCluster
+
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parRapply, parSapply
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, as.vector, cbind, colnames,
+    do.call, duplicated, eval, evalq, Filter, Find, get, grep, grepl,
+    intersect, is.unsorted, lapply, lengths, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unlist, unsplit
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: KernSmooth
+KernSmooth 2.23 loaded
+Copyright M. P. Wand 1997-2009
+> #library(CMA, lib="/home/kuppal3/karan_libs/Rlibs/")
+> library(RankAggreg)
+Warning message:
+package ‘RankAggreg’ was built under R version 3.2.5 
+> library(CMA)
+
+Attaching package: ‘CMA’
+
+The following object is masked from ‘package:pROC’:
+
+    roc
+
+The following object is masked from ‘package:e1071’:
+
+    tune
+
+Warning message:
+package ‘CMA’ was built under R version 3.2.4 
+> library(expm)
+Loading required package: Matrix
+
+Attaching package: ‘expm’
+
+The following object is masked from ‘package:Matrix’:
+
+    expm
+
+Warning messages:
+1: package ‘expm’ was built under R version 3.2.5 
+2: package ‘Matrix’ was built under R version 3.2.5 
+> 
+> cl<-makeCluster(1)
+> 
+> 
+> args<-commandArgs(trailingOnly=TRUE)
+> 
+> dirloc<-"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/"
+> #sname<-paste("/home/stu/kuppal3/Research/Feature_selection/Rcode/versionnov2014/OCFS_",args[9],".R",sep="")
+> 
+> sname<-paste(dirloc,"version2017/OCFS_",args[9],".R",sep="")
+> source(sname)
+> 
+> outloc<-paste(dirloc,"/Datasets/MAQCII_BreastCancer/OCFSvmay2415_MAQCER",args[9],"/",sep="")
+> 
+> 
+> sname<-paste(dirloc,"Datasets/MAQCII_BreastCancer/MaqcIIbr.Rda",sep="")
+> load(sname)
+> 
+> trainm<-MaqcIIbr$trainx
+> testm<-MaqcIIbr$testx
+> trainclass<-MaqcIIbr$trainER #PCRvsRD
+> testclass<-MaqcIIbr$testER #PCRvsRD
+> 
+> trainm<-trainm[,-c(22284)]
+> testm<-testm[,-c(22284)]
+> trainm<-apply(trainm,2,as.numeric)
+> testm<-apply(testm,2,as.numeric)
+> 
+> trainm<-cbind(trainclass,trainm)
+> testm<-cbind(testclass,testm)
+> 
+> trainm<-na.omit(trainm)
+> testm<-na.omit(testm)
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO//Datasets/MAQCII_BreastCancer/OCFSvmay2415_MAQCERvmarch62018_v2' already exists
+> setwd(outloc)
+> 
+> 
+> trainm<-as.matrix(trainm)
+> testm<-as.matrix(testm)
+> trainclass<-trainm[,1] #CMAres$modtrainclass
+> testclass<-testm[,1] #CMAres$modtestclass
+> trainm<-trainm[,-c(1)] #CMAres$modtrainmata
+> testm<-testm[,-c(1)] #CMAres$modtestmata
+> 
+> #a: Confusions
+> #b: Neighbors
+> #c: Global
+> #d: Death
+> 
+> a<-c(0.25,0.25,0.25,0.25)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0.25,0.25,0.5,0)
+> d<-c(0.9,0.1,0,0.1)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0,0.5,0.5,0)
+> d<-c(0.9,0.1,0,0)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.2,0.3,0.4,0.1)
+> c<-c(0,0.4,0.4,0.2)
+> d<-c(0.9,0.1,0,0)
+> 
+> transition_matrix<-rbind(a,b,c,d)
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO//Datasets/MAQCII_BreastCancer/OCFSvmay2415_MAQCERvmarch62018_v2' already exists
+> setwd(outloc)
+> temp2=t(trainm)
+> temp2=apply(temp2, 2, function(x){which(x=="MD")})
+> temp2=unlist(temp2)
+> temp2=unique(temp2)
+> if(length(temp2)>1)
++ {
++ 	trainm=trainm[,-c(temp2)]
++ 
++ 	rm(temp2)
++ }
+> 
+> boostweight=rep(0,dim(trainm)[2])
+> 
+> print("max num")
+[1] "max num"
+> print(as.numeric(args[10]))
+[1] 30
+> 
+> #if(FALSE)
+> {
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("limma"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("lasso"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("rfe"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("elasticnet"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ if(FALSE){
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("rf"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ }
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("f.test"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ }
+[1] "dim of trainm is "
+[1]   130 22283
+[1]   130 22283
+[1] "length of factcols"
+[1] 0
+[1]   130 22283
+[1]   100 22283
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "maxnum is "
+[1] 30
+[1] "# of genes left after filtering:"
+[1]   130 22283
+GeneSelection: iteration 1 
+
+Attaching package: ‘limma’
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    plotMA
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "limma:3:112.39366493355"
+[1] "limma:3:112.39366493355"
+[1] "limma:4:112.949489752669"
+[1] "limma:4:112.949489752669"
+[1] "limma:5:120.322774889249"
+[1] "limma:5:120.322774889249"
+[1] "limma:6:121.98971081948"
+[1] "limma:6:121.98971081948"
+[1] "limma:7:121.989980083044"
+[1] "limma:7:121.989980083044"
+[1] "limma:8:121.990249346608"
+[1] "limma:8:121.990249346608"
+[1] "limma:9:121.990518610173"
+[1] "limma:9:121.990518610173"
+[1] "limma:10:120.32412120707"
+[1] "limma:9:121.990518610173"
+[1] "limma:11:122.074390470634"
+[1] "limma:11:122.074390470634"
+[1] "limma:12:117.907993067532"
+[1] "limma:11:122.074390470634"
+[1] "limma:13:120.908262331096"
+[1] "limma:11:122.074390470634"
+[1] "limma:14:118.90853159466"
+[1] "limma:11:122.074390470634"
+[1] "limma:15:122.908800858224"
+[1] "limma:15:122.908800858224"
+[1] "limma:16:121.909070121788"
+[1] "limma:15:122.908800858224"
+[1] "limma:17:125.456958432972"
+[1] "limma:17:125.456958432972"
+[1] "limma:18:123.290561029869"
+[1] "limma:17:125.456958432972"
+[1] "limma:19:121.647973150576"
+[1] "limma:17:125.456958432972"
+[1] "limma:20:121.14824241414"
+[1] "limma:17:125.456958432972"
+[1] "limma:21:122.160416439609"
+[1] "limma:17:125.456958432972"
+[1] "limma:22:133.874971417459"
+[1] "limma:22:133.874971417459"
+[1] "limma:23:135.54190734769"
+[1] "limma:23:135.54190734769"
+[1] "limma:24:135.63146232554"
+[1] "limma:24:135.63146232554"
+[1] "limma:25:133.79839825577"
+[1] "limma:24:135.63146232554"
+[1] "limma:26:135.298667519335"
+[1] "limma:24:135.63146232554"
+[1] "limma:27:137.923936782899"
+[1] "limma:27:137.923936782899"
+[1] "limma:28:138.549206046463"
+[1] "limma:28:138.549206046463"
+[1] "limma:29:137.924475310027"
+[1] "limma:28:138.549206046463"
+[1] "limma:30:137.133077906925"
+[1] "limma:28:138.549206046463"
+[1] "limma:31:135.954775741917"
+[1] "limma:28:138.549206046463"
+[1] "limma:32:138.8776640531"
+[1] "limma:32:138.8776640531"
+[1] "limma:33:136.836266649998"
+[1] "limma:32:138.8776640531"
+[1] "limma:34:137.378202580229"
+[1] "limma:32:138.8776640531"
+[1] "limma:35:137.378471843793"
+[1] "limma:32:138.8776640531"
+[1] "limma:36:138.83707444069"
+[1] "limma:36:138.8776640531"
+[1] "limma:37:137.837343704255"
+[1] "limma:36:138.8776640531"
+[1] "limma:38:138.212612967819"
+[1] "limma:36:138.8776640531"
+[1] "limma:39:136.712882231383"
+[1] "limma:36:138.8776640531"
+[1] "limma:40:136.713151494947"
+[1] "limma:36:138.8776640531"
+[1] "limma:41:138.338420758511"
+[1] "limma:36:138.8776640531"
+[1] "limma:42:137.713690022075"
+[1] "dim of scoring matrix is "
+[1] 22283     1
+[1] 22283
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]   198  1511  1616  1617  3155  3490  4035  4390  4752  5223  5389  6564
+[13]  8667  9092  9093  9094 10196 10447 10671 11113 11534 11581 11582 11881
+[25] 12339 12343 13543 13819 13931 14925 15102 15240 17203 17560 18171 21125
+     200670_at 201983_s_at 202088_at 202089_s_at 203628_at 203963_at
+[1,]   13.7430      7.3840   14.6123     14.1629   10.7755   12.0638
+[2,]   14.3317      5.7702   14.9213     14.5094    9.8410   11.3553
+[3,]   13.0244      4.1164   12.9683     11.7586    9.4169   12.3832
+     204508_s_at 204863_s_at 205225_at 205696_s_at 205862_at 207038_at
+[1,]     10.1763      9.9978   13.0759     11.6168    8.6098    8.6291
+[2,]      9.3275     11.6873   13.7616      9.5737    8.0994    9.5709
+[3,]      9.9200      9.4441   12.7360      7.2600    7.6469    9.3182
+     209173_at 209602_s_at 209603_at 209604_s_at 210735_s_at 211000_s_at
+[1,]   12.9392     11.1535   10.5793     14.3763     11.5638      9.7316
+[2,]   14.1501     10.8437   10.5772     14.0214     10.8918     11.2882
+[3,]   14.5585     10.7019   11.1181     14.5222     11.6213      8.6531
+     211233_x_at 211712_s_at 212148_at 212195_at 212196_at 212496_s_at
+[1,]      8.6243     10.1229   12.2299   12.0684   10.3271     11.2178
+[2,]      9.8059      8.4092   11.1320   13.0105   11.8577     11.4706
+[3,]      8.8004     11.7707   12.6550   10.6865    9.8270      9.5889
+     212956_at 212960_at 214164_x_at 214440_at 214552_s_at 215552_s_at
+[1,]   13.3600   10.8422     12.6474   12.6295      9.8961      8.9322
+[2,]   13.2925   10.5720     11.7852   13.4492      8.6694      9.7896
+[3,]   12.3582    9.8482     12.7464   12.3205      9.0867      8.5444
+     215729_s_at 215867_x_at 217838_s_at 218195_at 218807_at 221765_at
+[1,]      2.9565     12.6194     11.8757   11.0995   11.7120    8.4652
+[2,]      1.5807     11.5534     11.8462   11.6987   11.2932    9.1804
+[3,]      5.6368     12.7285     12.0364   10.9932   10.2407    9.9421
+     200670_at 201983_s_at 202088_at 202089_s_at 203628_at 203963_at
+[1,]   14.4481      6.8644   14.9541     14.0631    9.4326   12.4052
+[2,]   12.9502      9.5840   13.8916     12.7077    9.8046   10.4033
+[3,]   11.7332      9.0904   11.1969     10.1126    7.9079    9.8307
+     204508_s_at 204863_s_at 205225_at 205696_s_at 205862_at 207038_at
+[1,]      9.8038     10.5781   13.8754      9.0616   10.0742   10.1496
+[2,]      7.9689      9.9332   11.7217      7.7288    7.3888    7.1306
+[3,]      7.6789     10.1938   10.9960      7.1560    4.4202    5.5464
+     209173_at 209602_s_at 209603_at 209604_s_at 210735_s_at 211000_s_at
+[1,]   13.2041     11.9413   11.9790     15.0625     11.3620     10.6617
+[2,]   11.3631     11.0319   10.8744     14.4978      9.5434      9.8946
+[3,]   11.1800      8.8487    8.0211     12.4583      9.2310      9.4886
+     211233_x_at 211712_s_at 212148_at 212195_at 212196_at 212496_s_at
+[1,]      8.7804      9.2284   12.0773   12.7926   11.2350     10.6425
+[2,]      5.7693      6.4300   10.7194   11.7735   10.2715      9.8266
+[3,]      5.6723      8.0450   10.5500   11.2755    9.9777      9.0531
+     212956_at 212960_at 214164_x_at 214440_at 214552_s_at 215552_s_at
+[1,]   13.5201   11.4301     12.7392   14.4201      9.9075      9.2961
+[2,]   12.5480   10.2569     10.9092    9.4904      9.6027      8.1732
+[3,]   11.2917    9.3181     10.6696    9.9120      8.5673      6.9931
+     215729_s_at 215867_x_at 217838_s_at 218195_at 218807_at 221765_at
+[1,]      1.9565     12.5744     11.7325   10.4582   12.5435   10.5778
+[2,]      5.3426     11.0575     10.1952    9.6734   10.8753    8.3228
+[3,]      5.3609     11.0769      9.5668    8.3681   10.1820    8.1290
+[1] "numgenes selected:36"
+[1] "test acc:0.87"
+[1] "test AUC acc:0.87494745691467"
+[1] "10 fold train95.3846153846154"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 48  1
+         2  2 79
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 35  9
+        2  4 52
+[1] "train acc:0.976923076923077"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 48  1
+         2  2 79
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   130 22283
+[1]   130 22283
+[1] "length of factcols"
+[1] 0
+[1]   130 22283
+[1]   100 22283
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "maxnum is "
+[1] 30
+[1] "# of genes left after filtering:"
+[1]   130 22283
+GeneSelection: iteration 1 
+Loaded glmnet 2.0-10
+
+
+Attaching package: ‘glmnet’
+
+The following object is masked from ‘package:pROC’:
+
+    auc
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+genelist
+    1     2     3     4     5     6     7     8     9    10    11    12    13 
+   10    10    10    10    10    10    10    10    10    10    10    10    10 
+   14    15    16    17    18    19    20    21  4752 15102  4035    22    23 
+   10    10    10    10    10    10    10    10    10    10     9     8     7 
+   24  9093    25 12339  3155    26  7147 13819 10447 17203    27  1511  9279 
+    7     7     6     5     4     3     3     3     2     2     1     1     1 
+11605 
+    1 
+[1] "varselmethod"
+[1] "forward"
+[1] "lasso:3:57.4650935049782"
+[1] "lasso:3:57.4650935049782"
+[1] "lasso:4:69.0963151494947"
+[1] "lasso:4:69.0963151494947"
+[1] "lasso:5:71.2930129844874"
+[1] "lasso:5:71.2930129844874"
+[1] "lasso:6:64.346853676623"
+[1] "lasso:5:71.2930129844874"
+[1] "lasso:7:60.4026784957427"
+[1] "lasso:5:71.2930129844874"
+[1] "lasso:8:63.0795350608942"
+[1] "lasso:5:71.2930129844874"
+[1] "lasso:9:67.7841694038234"
+[1] "lasso:5:71.2930129844874"
+[1] "lasso:10:75.3995180324669"
+[1] "lasso:10:75.3995180324669"
+[1] "lasso:11:78.41367618492"
+[1] "lasso:11:78.41367618492"
+[1] "lasso:12:74.8266438611825"
+[1] "lasso:11:78.41367618492"
+[1] "lasso:13:75.3130242358578"
+[1] "lasso:11:78.41367618492"
+[1] "lasso:14:74.5990077851362"
+[1] "lasso:11:78.41367618492"
+[1] "lasso:15:72.6468960963194"
+[1] "lasso:11:78.41367618492"
+[1] "lasso:16:87.8138320265502"
+[1] "lasso:16:87.8138320265502"
+[1] "lasso:17:91.1176727186858"
+[1] "lasso:17:91.1176727186858"
+[1] "lasso:18:82.4631800774881"
+[1] "lasso:17:91.1176727186858"
+[1] "lasso:19:83.8920207696236"
+[1] "lasso:17:91.1176727186858"
+[1] "lasso:20:79.2137186046164"
+[1] "lasso:17:91.1176727186858"
+[1] "lasso:21:77.1604164396091"
+[1] "lasso:17:91.1176727186858"
+[1] "lasso:22:120.244019036507"
+[1] "lasso:22:120.244019036507"
+[1] "lasso:23:115.466510522293"
+[1] "lasso:22:120.244019036507"
+[1] "lasso:24:131.30011311919"
+[1] "lasso:24:131.30011311919"
+[1] "lasso:25:127.800382382755"
+[1] "lasso:24:131.30011311919"
+[1] "lasso:26:125.175651646319"
+[1] "lasso:24:131.30011311919"
+[1] "lasso:27:126.009254243216"
+[1] "lasso:24:131.30011311919"
+[1] "lasso:28:121.094840967098"
+[1] "lasso:24:131.30011311919"
+[1] "lasso:29:122.454237214789"
+[1] "lasso:24:131.30011311919"
+[1] "lasso:30:131.204506478353"
+[1] "lasso:30:131.30011311919"
+[1] "lasso:31:131.482553519695"
+[1] "lasso:31:131.482553519695"
+[1] "lasso:32:131.427267227704"
+[1] "lasso:32:131.482553519695"
+[1] "lasso:33:134.663647602379"
+[1] "lasso:33:134.663647602379"
+[1] "lasso:34:137.378202580229"
+[1] "lasso:34:137.378202580229"
+[1] "lasso:35:137.378471843793"
+[1] "lasso:35:137.378471843793"
+[1] "lasso:36:138.045407774024"
+[1] "lasso:36:138.045407774024"
+[1] "lasso:37:138.045677037588"
+[1] "lasso:37:138.045677037588"
+[1] "lasso:38:139.379279634485"
+[1] "lasso:38:139.379279634485"
+[1] "lasso:39:139.37954889805"
+[1] "lasso:39:139.37954889805"
+[1] "lasso:40:138.54648482828"
+[1] "lasso:39:139.37954889805"
+[1] "dim of scoring matrix is "
+[1] 22283     1
+[1] 22283
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]     1     2     3     4     5     6     7     8     9    10    11    12
+[13]    13    14    15    16    17    18    19    20    21    22    23    24
+[25]    25    26    27  1511  3155  4035  4752  7147  9093  9279 10447 12339
+[37] 13819 15102 17203
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+     1405_i_at 1431_at 1438_at 1487_at 1494_f_at 1598_g_at 160020_at 1729_at
+[1,]    6.2325  6.8450  7.5774  9.3080    8.5992   10.6707    9.2059  9.3933
+[2,]    6.9047  5.8878  9.8562  8.8356    8.3173   10.0085    9.2157  9.2443
+[3,]    6.5940  5.6843  7.4038  9.5398    8.7748    9.9406    8.8970  9.0806
+     1773_at 177_at  179_at 1861_at 200000_s_at 200001_at 200002_at 200003_s_at
+[1,]  7.5473 6.7956 10.0408  8.7753     10.5827   11.7948   12.7895     13.4360
+[2,]  7.3025 6.6840 10.4239  8.6387      9.8278   12.3121   13.2616     13.9110
+[3,]  7.0802 6.4462  9.9977  8.3935     10.1965   12.0276   12.8911     13.7039
+     200004_at 200005_at 200006_at 201983_s_at 203628_at 204508_s_at 205225_at
+[1,]   12.6077   11.2388   13.0431      7.3840   10.7755     10.1763   13.0759
+[2,]   12.6356   11.5379   13.4008      5.7702    9.8410      9.3275   13.7616
+[3,]   12.8264   11.0158   12.4927      4.1164    9.4169      9.9200   12.7360
+     207626_s_at 209603_at 209791_at 211000_s_at 212956_at 214440_at
+[1,]      7.4760   10.5793    8.1878      9.7316   13.3600   12.6295
+[2,]      3.5539   10.5772    8.3732     11.2882   13.2925   13.4492
+[3,]      7.2242   11.1181   10.3116      8.6531   12.3582   12.3205
+     215729_s_at 217838_s_at
+[1,]      2.9565     11.8757
+[2,]      1.5807     11.8462
+[3,]      5.6368     12.0364
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.3446  7.0781 7.5017 10.6764    6.4327  9.2305  8.1481  6.1196
+[2,]   12.0376  7.6011 7.3458 10.5366    6.5568  9.1180  8.3105  7.1575
+[3,]   10.9684  7.4696 8.3759 11.1175    7.0579  9.3514  8.1214  7.7247
+     1405_i_at 1431_at 1438_at 1487_at 1494_f_at 1598_g_at 160020_at 1729_at
+[1,]    4.2718  7.1375  8.5984  8.9272    9.0705   10.3643   10.1083  8.8569
+[2,]    8.4540  6.6935  8.5378  8.8336    8.7718   11.4333    9.9977  9.2162
+[3,]    9.9479  7.7319  8.2890  9.4868    9.9207   11.6336   10.1420  7.0177
+     1773_at 177_at  179_at 1861_at 200000_s_at 200001_at 200002_at 200003_s_at
+[1,]  7.8693 7.1569 10.5507  8.4719     10.5182   11.6650   13.7219     14.0327
+[2,]  7.8673 7.3035  9.9391  8.1788     10.5693   11.7041   14.0613     14.1680
+[3,]  7.5146 7.1741 11.1995  8.4169      9.3242   12.3207   12.9784     13.9720
+     200004_at 200005_at 200006_at 201983_s_at 203628_at 204508_s_at 205225_at
+[1,]   12.6354   11.3591   13.1416      6.8644    9.4326      9.8038   13.8754
+[2,]   12.0730   11.9147   12.9145      9.5840    9.8046      7.9689   11.7217
+[3,]   12.1004   11.2010   12.9530      9.0904    7.9079      7.6789   10.9960
+     207626_s_at 209603_at 209791_at 211000_s_at 212956_at 214440_at
+[1,]      8.5889   11.9790    9.2513     10.6617   13.5201   14.4201
+[2,]      7.0887   10.8744    9.8296      9.8946   12.5480    9.4904
+[3,]      5.7342    8.0211    9.2347      9.4886   11.2917    9.9120
+     215729_s_at 217838_s_at
+[1,]      1.9565     11.7325
+[2,]      5.3426     10.1952
+[3,]      5.3609      9.5668
+[1] "numgenes selected:39"
+[1] "test acc:0.88"
+[1] "test AUC acc:0.873896595208071"
+[1] "10 fold train98.4615384615385"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 49  0
+         2  1 80
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 33  6
+        2  6 55
+[1] "train acc:0.992307692307692"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 49  0
+         2  1 80
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   130 22283
+[1]   130 22283
+[1] "length of factcols"
+[1] 0
+[1]   130 22283
+[1]   100 22283
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "maxnum is "
+[1] 30
+[1] "# of genes left after filtering:"
+[1]   130 22283
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "rfe:3:113.899617314502"
+[1] "rfe:3:113.899617314502"
+[1] "rfe:4:112.679648482828"
+[1] "rfe:3:113.899617314502"
+[1] "rfe:5:117.846584413059"
+[1] "rfe:5:117.846584413059"
+[1] "rfe:6:129.11471081948"
+[1] "rfe:6:129.11471081948"
+[1] "rfe:7:124.293551511616"
+[1] "rfe:6:129.11471081948"
+[1] "rfe:8:126.615249346608"
+[1] "rfe:6:129.11471081948"
+[1] "rfe:9:121.230597975252"
+[1] "rfe:6:129.11471081948"
+[1] "rfe:10:122.800311683261"
+[1] "rfe:6:129.11471081948"
+[1] "rfe:11:121.080342851587"
+[1] "rfe:6:129.11471081948"
+[1] "rfe:12:127.87823116277"
+[1] "dim of scoring matrix is "
+[1] 22283     1
+[1] 22283
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+[1] 2783 3490 4035 4536 4556 4752
+     203256_at 203963_at 204508_s_at 205009_at 205029_s_at 205225_at
+[1,]    6.3335   12.0638     10.1763   13.2850      2.9025   13.0759
+[2,]    4.1360   11.3553      9.3275   14.4107      2.2747   13.7616
+[3,]    5.8238   12.3832      9.9200   14.7836      0.9203   12.7360
+     203256_at 203963_at 204508_s_at 205009_at 205029_s_at 205225_at
+[1,]    5.4864   12.4052      9.8038   14.3747      3.0068   13.8754
+[2,]    8.4929   10.4033      7.9689   11.2149      3.3895   11.7217
+[3,]    5.7603    9.8307      7.6789    9.8209      4.9401   10.9960
+[1] "numgenes selected:6"
+[1] "test acc:0.89"
+[1] "test AUC acc:0.895964691046658"
+[1] "10 fold train94.6153846153846"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 47  1
+         2  3 79
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 36  8
+        2  3 53
+[1] "train acc:0.969230769230769"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 47  1
+         2  3 79
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   130 22283
+[1]   130 22283
+[1] "length of factcols"
+[1] 0
+[1]   130 22283
+[1]   100 22283
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "maxnum is "
+[1] 30
+[1] "# of genes left after filtering:"
+[1]   130 22283
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "elasticnet:3:57.4650935049782"
+[1] "elasticnet:3:57.4650935049782"
+[1] "elasticnet:4:69.0963151494947"
+[1] "elasticnet:4:69.0963151494947"
+[1] "elasticnet:5:71.2930129844874"
+[1] "elasticnet:5:71.2930129844874"
+[1] "elasticnet:6:64.346853676623"
+[1] "elasticnet:5:71.2930129844874"
+[1] "elasticnet:7:60.4026784957427"
+[1] "elasticnet:5:71.2930129844874"
+[1] "elasticnet:8:63.0795350608942"
+[1] "elasticnet:5:71.2930129844874"
+[1] "elasticnet:9:67.7841694038234"
+[1] "elasticnet:5:71.2930129844874"
+[1] "elasticnet:10:75.3995180324669"
+[1] "elasticnet:10:75.3995180324669"
+[1] "elasticnet:11:78.41367618492"
+[1] "elasticnet:11:78.41367618492"
+[1] "elasticnet:12:74.8266438611825"
+[1] "elasticnet:11:78.41367618492"
+[1] "elasticnet:13:75.3130242358578"
+[1] "elasticnet:11:78.41367618492"
+[1] "elasticnet:14:74.5990077851362"
+[1] "elasticnet:11:78.41367618492"
+[1] "elasticnet:15:72.6468960963194"
+[1] "elasticnet:11:78.41367618492"
+[1] "elasticnet:16:87.8138320265502"
+[1] "elasticnet:16:87.8138320265502"
+[1] "elasticnet:17:91.1176727186858"
+[1] "elasticnet:17:91.1176727186858"
+[1] "elasticnet:18:82.4631800774881"
+[1] "elasticnet:17:91.1176727186858"
+[1] "elasticnet:19:83.8920207696236"
+[1] "elasticnet:17:91.1176727186858"
+[1] "elasticnet:20:79.2137186046164"
+[1] "elasticnet:17:91.1176727186858"
+[1] "elasticnet:21:77.1604164396091"
+[1] "elasticnet:17:91.1176727186858"
+[1] "elasticnet:22:75.9702095126971"
+[1] "elasticnet:17:91.1176727186858"
+[1] "elasticnet:23:75.0240502048326"
+[1] "dim of scoring matrix is "
+[1] 22283     1
+[1] 22283
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+     1405_i_at 1431_at 1438_at 1487_at 1494_f_at 1598_g_at 160020_at 1729_at
+[1,]    6.2325  6.8450  7.5774  9.3080    8.5992   10.6707    9.2059  9.3933
+[2,]    6.9047  5.8878  9.8562  8.8356    8.3173   10.0085    9.2157  9.2443
+[3,]    6.5940  5.6843  7.4038  9.5398    8.7748    9.9406    8.8970  9.0806
+     1773_at
+[1,]  7.5473
+[2,]  7.3025
+[3,]  7.0802
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.3446  7.0781 7.5017 10.6764    6.4327  9.2305  8.1481  6.1196
+[2,]   12.0376  7.6011 7.3458 10.5366    6.5568  9.1180  8.3105  7.1575
+[3,]   10.9684  7.4696 8.3759 11.1175    7.0579  9.3514  8.1214  7.7247
+     1405_i_at 1431_at 1438_at 1487_at 1494_f_at 1598_g_at 160020_at 1729_at
+[1,]    4.2718  7.1375  8.5984  8.9272    9.0705   10.3643   10.1083  8.8569
+[2,]    8.4540  6.6935  8.5378  8.8336    8.7718   11.4333    9.9977  9.2162
+[3,]    9.9479  7.7319  8.2890  9.4868    9.9207   11.6336   10.1420  7.0177
+     1773_at
+[1,]  7.8693
+[2,]  7.8673
+[3,]  7.5146
+[1] "numgenes selected:17"
+[1] "test acc:0.72"
+[1] "test AUC acc:0.705758722152165"
+[1] "10 fold train75.3846153846154"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 41  0
+         2  9 80
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 25 14
+        2 14 47
+[1] "train acc:0.930769230769231"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 41  0
+         2  9 80
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   130 22283
+[1]   130 22283
+[1] "length of factcols"
+[1] 0
+[1]   130 22283
+[1]   100 22283
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "maxnum is "
+[1] 30
+[1] "# of genes left after filtering:"
+[1]   130 22283
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "f.test:3:112.39366493355"
+[1] "f.test:3:112.39366493355"
+[1] "f.test:4:112.949489752669"
+[1] "f.test:4:112.949489752669"
+[1] "f.test:5:120.322774889249"
+[1] "f.test:5:120.322774889249"
+[1] "f.test:6:121.98971081948"
+[1] "f.test:6:121.98971081948"
+[1] "f.test:7:121.989980083044"
+[1] "f.test:7:121.989980083044"
+[1] "f.test:8:121.990249346608"
+[1] "f.test:8:121.990249346608"
+[1] "f.test:9:121.990518610173"
+[1] "f.test:9:121.990518610173"
+[1] "f.test:10:120.32412120707"
+[1] "f.test:9:121.990518610173"
+[1] "f.test:11:122.074390470634"
+[1] "f.test:11:122.074390470634"
+[1] "f.test:12:117.907993067532"
+[1] "f.test:11:122.074390470634"
+[1] "f.test:13:120.908262331096"
+[1] "f.test:11:122.074390470634"
+[1] "f.test:14:118.90853159466"
+[1] "f.test:11:122.074390470634"
+[1] "f.test:15:122.908800858224"
+[1] "f.test:15:122.908800858224"
+[1] "f.test:16:121.909070121788"
+[1] "f.test:15:122.908800858224"
+[1] "f.test:17:125.456958432972"
+[1] "f.test:17:125.456958432972"
+[1] "f.test:18:123.290561029869"
+[1] "f.test:17:125.456958432972"
+[1] "f.test:19:121.647973150576"
+[1] "f.test:17:125.456958432972"
+[1] "f.test:20:121.14824241414"
+[1] "f.test:17:125.456958432972"
+[1] "f.test:21:122.160416439609"
+[1] "f.test:17:125.456958432972"
+[1] "f.test:22:121.619019036507"
+[1] "f.test:17:125.456958432972"
+[1] "f.test:23:134.285954966737"
+[1] "f.test:23:134.285954966737"
+[1] "f.test:24:125.464795658873"
+[1] "f.test:23:134.285954966737"
+[1] "f.test:25:135.542445874818"
+[1] "f.test:25:135.542445874818"
+[1] "f.test:26:134.751048471716"
+[1] "f.test:25:135.542445874818"
+[1] "f.test:27:125.75131773528"
+[1] "f.test:25:135.542445874818"
+[1] "f.test:28:136.418253665511"
+[1] "f.test:28:136.418253665511"
+[1] "f.test:29:137.043522929075"
+[1] "f.test:29:137.043522929075"
+[1] "f.test:30:138.043792192639"
+[1] "f.test:30:138.043792192639"
+[1] "f.test:31:136.419061456203"
+[1] "f.test:30:138.043792192639"
+[1] "f.test:32:138.044330719767"
+[1] "f.test:32:138.044330719767"
+[1] "f.test:33:137.669599983331"
+[1] "f.test:32:138.044330719767"
+[1] "f.test:34:137.669869246895"
+[1] "f.test:32:138.044330719767"
+[1] "f.test:35:136.67013851046"
+[1] "f.test:32:138.044330719767"
+[1] "f.test:36:138.33707444069"
+[1] "f.test:36:138.33707444069"
+[1] "f.test:37:138.337343704255"
+[1] "f.test:37:138.337343704255"
+[1] "f.test:38:136.998327253533"
+[1] "f.test:37:138.337343704255"
+[1] "f.test:39:137.623596517097"
+[1] "f.test:37:138.337343704255"
+[1] "f.test:40:137.623865780661"
+[1] "f.test:37:138.337343704255"
+[1] "f.test:41:137.624135044225"
+[1] "f.test:37:138.337343704255"
+[1] "f.test:42:137.62440430779"
+[1] "f.test:37:138.337343704255"
+[1] "f.test:43:136.999673571354"
+[1] "dim of scoring matrix is "
+[1] 22283     1
+[1] 22283
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]   198  1616  1617  3155  3490  4035  4390  4752  5223  5389  6564  8177
+[13]  8667  9092  9093  9094 10196 10447 10671 11113 11534 11581 11881 12339
+[25] 12343 13543 13819 13931 14925 15102 15240 17203 17560 17624 17897 18171
+[37] 21125
+     200670_at 202088_at 202089_s_at 203628_at 203963_at 204508_s_at
+[1,]   13.7430   14.6123     14.1629   10.7755   12.0638     10.1763
+[2,]   14.3317   14.9213     14.5094    9.8410   11.3553      9.3275
+[3,]   13.0244   12.9683     11.7586    9.4169   12.3832      9.9200
+     204863_s_at 205225_at 205696_s_at 205862_at 207038_at 208682_s_at
+[1,]      9.9978   13.0759     11.6168    8.6098    8.6291     12.3746
+[2,]     11.6873   13.7616      9.5737    8.0994    9.5709     13.0787
+[3,]      9.4441   12.7360      7.2600    7.6469    9.3182     11.2795
+     209173_at 209602_s_at 209603_at 209604_s_at 210735_s_at 211000_s_at
+[1,]   12.9392     11.1535   10.5793     14.3763     11.5638      9.7316
+[2,]   14.1501     10.8437   10.5772     14.0214     10.8918     11.2882
+[3,]   14.5585     10.7019   11.1181     14.5222     11.6213      8.6531
+     211233_x_at 211712_s_at 212148_at 212195_at 212496_s_at 212956_at
+[1,]      8.6243     10.1229   12.2299   12.0684     11.2178   13.3600
+[2,]      9.8059      8.4092   11.1320   13.0105     11.4706   13.2925
+[3,]      8.8004     11.7707   12.6550   10.6865      9.5889   12.3582
+     212960_at 214164_x_at 214440_at 214552_s_at 215552_s_at 215729_s_at
+[1,]   10.8422     12.6474   12.6295      9.8961      8.9322      2.9565
+[2,]   10.5720     11.7852   13.4492      8.6694      9.7896      1.5807
+[3,]    9.8482     12.7464   12.3205      9.0867      8.5444      5.6368
+     215867_x_at 217838_s_at 218195_at 218259_at 218532_s_at 218807_at
+[1,]     12.6194     11.8757   11.0995   10.3963      9.6457   11.7120
+[2,]     11.5534     11.8462   11.6987    9.4142      8.3003   11.2932
+[3,]     12.7285     12.0364   10.9932   10.2641     10.2413   10.2407
+     221765_at
+[1,]    8.4652
+[2,]    9.1804
+[3,]    9.9421
+     200670_at 202088_at 202089_s_at 203628_at 203963_at 204508_s_at
+[1,]   14.4481   14.9541     14.0631    9.4326   12.4052      9.8038
+[2,]   12.9502   13.8916     12.7077    9.8046   10.4033      7.9689
+[3,]   11.7332   11.1969     10.1126    7.9079    9.8307      7.6789
+     204863_s_at 205225_at 205696_s_at 205862_at 207038_at 208682_s_at
+[1,]     10.5781   13.8754      9.0616   10.0742   10.1496     11.6815
+[2,]      9.9332   11.7217      7.7288    7.3888    7.1306     11.6162
+[3,]     10.1938   10.9960      7.1560    4.4202    5.5464      9.9698
+     209173_at 209602_s_at 209603_at 209604_s_at 210735_s_at 211000_s_at
+[1,]   13.2041     11.9413   11.9790     15.0625     11.3620     10.6617
+[2,]   11.3631     11.0319   10.8744     14.4978      9.5434      9.8946
+[3,]   11.1800      8.8487    8.0211     12.4583      9.2310      9.4886
+     211233_x_at 211712_s_at 212148_at 212195_at 212496_s_at 212956_at
+[1,]      8.7804      9.2284   12.0773   12.7926     10.6425   13.5201
+[2,]      5.7693      6.4300   10.7194   11.7735      9.8266   12.5480
+[3,]      5.6723      8.0450   10.5500   11.2755      9.0531   11.2917
+     212960_at 214164_x_at 214440_at 214552_s_at 215552_s_at 215729_s_at
+[1,]   11.4301     12.7392   14.4201      9.9075      9.2961      1.9565
+[2,]   10.2569     10.9092    9.4904      9.6027      8.1732      5.3426
+[3,]    9.3181     10.6696    9.9120      8.5673      6.9931      5.3609
+     215867_x_at 217838_s_at 218195_at 218259_at 218532_s_at 218807_at
+[1,]     12.5744     11.7325   10.4582   10.6457      7.6425   12.5435
+[2,]     11.0575     10.1952    9.6734   10.2625      8.9213   10.8753
+[3,]     11.0769      9.5668    8.3681    9.6796      8.6972   10.1820
+     221765_at
+[1,]   10.5778
+[2,]    8.3228
+[3,]    8.1290
+[1] "numgenes selected:37"
+[1] "test acc:0.86"
+[1] "test AUC acc:0.866750735603195"
+[1] "10 fold train95.3846153846154"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 47  1
+         2  3 79
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 35 10
+        2  4 51
+[1] "train acc:0.969230769230769"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 47  1
+         2  3 79
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+There were 50 or more warnings (use warnings() to see the first 50)
+> #1
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("limma","lasso","rfe","elasticnet", "f.test"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   130 22283
+[1]   130 22283
+[1] "length of factcols"
+[1] 0
+[1]   130 22283
+[1]   100 22283
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "maxnum is "
+[1] 30
+[1] "# of genes left after filtering:"
+[1]   130 22283
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "limma:3:112.39366493355"
+[1] "limma:3:112.39366493355"
+[1] "limma:4:112.949489752669"
+[1] "limma:4:112.949489752669"
+[1] "limma:5:120.322774889249"
+[1] "limma:5:120.322774889249"
+[1] "limma:6:121.98971081948"
+[1] "limma:6:121.98971081948"
+[1] "limma:7:121.989980083044"
+[1] "limma:7:121.989980083044"
+[1] "limma:8:121.990249346608"
+[1] "limma:8:121.990249346608"
+[1] "limma:9:121.990518610173"
+[1] "limma:9:121.990518610173"
+[1] "limma:10:120.32412120707"
+[1] "limma:9:121.990518610173"
+[1] "limma:11:122.074390470634"
+[1] "limma:11:122.074390470634"
+[1] "limma:12:117.907993067532"
+[1] "limma:11:122.074390470634"
+[1] "limma:13:120.908262331096"
+[1] "limma:11:122.074390470634"
+[1] "limma:14:118.90853159466"
+[1] "limma:11:122.074390470634"
+[1] "limma:15:122.908800858224"
+[1] "limma:15:122.908800858224"
+[1] "limma:16:121.909070121788"
+[1] "limma:15:122.908800858224"
+[1] "limma:17:125.456958432972"
+[1] "limma:17:125.456958432972"
+[1] "limma:18:123.290561029869"
+[1] "limma:17:125.456958432972"
+[1] "limma:19:121.647973150576"
+[1] "limma:17:125.456958432972"
+[1] "limma:20:121.14824241414"
+[1] "limma:17:125.456958432972"
+[1] "limma:21:122.160416439609"
+[1] "limma:17:125.456958432972"
+[1] "limma:22:133.874971417459"
+[1] "limma:22:133.874971417459"
+[1] "limma:23:135.54190734769"
+[1] "limma:23:135.54190734769"
+[1] "limma:24:135.63146232554"
+[1] "limma:24:135.63146232554"
+[1] "limma:25:133.79839825577"
+[1] "limma:24:135.63146232554"
+[1] "limma:26:135.298667519335"
+[1] "limma:24:135.63146232554"
+[1] "limma:27:137.923936782899"
+[1] "limma:27:137.923936782899"
+[1] "limma:28:138.549206046463"
+[1] "limma:28:138.549206046463"
+[1] "limma:29:137.924475310027"
+[1] "limma:28:138.549206046463"
+[1] "limma:30:137.133077906925"
+[1] "limma:28:138.549206046463"
+[1] "limma:31:135.954775741917"
+[1] "limma:28:138.549206046463"
+[1] "limma:32:138.8776640531"
+[1] "limma:32:138.8776640531"
+[1] "limma:33:136.836266649998"
+[1] "limma:32:138.8776640531"
+[1] "limma:34:137.378202580229"
+[1] "limma:32:138.8776640531"
+[1] "limma:35:137.378471843793"
+[1] "limma:32:138.8776640531"
+[1] "limma:36:138.83707444069"
+[1] "limma:36:138.8776640531"
+[1] "limma:37:137.837343704255"
+[1] "limma:36:138.8776640531"
+[1] "limma:38:138.212612967819"
+[1] "limma:36:138.8776640531"
+[1] "limma:39:136.712882231383"
+[1] "limma:36:138.8776640531"
+[1] "limma:40:136.713151494947"
+[1] "limma:36:138.8776640531"
+[1] "limma:41:138.338420758511"
+[1] "limma:36:138.8776640531"
+[1] "limma:42:137.713690022075"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+genelist
+    1     2     3     4     5     6     7     8     9    10    11    12    13 
+   10    10    10    10    10    10    10    10    10    10    10    10    10 
+   14    15    16    17    18    19    20    21    22    23    24    25    26 
+   10    10    10    10    10    10    10    10    10    10    10    10    10 
+   27    28    29    30    31    32    33    34    35    36    37    38    39 
+   10    10    10    10    10    10    10    10    10    10    10    10    10 
+   40    41    42    43    44    45  4752 15102  4035    46    47    48  9093 
+   10    10    10    10    10    10    10    10     9     8     7     7     7 
+   49 12339  3155    50  7147 13819 10447 17203    51  1511  9279 11605 
+    6     5     4     3     3     3     2     2     1     1     1     1 
+[1] "varselmethod"
+[1] "forward"
+[1] "lasso:3:57.4650935049782"
+[1] "lasso:3:57.4650935049782"
+[1] "lasso:4:69.0963151494947"
+[1] "lasso:4:69.0963151494947"
+[1] "lasso:5:71.2930129844874"
+[1] "lasso:5:71.2930129844874"
+[1] "lasso:6:64.346853676623"
+[1] "lasso:5:71.2930129844874"
+[1] "lasso:7:60.4026784957427"
+[1] "lasso:5:71.2930129844874"
+[1] "lasso:8:63.0795350608942"
+[1] "lasso:5:71.2930129844874"
+[1] "lasso:9:67.7841694038234"
+[1] "lasso:5:71.2930129844874"
+[1] "lasso:10:75.3995180324669"
+[1] "lasso:10:75.3995180324669"
+[1] "lasso:11:78.41367618492"
+[1] "lasso:11:78.41367618492"
+[1] "lasso:12:74.8266438611825"
+[1] "lasso:11:78.41367618492"
+[1] "lasso:13:75.3130242358578"
+[1] "lasso:11:78.41367618492"
+[1] "lasso:14:74.5990077851362"
+[1] "lasso:11:78.41367618492"
+[1] "lasso:15:72.6468960963194"
+[1] "lasso:11:78.41367618492"
+[1] "lasso:16:87.8138320265502"
+[1] "lasso:16:87.8138320265502"
+[1] "lasso:17:91.1176727186858"
+[1] "lasso:17:91.1176727186858"
+[1] "lasso:18:82.4631800774881"
+[1] "lasso:17:91.1176727186858"
+[1] "lasso:19:83.8920207696236"
+[1] "lasso:17:91.1176727186858"
+[1] "lasso:20:79.2137186046164"
+[1] "lasso:17:91.1176727186858"
+[1] "lasso:21:77.1604164396091"
+[1] "lasso:17:91.1176727186858"
+[1] "lasso:22:75.9702095126971"
+[1] "lasso:17:91.1176727186858"
+[1] "lasso:23:75.0240502048326"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "rfe:3:118.661522076407"
+[1] "rfe:3:118.661522076407"
+[1] "rfe:4:124.911791339971"
+[1] "rfe:4:124.911791339971"
+[1] "rfe:5:126.912060603535"
+[1] "rfe:5:126.912060603535"
+[1] "rfe:6:126.961933041702"
+[1] "rfe:6:126.961933041702"
+[1] "rfe:7:123.801488019552"
+[1] "rfe:6:126.961933041702"
+[1] "rfe:8:124.962471568831"
+[1] "rfe:6:126.961933041702"
+[1] "rfe:9:130.057978927633"
+[1] "rfe:9:130.057978927633"
+[1] "rfe:10:127.836025968975"
+[1] "rfe:9:130.057978927633"
+[1] "rfe:11:126.211295232539"
+[1] "rfe:9:130.057978927633"
+[1] "rfe:12:126.975453384992"
+[1] "rfe:9:130.057978927633"
+[1] "rfe:13:130.975722648556"
+[1] "rfe:13:130.975722648556"
+[1] "rfe:14:128.85099191212"
+[1] "rfe:13:130.975722648556"
+[1] "rfe:15:123.345308794732"
+[1] "rfe:13:130.975722648556"
+[1] "rfe:16:122.165022502741"
+[1] "rfe:13:130.975722648556"
+[1] "rfe:17:122.415291766305"
+[1] "rfe:13:130.975722648556"
+[1] "rfe:18:134.524688013996"
+[1] "rfe:18:134.524688013996"
+[1] "rfe:19:134.435671563274"
+[1] "rfe:19:134.524688013996"
+[1] "rfe:20:134.935940826839"
+[1] "rfe:20:134.935940826839"
+[1] "rfe:21:135.436210090403"
+[1] "rfe:21:135.436210090403"
+[1] "rfe:22:134.007907925395"
+[1] "rfe:21:135.436210090403"
+[1] "rfe:23:124.00817718896"
+[1] "rfe:21:135.436210090403"
+[1] "rfe:24:137.151303595381"
+[1] "rfe:24:137.151303595381"
+[1] "rfe:25:135.187287144659"
+[1] "rfe:24:137.151303595381"
+[1] "rfe:26:133.812556408223"
+[1] "rfe:24:137.151303595381"
+[1] "rfe:27:133.312825671788"
+[1] "rfe:24:137.151303595381"
+[1] "rfe:28:133.313094935352"
+[1] "rfe:24:137.151303595381"
+[1] "rfe:29:134.527649913202"
+[1] "rfe:24:137.151303595381"
+[1] "rfe:30:133.18863346248"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "elasticnet:3:57.4650935049782"
+[1] "elasticnet:3:57.4650935049782"
+[1] "elasticnet:4:69.0963151494947"
+[1] "elasticnet:4:69.0963151494947"
+[1] "elasticnet:5:71.2930129844874"
+[1] "elasticnet:5:71.2930129844874"
+[1] "elasticnet:6:64.346853676623"
+[1] "elasticnet:5:71.2930129844874"
+[1] "elasticnet:7:60.4026784957427"
+[1] "elasticnet:5:71.2930129844874"
+[1] "elasticnet:8:63.0795350608942"
+[1] "elasticnet:5:71.2930129844874"
+[1] "elasticnet:9:67.7841694038234"
+[1] "elasticnet:5:71.2930129844874"
+[1] "elasticnet:10:75.3995180324669"
+[1] "elasticnet:10:75.3995180324669"
+[1] "elasticnet:11:78.41367618492"
+[1] "elasticnet:11:78.41367618492"
+[1] "elasticnet:12:74.8266438611825"
+[1] "elasticnet:11:78.41367618492"
+[1] "elasticnet:13:75.3130242358578"
+[1] "elasticnet:11:78.41367618492"
+[1] "elasticnet:14:74.5990077851362"
+[1] "elasticnet:11:78.41367618492"
+[1] "elasticnet:15:72.6468960963194"
+[1] "elasticnet:11:78.41367618492"
+[1] "elasticnet:16:87.8138320265502"
+[1] "elasticnet:16:87.8138320265502"
+[1] "elasticnet:17:91.1176727186858"
+[1] "elasticnet:17:91.1176727186858"
+[1] "elasticnet:18:82.4631800774881"
+[1] "elasticnet:17:91.1176727186858"
+[1] "elasticnet:19:83.8920207696236"
+[1] "elasticnet:17:91.1176727186858"
+[1] "elasticnet:20:79.2137186046164"
+[1] "elasticnet:17:91.1176727186858"
+[1] "elasticnet:21:77.1604164396091"
+[1] "elasticnet:17:91.1176727186858"
+[1] "elasticnet:22:75.9702095126971"
+[1] "elasticnet:17:91.1176727186858"
+[1] "elasticnet:23:75.0240502048326"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "f.test:3:90.3718395367242"
+[1] "f.test:3:90.3718395367242"
+[1] "f.test:4:87.6022675304471"
+[1] "f.test:3:90.3718395367242"
+[1] "f.test:5:98.2295209209954"
+[1] "f.test:5:98.2295209209954"
+[1] "f.test:6:105.001615581385"
+[1] "f.test:6:105.001615581385"
+[1] "f.test:7:106.251884844949"
+[1] "f.test:7:106.251884844949"
+[1] "f.test:8:110.889058870418"
+[1] "f.test:8:110.889058870418"
+[1] "f.test:9:117.782185276839"
+[1] "f.test:9:117.782185276839"
+[1] "f.test:10:118.94912120707"
+[1] "f.test:10:118.94912120707"
+[1] "f.test:11:120.235104756349"
+[1] "f.test:11:120.235104756349"
+[1] "f.test:12:119.259183543722"
+[1] "f.test:11:120.235104756349"
+[1] "f.test:13:118.509452807286"
+[1] "f.test:11:120.235104756349"
+[1] "f.test:14:120.509722070851"
+[1] "f.test:14:120.509722070851"
+[1] "f.test:15:121.843324667748"
+[1] "f.test:15:121.843324667748"
+[1] "f.test:16:121.772165359884"
+[1] "f.test:16:121.843324667748"
+[1] "f.test:17:124.189101290114"
+[1] "f.test:17:124.189101290114"
+[1] "f.test:18:120.522703887012"
+[1] "f.test:17:124.189101290114"
+[1] "f.test:19:120.522973150576"
+[1] "f.test:17:124.189101290114"
+[1] "f.test:20:121.14824241414"
+[1] "f.test:17:124.189101290114"
+[1] "f.test:21:125.190178344371"
+[1] "f.test:21:125.190178344371"
+[1] "f.test:22:126.690447607935"
+[1] "f.test:22:126.690447607935"
+[1] "f.test:23:125.315716871499"
+[1] "f.test:22:126.690447607935"
+[1] "f.test:24:125.440986135063"
+[1] "f.test:22:126.690447607935"
+[1] "f.test:25:125.316255398628"
+[1] "f.test:22:126.690447607935"
+[1] "f.test:26:124.691524662192"
+[1] "f.test:22:126.690447607935"
+[1] "f.test:27:125.941793925756"
+[1] "f.test:22:126.690447607935"
+[1] "f.test:28:126.745634617891"
+[1] "f.test:28:126.745634617891"
+[1] "f.test:29:126.120903881456"
+[1] "f.test:28:126.745634617891"
+[1] "f.test:30:128.74617314502"
+[1] "f.test:30:128.74617314502"
+[1] "f.test:31:127.621442408584"
+[1] "f.test:30:128.74617314502"
+[1] "f.test:32:128.246711672148"
+[1] "f.test:30:128.74617314502"
+[1] "f.test:33:128.746980935712"
+[1] "f.test:33:128.746980935712"
+[1] "f.test:34:128.747250199276"
+[1] "f.test:34:128.747250199276"
+[1] "f.test:35:126.997519462841"
+[1] "f.test:34:128.747250199276"
+[1] "f.test:36:128.122788726405"
+[1] "f.test:34:128.747250199276"
+[1] "f.test:37:128.123057989969"
+[1] "f.test:34:128.747250199276"
+[1] "f.test:38:128.123327253533"
+[1] "f.test:34:128.747250199276"
+[1] "f.test:39:128.123596517097"
+[1] "f.test:34:128.747250199276"
+[1] "f.test:40:128.123865780661"
+[1] "dim of scoring matrix is "
+[1] 22283     5
+[1] 22283
+[1] "DS index stage 1"
+[1] 0.2117406
+[1] "bestgenelist"
+ [1]     1     2     3     4     5     6     7     8     9    10    11    12
+[13]    13    14    15    16    17   198   239   338   759   941  1036  1354
+[25]  1511  1616  1617  2032  2169  2672  2783  3155  3490  4024  4035  4150
+[37]  4194  4325  4390  4408  4441  4536  4556  4593  4713  4752  4967  4998
+[49]  4999  5223  5389  5904  6280  6325  6564  7147  8113  8177  8667  8936
+[61]  9092  9093  9094  9580 10196 10447 10671 11113 11534 11581 11582 11881
+[73] 12339 12343 13543 13819 13931 14925 15102 15240 17203 17560 18171 21125
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+     1405_i_at 1431_at 1438_at 1487_at 1494_f_at 1598_g_at 160020_at 1729_at
+[1,]    6.2325  6.8450  7.5774  9.3080    8.5992   10.6707    9.2059  9.3933
+[2,]    6.9047  5.8878  9.8562  8.8356    8.3173   10.0085    9.2157  9.2443
+[3,]    6.5940  5.6843  7.4038  9.5398    8.7748    9.9406    8.8970  9.0806
+     1773_at 200670_at 200711_s_at 200810_s_at 201231_s_at 201413_at 201508_at
+[1,]  7.5473   13.7430     11.7183     11.3835     12.0096   11.7633   10.8379
+[2,]  7.3025   14.3317     11.5833     11.6389     12.1479   10.9740    8.8812
+[3,]  7.0802   13.0244     12.0750     10.4619     11.5763   10.6308   12.8232
+     201826_s_at 201983_s_at 202088_at 202089_s_at 202504_at 202641_at
+[1,]      9.5482      7.3840   14.6123     14.1629    8.5290   10.1932
+[2,]     10.1227      5.7702   14.9213     14.5094    7.7484    9.7208
+[3,]     10.5279      4.1164   12.9683     11.7586    8.3929   10.1136
+     203144_s_at 203256_at 203628_at 203963_at 204497_at 204508_s_at 204623_at
+[1,]      8.2782    6.3335   10.7755   12.0638    9.5110     10.1763   12.6711
+[2,]      9.3791    4.1360    9.8410   11.3553    8.6670      9.3275   14.7081
+[3,]      7.1955    5.8238    9.4169   12.3832   10.3678      9.9200   15.3238
+     204667_at 204798_at 204863_s_at 204881_s_at 204914_s_at 205009_at
+[1,]   10.7544   10.6744      9.9978     10.5478      6.9654   13.2850
+[2,]   11.4451   10.9593     11.6873     10.7098      4.0367   14.4107
+[3,]   10.7541    9.6387      9.4441     11.3727      3.6401   14.7836
+     205029_s_at 205066_s_at 205186_at 205225_at 205440_s_at 205471_s_at
+[1,]      2.9025     11.4135    8.4455   13.0759      8.6216     10.0126
+[2,]      2.2747     10.7974    8.7276   13.7616     10.7598      8.2965
+[3,]      0.9203     10.1259    9.0776   12.7360      7.7832      7.5720
+     205472_s_at 205696_s_at 205862_at 206378_at 206754_s_at 206799_at
+[1,]      9.4848     11.6168    8.6098    6.1826     12.4854    3.1490
+[2,]      7.7881      9.5737    8.0994   15.2013     10.5188   14.9688
+[3,]      6.0649      7.2600    7.6469   12.9669     11.6232   11.6974
+     207038_at 207626_s_at 208615_s_at 208682_s_at 209173_at 209443_at
+[1,]    8.6291      7.4760     10.2986     12.3746   12.9392    5.0127
+[2,]    9.5709      3.5539     11.7025     13.0787   14.1501    4.8988
+[3,]    9.3182      7.2242     10.0630     11.2795   14.5585    7.8027
+     209602_s_at 209603_at 209604_s_at 210096_at 210735_s_at 211000_s_at
+[1,]     11.1535   10.5793     14.3763    3.6653     11.5638      9.7316
+[2,]     10.8437   10.5772     14.0214    6.9066     10.8918     11.2882
+[3,]     10.7019   11.1181     14.5222    6.3138     11.6213      8.6531
+     211233_x_at 211712_s_at 212148_at 212195_at 212196_at 212496_s_at
+[1,]      8.6243     10.1229   12.2299   12.0684   10.3271     11.2178
+[2,]      9.8059      8.4092   11.1320   13.0105   11.8577     11.4706
+[3,]      8.8004     11.7707   12.6550   10.6865    9.8270      9.5889
+     212956_at 212960_at 214164_x_at 214440_at 214552_s_at 215552_s_at
+[1,]   13.3600   10.8422     12.6474   12.6295      9.8961      8.9322
+[2,]   13.2925   10.5720     11.7852   13.4492      8.6694      9.7896
+[3,]   12.3582    9.8482     12.7464   12.3205      9.0867      8.5444
+     215729_s_at 215867_x_at 217838_s_at 218195_at 218807_at 221765_at
+[1,]      2.9565     12.6194     11.8757   11.0995   11.7120    8.4652
+[2,]      1.5807     11.5534     11.8462   11.6987   11.2932    9.1804
+[3,]      5.6368     12.7285     12.0364   10.9932   10.2407    9.9421
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.3446  7.0781 7.5017 10.6764    6.4327  9.2305  8.1481  6.1196
+[2,]   12.0376  7.6011 7.3458 10.5366    6.5568  9.1180  8.3105  7.1575
+[3,]   10.9684  7.4696 8.3759 11.1175    7.0579  9.3514  8.1214  7.7247
+     1405_i_at 1431_at 1438_at 1487_at 1494_f_at 1598_g_at 160020_at 1729_at
+[1,]    4.2718  7.1375  8.5984  8.9272    9.0705   10.3643   10.1083  8.8569
+[2,]    8.4540  6.6935  8.5378  8.8336    8.7718   11.4333    9.9977  9.2162
+[3,]    9.9479  7.7319  8.2890  9.4868    9.9207   11.6336   10.1420  7.0177
+     1773_at 200670_at 200711_s_at 200810_s_at 201231_s_at 201413_at 201508_at
+[1,]  7.8693   14.4481     11.6623     12.0629     12.3806   11.1588   10.2358
+[2,]  7.8673   12.9502     11.5301     12.2673     12.2088   10.7649   10.4887
+[3,]  7.5146   11.7332     11.4169     11.2106     11.8742   10.3559    9.3978
+     201826_s_at 201983_s_at 202088_at 202089_s_at 202504_at 202641_at
+[1,]     10.3931      6.8644   14.9541     14.0631    7.6253   10.5707
+[2,]      8.5860      9.5840   13.8916     12.7077    9.9958    9.1721
+[3,]      8.7636      9.0904   11.1969     10.1126    9.0808    9.1238
+     203144_s_at 203256_at 203628_at 203963_at 204497_at 204508_s_at 204623_at
+[1,]     10.1543    5.4864    9.4326   12.4052    9.0374      9.8038   12.6644
+[2,]      6.9663    8.4929    9.8046   10.4033    8.4032      7.9689   10.0711
+[3,]      8.6431    5.7603    7.9079    9.8307    3.8503      7.6789    8.6975
+     204667_at 204798_at 204863_s_at 204881_s_at 204914_s_at 205009_at
+[1,]   11.0620   11.9536     10.5781     11.7106      4.5686   14.3747
+[2,]   10.2405   10.5509      9.9332     10.1653      6.6256   11.2149
+[3,]    9.8094    9.7903     10.1938      9.6770      6.1259    9.8209
+     205029_s_at 205066_s_at 205186_at 205225_at 205440_s_at 205471_s_at
+[1,]      3.0068      9.3784    9.6998   13.8754     10.5785      8.5065
+[2,]      3.3895      8.4724    8.2066   11.7217      8.5134      8.1419
+[3,]      4.9401      9.1030    4.7684   10.9960      9.3702      6.4824
+     205472_s_at 205696_s_at 205862_at 206378_at 206754_s_at 206799_at
+[1,]      7.7222      9.0616   10.0742   10.2362     11.4867    7.9310
+[2,]      6.5022      7.7288    7.3888   13.2355      7.4297   10.6196
+[3,]      5.8109      7.1560    4.4202    9.5032      5.9013    6.2148
+     207038_at 207626_s_at 208615_s_at 208682_s_at 209173_at 209443_at
+[1,]   10.1496      8.5889     11.0056     11.6815   13.2041    9.7194
+[2,]    7.1306      7.0887     10.8788     11.6162   11.3631    5.8991
+[3,]    5.5464      5.7342      9.6950      9.9698   11.1800    6.6629
+     209602_s_at 209603_at 209604_s_at 210096_at 210735_s_at 211000_s_at
+[1,]     11.9413   11.9790     15.0625    7.2000     11.3620     10.6617
+[2,]     11.0319   10.8744     14.4978    8.8320      9.5434      9.8946
+[3,]      8.8487    8.0211     12.4583    7.9067      9.2310      9.4886
+     211233_x_at 211712_s_at 212148_at 212195_at 212196_at 212496_s_at
+[1,]      8.7804      9.2284   12.0773   12.7926   11.2350     10.6425
+[2,]      5.7693      6.4300   10.7194   11.7735   10.2715      9.8266
+[3,]      5.6723      8.0450   10.5500   11.2755    9.9777      9.0531
+     212956_at 212960_at 214164_x_at 214440_at 214552_s_at 215552_s_at
+[1,]   13.5201   11.4301     12.7392   14.4201      9.9075      9.2961
+[2,]   12.5480   10.2569     10.9092    9.4904      9.6027      8.1732
+[3,]   11.2917    9.3181     10.6696    9.9120      8.5673      6.9931
+     215729_s_at 215867_x_at 217838_s_at 218195_at 218807_at 221765_at
+[1,]      1.9565     12.5744     11.7325   10.4582   12.5435   10.5778
+[2,]      5.3426     11.0575     10.1952    9.6734   10.8753    8.3228
+[3,]      5.3609     11.0769      9.5668    8.3681   10.1820    8.1290
+[1] "numgenes selected:84"
+[1] "test acc:0.9"
+[1] "test AUC acc:0.904161412358134"
+[1] "10 fold train94.6153846153846"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 49  0
+         2  1 80
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 36  7
+        2  3 54
+[1] "train acc:0.992307692307692"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 49  0
+         2  1 80
+[1] "DS index stage 1"
+[1] 0.2117406
+[1] "KI index stage 1"
+[1] 0.02225016
+There were 50 or more warnings (use warnings() to see the first 50)
+> 
+> cma_feat_list<-colnames(trainm)
+> 
+> save(CMAres,file="CMAres.Rda")
+> write.table(cma_feat_list,file="selected_cma_feat_list.txt",sep="t",row.names=FALSE)
+> 
+> # modtraindata=modtrain, modtestdata=modtest, blindtest=testacc, modtrainclass=nci_y, modtestclass=test_y
+> #if(FALSE)
+> {
++ trainm<-CMAres$modtraindata
++ testm<-CMAres$modtestdata
++ trainclass<-CMAres$modtrainclass
++ testclass<-CMAres$modtestclass
++ learningsets<-CMAres$learningsets
++ }
+> 
+> if(FALSE)
++ {
++ trainclass<-trainm[,1] #CMAres$modtrainclass
++ testclass<-testm[,1] #CMAres$modtestclass
++ trainm<-trainm[,-c(1)] #CMAres$modtrainmata
++ testm<-testm[,-c(1)] #CMAres$modtestmata
++ 
++ }
+> 
+> d_dim<-dim(trainm)
+> 
+> print("Original dimension")
+[1] "Original dimension"
+> print(d_dim)
+[1] 130  84
+> 
+> system.time(psores<-run_pso(outloc=outloc,trainm,trainclass,testm,testclass,transition_matrix,c1=2.05,
++ c2=2.05,
++ itr=10,
++ globalpso_maxitr=10,
++ global_max_itr=5,
++ num_part=20,
++ kname="radial",
++ errortype="BER",
++ weightA<-as.numeric(args[1]),
++ weightB<-as.numeric(args[2]),
++ weightC<-as.numeric(args[3]),
++ weightD<-as.numeric(args[4]),
++ featweight.max=0.01,
++ featweight.min=0.01,
++ numfolds=10,
++ followerprob=as.numeric(args[6]),
++ confusionprob=as.numeric(args[7]),
++ leaderprob=as.numeric(args[8]),
++ wmax=1,
++ wmin=1,
++ behavior_reset_itr=5,
++ maxitrreset=10,
++ num_neighbors=3,
++ minselect.pct=0.5,
++ evalMode="CV2",
++ minfitnessthresh=50,
++ maxnum=as.numeric(args[10]),minnum=3,inertia_method=args[5],particlebehav_method="randbased",constriction_factor=1,
++ select.global.best=TRUE,numnodes=4,evalFunc=eval_fit_kfold_diff,itr.terminate=FALSE,train.pct=0.8))
+[1] "c1: 2.05"
+[1] "c2: 2.05"
+[1] "itr: 10"
+[1] "globalpso_maxitr: 10"
+[1] "global_max_itr: 5"
+[1] "num_part: 20"
+[1] "kname: radial"
+[1] "errortype: BER"
+[1] "weightA: 0.7"
+[1] "weightB: 0.2"
+[1] "weightC: 0.05"
+[1] "weightD: 0.05"
+[1] "featweight.max: 0.01"
+[1] "featweight.min: 0.01"
+[1] "numfolds: 10"
+[1] "followerprob: 0.45"
+[1] "confusionprob: 0.2"
+[1] "leaderprob: 0.25"
+[1] "wmax: 1"
+[1] "wmin: 1"
+[1] "behavior_reset_itr: 5"
+[1] "maxitrreset: 10"
+[1] "num_neighbors: 3"
+[1] "minselect.pct: 0.5"
+[1] "minfitnessthresh: 50"
+[1] "maxnum: 30"
+[1] "minnum: 3"
+[1] "inertia_method: global"
+[1] "particlebehav_method: randbased"
+[1] "constriction_factor: 1"
+[1] "select.global.best: TRUE"
+[1] "train 10 fold"
+[1] 94.61538
+[1] "here"
+[1] "s"
+[1] 104
+[1] 130  84
+[1] 10
+[1] "learning sets: 1"
+  [1] 118 110  23 129  33  31  43  24  42  78  54  30  72   6  46  16  83  29
+ [19]  18 104  73  71  66  76  90  98  51  74   8 103  13  68  45  32  22  15
+ [37] 109   5  17  14  12  96 126  39  95 123  70  19  36  28  82 122 101  55
+ [55]  27  85 121  38  75  84 119   4   7 105  37  86 128 125  44  58 116 107
+ [73]  62  88 106  61  65  69  25  40  81  93  50  10  11   3 114 100 102  63
+ [91]  26   1  52  67  92  41 113  35  64  77  21 130  34   2
+[1] "Starting global iteration number : 1"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -55.31256
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[26] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[51] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[76] NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -58.54623
+[1] "Best solution:"
+ [1] 1 0 0 1 0 0 1 0 1 1 0 1 1 0 1 0 1 0 1 1 0 1 0 0 1 1 0 1 0 0 0 1 1 1 0 0 0 0
+[39] 1 0 1 0 0 0 1 0 0 1 0 1 0 0 0 1 0 0 1 0 1 0 0 0 0 1 1 1 0 1 1 1 1 1 1 1 1 1
+[77] 1 0 0 1 0 0 0 1
+[1] 41
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "iteration number: "
+[1] 8
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 84
+ [1] 3 2 2 3 4 1 2 1 3 2 2 3 4 1 3 2 3 1 3 3
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "Best fitness updated to:"
+[1] -58.77793
+[1] "Best solution:"
+ [1] 1 0 0 0 0 1 0 0 0 0 0 0 1 1 1 0 0 0 1 1 1 1 0 0 0 1 1 1 1 0 0 1 1 1 1 1 1 0
+[39] 0 1 0 1 0 0 0 1 1 0 1 0 0 0 1 0 1 0 0 1 1 1 0 1 0 0 1 0 0 0 1 0 0 0 1 0 0 0
+[77] 1 1 0 0 0 0 0 0
+[1] 35
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 78
+ [1] 3 2 2 3 4 1 2 1 3 2 2 3 4 1 3 2 3 1 3 3
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 74
+ [1] 4 3 2 2 4 3 3 1 2 2 2 2 2 3 4 2 3 4 2 1
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 71
+ [1] 4 3 2 2 4 3 3 1 2 2 2 2 2 3 4 2 3 4 2 1
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "Best fitness updated to:"
+[1] -58.82868
+[1] "Best solution:"
+ [1] 1 0 0 0 0 1 0 0 0 0 0 0 1 1 1 0 0 0 1 1 1 1 0 0 0 1 1 1 1 0 0 1 1 1 1 1 1 0
+[39] 0 1 0 1 0 0 0 1 1 0 1 0 0 0 1 0 1 0 0 1 1 1 0 1 0 0 1 0 0 0 1 0 0 0 1 0 0 0
+[77] 1 1 0 0 0 0 0 0
+[1] 35
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "Best fitness updated to:"
+[1] -58.996
+[1] "Best solution:"
+ [1] 1 0 0 0 0 1 1 0 0 1 0 0 1 0 1 0 0 0 1 0 1 0 0 0 0 1 1 1 1 0 0 1 0 1 1 0 1 0
+[39] 0 1 0 0 0 0 0 1 1 0 1 0 0 0 1 0 1 0 0 1 1 1 0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0
+[77] 0 1 0 1 0 0 0 0
+[1] 30
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "Best fitness updated to:"
+[1] -59.2445
+[1] "Best solution:"
+ [1] 1 0 0 0 0 1 1 0 0 1 0 0 1 0 1 0 0 0 1 0 1 0 0 0 0 1 1 1 1 0 0 1 0 1 1 0 1 0
+[39] 0 1 0 0 0 0 0 1 1 0 1 0 0 0 1 0 1 0 0 1 1 1 0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0
+[77] 0 1 0 1 0 0 0 0
+[1] 30
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "Best fitness updated to:"
+[1] -59.25175
+[1] "Best solution:"
+ [1] 1 0 0 0 0 1 1 0 0 1 0 0 1 0 1 0 0 0 1 0 1 0 0 0 0 1 1 1 1 0 0 1 0 1 0 0 1 0
+[39] 0 1 0 0 0 0 0 1 1 0 1 0 1 0 1 0 1 0 0 1 1 1 0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0
+[77] 0 0 0 1 0 0 0 0
+[1] 29
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "Best fitness updated to:"
+[1] -59.43308
+[1] "Best solution:"
+ [1] 1 0 0 0 0 1 1 0 0 1 0 0 1 0 1 0 0 0 1 0 1 0 0 0 0 1 1 1 1 0 0 1 0 1 0 0 1 0
+[39] 0 1 0 0 0 0 0 1 1 0 1 0 1 0 1 0 1 0 0 1 1 1 0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0
+[77] 0 0 0 1 0 0 0 0
+[1] 29
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "Best fitness updated to:"
+[1] -59.67069
+[1] "Best solution:"
+ [1] 1 0 0 0 0 1 1 0 0 1 0 0 1 0 1 0 0 0 1 0 1 0 0 0 0 1 1 1 1 0 0 1 1 1 1 0 1 0
+[39] 0 1 0 0 0 0 0 1 1 0 1 0 1 0 1 0 1 0 0 1 1 1 0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0
+[77] 0 1 0 1 0 0 0 0
+[1] 32
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "Best fitness updated to:"
+[1] -59.79669
+[1] "Best solution:"
+ [1] 0 1 0 0 0 0 0 0 0 0 0 0 1 0 1 0 0 0 0 0 0 1 1 0 0 0 1 0 0 1 0 0 1 1 1 0 0 0
+[39] 0 1 1 1 0 0 0 0 0 1 0 1 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 1 0
+[77] 0 1 0 0 0 1 0 1
+[1] 23
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "iteration number: "
+[1] 96
+[1] "iteration number: "
+[1] 97
+[1] "iteration number: "
+[1] 98
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 63
+ [1] 4 3 2 2 4 3 3 1 2 2 2 2 2 3 4 2 3 4 2 1
+[1] "iteration number: "
+[1] 99
+[1] "iteration number: "
+[1] 100
+[1] "iteration number: "
+[1] 101
+[1] "iteration number: "
+[1] 102
+[1] "iteration number: "
+[1] 103
+[1] "iteration number: "
+[1] 104
+[1] "iteration number: "
+[1] 105
+[1] "Best fitness updated to:"
+[1] -59.82347
+[1] "Best solution:"
+ [1] 1 0 0 0 0 1 1 0 0 1 0 0 1 0 1 0 0 0 1 0 1 0 0 0 0 1 1 1 1 0 1 1 0 1 1 0 1 0
+[39] 0 1 0 0 0 0 0 1 1 0 1 0 0 0 1 0 1 0 0 1 1 1 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0
+[77] 0 1 0 1 0 0 0 0
+[1] 30
+[1] "iteration number: "
+[1] 106
+[1] "iteration number: "
+[1] 107
+[1] "Best fitness updated to:"
+[1] -59.90173
+[1] "Best solution:"
+ [1] 1 0 0 0 0 1 1 0 0 1 0 0 1 0 1 0 0 0 1 0 1 0 0 0 0 1 1 1 1 0 0 1 0 1 1 0 1 0
+[39] 0 1 0 1 0 0 0 1 1 0 1 0 0 0 1 0 1 0 0 1 1 1 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0
+[77] 1 1 0 0 0 0 0 0
+[1] 30
+[1] "iteration number: "
+[1] 108
+[1] "Best fitness updated to:"
+[1] -59.95463
+[1] "Best solution:"
+ [1] 1 0 0 0 0 1 0 0 0 1 0 0 1 0 1 0 0 0 1 1 1 0 0 0 0 1 1 1 1 0 0 1 0 1 1 0 1 0
+[39] 0 1 0 0 0 0 0 1 1 0 1 0 0 0 1 0 1 0 0 1 1 1 0 1 0 0 1 0 0 0 1 0 0 0 0 0 0 0
+[77] 1 1 0 1 0 0 0 0
+[1] 31
+[1] "iteration number: "
+[1] 109
+[1] "iteration number: "
+[1] 110
+[1] "iteration number: "
+[1] 111
+[1] "iteration number: "
+[1] 112
+[1] "iteration number: "
+[1] 113
+[1] "iteration number: "
+[1] 114
+[1] "iteration number: "
+[1] 115
+[1] "iteration number: "
+[1] 116
+[1] "iteration number: "
+[1] 117
+[1] "iteration number: "
+[1] 118
+[1] "iteration number: "
+[1] 119
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 60
+ [1] 4 3 2 2 4 3 3 1 2 2 2 2 2 3 4 2 3 4 2 1
+[1] "iteration number: "
+[1] 120
+[1] "iteration number: "
+[1] 121
+[1] "iteration number: "
+[1] 122
+[1] "iteration number: "
+[1] 123
+[1] "iteration number: "
+[1] 124
+[1] "iteration number: "
+[1] 125
+[1] "iteration number: "
+[1] 126
+[1] "iteration number: "
+[1] 127
+[1] "iteration number: "
+[1] 128
+[1] "iteration number: "
+[1] 129
+[1] "iteration number: "
+[1] 130
+[1] "Best fitness updated to:"
+[1] -60.01916
+[1] "Best solution:"
+ [1] 1 0 0 0 0 1 0 0 0 1 0 0 1 0 1 0 0 0 1 0 1 0 0 0 0 1 1 1 1 0 0 1 0 1 1 0 1 0
+[39] 0 1 0 0 0 0 0 1 1 0 1 0 0 0 1 0 1 0 0 1 1 1 0 1 0 0 1 0 0 0 1 0 0 0 0 0 0 0
+[77] 1 1 0 0 0 0 0 0
+[1] 29
+[1] "iteration number: "
+[1] 131
+[1] "iteration number: "
+[1] 132
+[1] "Best fitness updated to:"
+[1] -60.09154
+[1] "Best solution:"
+ [1] 1 0 0 0 0 1 1 0 0 1 0 0 1 0 1 0 0 0 1 0 1 0 0 0 0 1 1 1 1 0 0 1 0 1 1 0 1 0
+[39] 0 1 0 0 0 0 0 1 1 0 1 0 0 0 1 0 1 0 0 1 1 1 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0
+[77] 1 0 0 1 0 0 0 0
+[1] 29
+[1] "iteration number: "
+[1] 133
+[1] "iteration number: "
+[1] 134
+[1] "iteration number: "
+[1] 135
+[1] "iteration number: "
+[1] 136
+[1] "iteration number: "
+[1] 137
+[1] "iteration number: "
+[1] 138
+[1] "iteration number: "
+[1] 139
+[1] "iteration number: "
+[1] 140
+[1] "iteration number: "
+[1] 141
+[1] "iteration number: "
+[1] 142
+[1] "iteration number: "
+[1] 143
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 60
+ [1] 4 3 2 2 4 3 3 1 2 2 2 2 2 3 4 2 3 4 2 1
+[1] "iteration number: "
+[1] 144
+[1] "iteration number: "
+[1] 145
+[1] "iteration number: "
+[1] 146
+[1] "iteration number: "
+[1] 147
+[1] "iteration number: "
+[1] 148
+[1] "iteration number: "
+[1] 149
+[1] "iteration number: "
+[1] 150
+[1] "iteration number: "
+[1] 151
+[1] "iteration number: "
+[1] 152
+[1] "iteration number: "
+[1] 153
+[1] "iteration number: "
+[1] 154
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 60
+ [1] 4 3 2 2 4 3 3 1 2 2 2 2 2 3 4 2 3 4 2 1
+[1] "iteration number: "
+[1] 155
+[1] "iteration number: "
+[1] 156
+[1] "iteration number: "
+[1] 157
+[1] "iteration number: "
+[1] 158
+[1] "iteration number: "
+[1] 159
+[1] "iteration number: "
+[1] 160
+[1] "iteration number: "
+[1] 161
+[1] "iteration number: "
+[1] 162
+[1] "iteration number: "
+[1] 163
+[1] "iteration number: "
+[1] 164
+[1] "iteration number: "
+[1] 165
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 60
+ [1] 4 3 2 2 4 3 3 1 2 2 2 2 2 3 4 2 3 4 2 1
+[1] "iteration number: "
+[1] 166
+[1] "Best fitness updated to:"
+[1] -60.31016
+[1] "Best solution:"
+ [1] 1 0 0 0 0 1 0 0 0 1 0 0 1 0 1 0 0 0 1 0 1 0 0 0 0 1 1 1 1 0 0 1 0 1 1 0 1 0
+[39] 0 1 0 0 0 0 0 1 1 0 1 0 0 0 1 0 1 0 0 1 1 1 0 1 0 0 1 0 0 1 1 0 0 0 0 0 0 0
+[77] 0 1 0 0 0 0 0 0
+[1] 29
+[1] "iteration number: "
+[1] 167
+[1] "iteration number: "
+[1] 168
+[1] "iteration number: "
+[1] 169
+[1] "iteration number: "
+[1] 170
+[1] "iteration number: "
+[1] 171
+[1] "iteration number: "
+[1] 172
+[1] "iteration number: "
+[1] 173
+[1] "iteration number: "
+[1] 174
+[1] "iteration number: "
+[1] 175

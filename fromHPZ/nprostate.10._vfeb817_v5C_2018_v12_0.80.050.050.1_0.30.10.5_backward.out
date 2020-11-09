@@ -1,0 +1,504 @@
+
+R version 3.4.0 (2017-04-21) -- "You Stupid Darkness"
+Copyright (C) 2017 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> #.libPaths("/home/kuppal3/karan_libs/Rlibs")
+> library(snow)
+> library(e1071)
+> library(yaImpute)
+
+Attaching package: ‘yaImpute’
+
+The following object is masked from ‘package:e1071’:
+
+    impute
+
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+> library(bioDist)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘parallel’
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, clusterSplit, makeCluster, parApply,
+    parCapply, parLapply, parRapply, parSapply, splitIndices,
+    stopCluster
+
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following object is masked from ‘package:pROC’:
+
+    var
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parRapply, parSapply
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, cbind, colMeans, colnames,
+    colSums, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+    grepl, intersect, is.unsorted, lapply, lengths, Map, mapply, match,
+    mget, order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rowMeans, rownames, rowSums, sapply, setdiff, sort,
+    table, tapply, union, unique, unsplit, which, which.max, which.min
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: KernSmooth
+KernSmooth 2.23 loaded
+Copyright M. P. Wand 1997-2009
+> #library(CMA, lib="/home/kuppal3/karan_libs/Rlibs/")
+> library(RankAggreg)
+> library(CMA)
+
+Attaching package: ‘CMA’
+
+The following object is masked from ‘package:pROC’:
+
+    roc
+
+The following object is masked from ‘package:e1071’:
+
+    tune
+
+> library(expm)
+Loading required package: Matrix
+
+Attaching package: ‘expm’
+
+The following object is masked from ‘package:Matrix’:
+
+    expm
+
+> library(plyr)
+
+Attaching package: ‘plyr’
+
+The following object is masked from ‘package:CMA’:
+
+    join
+
+> library(doParallel)
+Loading required package: foreach
+Loading required package: iterators
+> cl<-makeCluster(1)
+> 
+> 
+> args<-commandArgs(trailingOnly=TRUE)
+> 
+> #dirloc<-"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/"
+> #sname<-paste("/home/stu/kuppal3/Research/Feature_selection/Rcode/versionnov2014/OCFS_",args[9],".R",sep="")
+> sname<-paste("/home/kuppal2/Documents/Projects/xmsPANDA/Other/scripts/OCFS_",args[9],".R",sep="")
+> source(sname)
+> print(sname)
+[1] "/home/kuppal2/Documents/Projects/xmsPANDA/Other/scripts/OCFS_vfeb817_v5C_2018_v12.R"
+> 
+> dirloc<-"/home/kuppal2/Documents/Projects/xmsPANDA/Other/Datasets/Prostate/"
+> 
+> setwd(dirloc)
+> 
+> 
+> 
+> outloc<-paste(dirloc,"/OCFSvmay2415_Prostate",args[9],"/",sep="")
+> 
+> 
+> sname<-paste(dirloc,"Prostate.Rda",sep="")
+> load(sname)
+> 
+> trainm<-Prostate$X
+> testm<-Prostate$Xt
+> trainclass<-Prostate$Y
+> testclass<-Prostate$Yt
+> 
+> 
+> 
+> 
+> 
+> trainm<-cbind(trainclass,trainm)
+> testm<-cbind(testclass,testm)
+> 
+> trainm<-na.omit(trainm)
+> testm<-na.omit(testm)
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/home/kuppal2/Documents/Projects/xmsPANDA/Other/Datasets/Prostate//OCFSvmay2415_Prostatevfeb817_v5C_2018_v12' already exists
+> setwd(outloc)
+> 
+> trainm<-as.matrix(trainm)
+> testm<-as.matrix(testm)
+> trainclass<-trainm[,1] #CMAres$modtrainclass
+> testclass<-testm[,1] #CMAres$modtestclass
+> trainm<-trainm[,-c(1)] #CMAres$modtrainmata
+> testm<-testm[,-c(1)] #CMAres$modtestmata
+> 
+> #a: Confusions
+> #b: Neighbors
+> #c: Global
+> #d: Death
+> 
+> a<-c(0.25,0.25,0.25,0.25)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0.25,0.25,0.5,0)
+> d<-c(0.9,0.1,0,0.1)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0,0.5,0.5,0)
+> d<-c(0.9,0.1,0,0)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.2,0.3,0.4,0.1)
+> c<-c(0,0.4,0.4,0.2)
+> d<-c(0.9,0.1,0,0)
+> 
+> transition_matrix<-rbind(a,b,c,d)
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/home/kuppal2/Documents/Projects/xmsPANDA/Other/Datasets/Prostate//OCFSvmay2415_Prostatevfeb817_v5C_2018_v12' already exists
+> setwd(outloc)
+> temp2=t(trainm)
+> temp2=apply(temp2, 2, function(x){which(x=="MD")})
+> temp2=unlist(temp2)
+> temp2=unique(temp2)
+> if(length(temp2)>1)
++ {
++ 	trainm=trainm[,-c(temp2)]
++ 
++ 	rm(temp2)
++ }
+> 
+> boostweight=rep(0,dim(trainm)[2])
+> 
+> #if(FALSE)
+> {
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("limma"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("lasso"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("rfe"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("elasticnet"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ if(FALSE){
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("rf"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ }
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("f.test"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ }
+[1] "dim of trainm is "
+[1]   61 6033
+[1]   61 6033
+[1] "length of factcols"
+[1] 0
+[1]   61 6033
+[1]   41 6033
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 2 2 1 1
+Levels: 1 2
+[1] "orig train matrix"
+                                                                         
+[1,] -0.54578123 -0.8516873 -0.003043134 -0.1220894  0.8379074 -1.1958825
+[2,] -0.83575852  0.6291059 -1.127423770 -1.1274086 -0.1473340 -0.1643465
+[3,] -0.84966959  0.4419918 -0.968790494 -0.9000653  0.6839473  1.2117126
+[4,] -0.89063254 -0.8549236 -0.771034230 -0.5456977  2.9096575 -1.2019367
+[5,]  0.03316544  3.1724275  1.123120513  0.7368656 -0.7237286 -1.1892243
+                                                  
+[1,] -0.9317487 -1.164679251 -0.5490455  3.8286631
+[2,] -0.2824207  0.139743912 -0.8651916  1.6939603
+[3,]  0.9594948  0.802991219  4.1367085  3.7328098
+[4,]  1.5207587  0.980652255 -0.9775498  1.8656989
+[5,] -0.7814362 -0.007724828 -0.3478894 -0.6713824
+[1] "orig train matrix"
+                                                                         
+[1,] -0.54578123 -0.8516873 -0.003043134 -0.1220894  0.8379074 -1.1958825
+[2,] -0.83575852  0.6291059 -1.127423770 -1.1274086 -0.1473340 -0.1643465
+[3,] -0.84966959  0.4419918 -0.968790494 -0.9000653  0.6839473  1.2117126
+[4,] -0.89063254 -0.8549236 -0.771034230 -0.5456977  2.9096575 -1.2019367
+[5,]  0.03316544  3.1724275  1.123120513  0.7368656 -0.7237286 -1.1892243
+                                                  
+[1,] -0.9317487 -1.164679251 -0.5490455  3.8286631
+[2,] -0.2824207  0.139743912 -0.8651916  1.6939603
+[3,]  0.9594948  0.802991219  4.1367085  3.7328098
+[4,]  1.5207587  0.980652255 -0.9775498  1.8656989
+[5,] -0.7814362 -0.007724828 -0.3478894 -0.6713824
+[1] -0.003043134 -1.127423770 -0.968790494
+[1] "norm train matrix"
+                                                                         
+[1,] -0.54578123 -0.8516873 -0.003043134 -0.1220894  0.8379074 -1.1958825
+[2,] -0.83575852  0.6291059 -1.127423770 -1.1274086 -0.1473340 -0.1643465
+[3,] -0.84966959  0.4419918 -0.968790494 -0.9000653  0.6839473  1.2117126
+[4,] -0.89063254 -0.8549236 -0.771034230 -0.5456977  2.9096575 -1.2019367
+[5,]  0.03316544  3.1724275  1.123120513  0.7368656 -0.7237286 -1.1892243
+                                                  
+[1,] -0.9317487 -1.164679251 -0.5490455  3.8286631
+[2,] -0.2824207  0.139743912 -0.8651916  1.6939603
+[3,]  0.9594948  0.802991219  4.1367085  3.7328098
+[4,]  1.5207587  0.980652255 -0.9775498  1.8656989
+[5,] -0.7814362 -0.007724828 -0.3478894 -0.6713824
+[1] "mean of feat 2"
+[1] -0.1220752
+[1] "sd of feat 2"
+[1] 1.164888
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   61 6033
+GeneSelection: iteration 1 
+
+Attaching package: ‘limma’
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    plotMA
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "backward"
+[1] "limma:10:116.676611967512"
+[1] "limma:10:116.676611967512 : 9"
+[1] "limma:9:101.175617437428"
+[1] "limma:10:116.676611967512 : 8"
+[1] "limma:8:115.59128957401"
+[1] "limma:10:116.676611967512 : 7"
+[1] "limma:7:112.923628377258"
+[1] "limma:10:116.676611967512 : 6"
+[1] "limma:6:107.589300513841"
+[1] "limma:10:116.676611967512 : 5"
+[1] "limma:5:103.588305983756"
+[1] "limma:10:116.676611967512 : 4"
+[1] "limma:4:100.170644787005"
+[1] "dim of scoring matrix is "
+[1] 6033    1
+[1] 6033
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]  478  610  694  735  914 2941 3002 3200 3600 3647
+                                                                     
+[1,]  0.3523077 -0.9436425  3.418485  3.6118660 -0.6832863 -0.2274168
+[2,] -0.8300460  1.1785517 -0.874537 -0.8149619  1.7123557  0.4726325
+[3,] -0.2684535 -1.3201326 -0.495250 -0.8291011  1.0313727 -1.1636745
+                                                 
+[1,]  0.48996778 -0.2664731  2.9995593 -0.6064776
+[2,] -0.89862866  1.3091427 -1.1621560  2.1909283
+[3,] -0.08058525  0.7004428  0.4958446  1.4493698
+                                                                      
+[1,]  2.8785633  0.4530718 -0.9573321 -0.8645951 -0.7478173  0.9749025
+[2,] -0.8229654  0.4364162 -0.4752287 -0.5544799  1.0224178 -1.1416733
+[3,] -0.4537037 -1.3101486 -0.8832488 -0.8250375 -1.1491934  0.1145004
+                                               
+[1,]  1.5184903 -1.1090958 -0.9600797 0.4494994
+[2,] -0.4619267  1.1962921 -1.1504606 0.2482434
+[3,] -0.9067891 -0.8592837  0.7498193 0.6337699
+[1] "numgenes selected:10"
+[1] "test acc:0.609756097560976"
+[1] "test AUC acc:0.64625"
+[1] "10 fold train88.5245901639344"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 35  2
+         2  1 23
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 13 13
+        2  3 12
+[1] "train acc:0.950819672131147"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 35  2
+         2  1 23
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   61 6033
+[1]   61 6033

@@ -1,0 +1,608 @@
+
+R version 3.2.2 (2015-08-14) -- "Fire Safety"
+Copyright (C) 2015 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> #.libPaths("/home/stu/kuppal3/karan_libs/Rlibs")
+> library(snow)
+> library(e1071)
+> library(yaImpute)
+
+Attaching package: ‘yaImpute’
+
+The following object is masked from ‘package:e1071’:
+
+    impute
+
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+> library(bioDist)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘parallel’
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, clusterSplit, makeCluster, parApply,
+    parCapply, parLapply, parRapply, parSapply, splitIndices,
+    stopCluster
+
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parRapply, parSapply
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, as.vector, cbind, colnames,
+    do.call, duplicated, eval, evalq, Filter, Find, get, grep, grepl,
+    intersect, is.unsorted, lapply, lengths, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unlist, unsplit
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: KernSmooth
+KernSmooth 2.23 loaded
+Copyright M. P. Wand 1997-2009
+> #library(CMA, lib="/home/stu/kuppal3/karan_libs/Rlibs/")
+> library(RankAggreg)
+> library(CMA)
+
+Attaching package: ‘CMA’
+
+The following object is masked from ‘package:pROC’:
+
+    roc
+
+The following object is masked from ‘package:e1071’:
+
+    tune
+
+Warning message:
+package ‘CMA’ was built under R version 3.2.4 
+> library(expm)
+Loading required package: Matrix
+
+Attaching package: ‘expm’
+
+The following object is masked from ‘package:Matrix’:
+
+    expm
+
+> 
+> cl<-makeCluster(1)
+> 
+> 
+> args<-commandArgs(trailingOnly=TRUE)
+> #sname<-paste("/home/stu/kuppal3/Research/Feature_selection/Rcode/version2016/OCFS_",args[9],".R",sep="")
+> 
+> sname<-paste("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/version2016/OCFS_",args[9],".R",sep="")
+> source(sname)
+> print(sname)
+[1] "/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/version2016/OCFS_vmay2415_v32_FINAL.R"
+> 
+> #data_loc<-"/home/stu/kuppal3/Research/Feature_selection/Datasets/Prostate/" 
+> data_loc<-"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/Prostate/"
+> 
+> setwd(data_loc)
+> #load("/home/stu/kuppal3/Research/Feature_selection/Datasets/MAQCII_BreastCancer/MaqcIIbr.Rda")
+> 
+> 
+> outloc<-paste(data_loc,"OCFSv062016_v32_Prostate_sensitivity_itr",args[9],"/",sep="")
+> 
+> 
+> load("Prostate.Rda")
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/Prostate/OCFSv062016_v32_Prostate_sensitivity_itrvmay2415_v32_FINAL' already exists
+> setwd(outloc)
+> 
+> 
+> 
+> trainm<-Prostate$X
+> testm<-Prostate$Xt
+> trainclass<-Prostate$Y
+> testclass<-Prostate$Yt
+> 
+> cnames<-paste("var",seq(1,dim(trainm)[2]),sep="")
+> colnames(trainm)<-cnames
+> colnames(testm)<-cnames
+> 
+> trainm<-t(trainm)
+> testm<-t(testm)
+> 
+> args<-commandArgs(trailingOnly=TRUE)
+> 
+> 
+> trainm<-t(trainm)
+> testm<-t(testm)
+> 
+> trainm<-cbind(trainclass,trainm)
+> testm<-cbind(testclass,testm)
+Warning message:
+In .Method(..., deparse.level = deparse.level) :
+  number of rows of result is not a multiple of vector length (arg 1)
+> 
+> trainm<-na.omit(trainm)
+> testm<-na.omit(testm)
+> 
+> 
+> 
+> 
+> 
+> #OCFSvmay2415v2reg_itr1_LassoRFELIMMAELpres1backwsel_l0.25f0.45c0.25_top10pctmaxitrs100minselmedianrandbehavfeatw0.01_CV2accA100B1wrand6methodsmax100wrand/"
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/Prostate/OCFSv062016_v32_Prostate_sensitivity_itrvmay2415_v32_FINAL' already exists
+> setwd(outloc)
+> 
+> trainm<-as.matrix(trainm)
+> testm<-as.matrix(testm)
+> trainclass<-trainm[,1] #CMAres$modtrainclass
+> testclass<-testm[,1] #CMAres$modtestclass
+> trainm<-trainm[,-c(1)] #CMAres$modtrainmata
+> testm<-testm[,-c(1)] #CMAres$modtestmata
+> 
+> #a: Confusions
+> #b: Neighbors
+> #c: Global
+> #d: Death
+> 
+> a<-c(0.25,0.25,0.25,0.25)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0.25,0.25,0.5,0)
+> d<-c(0.9,0.1,0,0.1)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0,0.5,0.5,0)
+> d<-c(0.9,0.1,0,0)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.2,0.3,0.4,0.1)
+> c<-c(0,0.4,0.4,0.2)
+> d<-c(0.9,0.1,0,0)
+> 
+> transition_matrix<-rbind(a,b,c,d)
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/Prostate/OCFSv062016_v32_Prostate_sensitivity_itrvmay2415_v32_FINAL' already exists
+> setwd(outloc)
+> temp2=t(trainm)
+> temp2=apply(temp2, 2, function(x){which(x=="MD")})
+> temp2=unlist(temp2)
+> temp2=unique(temp2)
+> if(length(temp2)>1)
++ {
++ 	trainm=trainm[,-c(temp2)]
++ 
++ 	rm(temp2)
++ }
+> 
+> boostweight=rep(0,dim(trainm)[2])
+> 
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("limma"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="none",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   61 6033
+[1]   61 6033
+[1] "length of factcols"
+[1] 0
+[1]   61 6033
+[1]   41 6033
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 1 1 1 1
+Levels: 1 2
+[1] "orig train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] "orig train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] -0.5320164 -0.5856470 -1.1543512
+[1] "norm train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] "mean of feat 2"
+[1] -0.6215651
+[1] "sd of feat 2"
+[1] 0.4198486
+[1] "maxnum is "
+[1] 100
+[1] "# of genes left after filtering:"
+[1]   61 6033
+GeneSelection: iteration 1 
+
+Attaching package: ‘limma’
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    plotMA
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+[1] "dim of scoring matrix is "
+[1] 6033    1
+[1] 6033
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+  [1]   93  118  241 1120 1243 1346 1455 1640 1788 1839 1881 1897 1898 1903 1973
+ [16] 1991 2025 2115 2179 2317 2354 2386 2425 2428 2456 2485 2503 2584 2619 2746
+ [31] 2752 2775 2800 2808 2816 2848 2895 2913 3005 3006 3032 3118 3225 3249 3300
+ [46] 3306 3318 3366 3372 3392 3423 3493 3587 3609 3665 3705 3713 3725 3783 3792
+ [61] 3833 3842 3934 3950 3967 4019 4034 4078 4155 4212 4218 4225 4266 4288 4313
+ [76] 4353 4355 4448 4474 4498 4701 4822 4849 4880 5016 5035 5134 5171 5248 5249
+ [91] 5304 5337 5343 5391 5489 5639 5808 5933 5963 6010
+           var93   var118     var241    var1120    var1243    var1346   var1455
+[1,]  0.05881336 2.627575 1.72437386 -1.0978915 -0.1451914  0.1399172 2.0812422
+[2,] -0.44915255 2.775756 2.19940337 -0.8358990  0.3313798 -0.8358990 2.4082793
+[3,] -1.15435124 1.115964 0.04981157  0.9733972 -1.1543512  1.0146997 0.7302317
+        var1640    var1788     var1839    var1881   var1897     var1898
+[1,] -0.4324850 -0.4526165 -0.06663936  0.9753993 -1.097891 -0.07007676
+[2,] -0.4491525 -0.7449889 -0.12821383 -0.2752480 -0.835899  0.67996782
+[3,]  0.4164084 -0.3388998 -1.15435124  1.1510412 -1.154351 -1.15435124
+        var1903     var1973    var1991    var2025    var2115    var2179
+[1,]  0.7161394 -0.02301543  0.8569873 -0.6489853 -1.0978915 -0.6005124
+[2,]  0.1461872  0.33137980  1.0337064 -0.3297677 -0.2752480 -0.1747516
+[3,] -0.4814669  0.16636770 -1.1543512 -1.1543512 -0.1887914 -1.1543512
+        var2317    var2354    var2386     var2425     var2428    var2456
+[1,]  0.2527227 -0.6489853 -0.4941625 -0.09095791 -1.09789145 -0.3330800
+[2,]  1.3214479  0.7548167 -0.1747516 -0.17475155  0.03809039  0.1796585
+[3,] -1.1543512 -1.1543512  0.1843351 -0.33889981  0.25264502  0.1843351
+       var2485   var2503   var2584   var2619    var2746    var2752    var2775
+[1,] 1.2668777 1.2409682 1.2445829 0.6272297 -0.4374793 -0.5486974 -0.4836099
+[2,] 0.3590291 1.5500561 0.8242171 1.2275524  1.1475434  0.3858995  0.1461872
+[3,] 1.8700401 0.6918693 0.3747700 0.8523566 -1.1543512 -1.1543512 -1.0730117
+           var2800   var2808    var2816  var2848   var2895   var2913  var3005
+[1,] -0.5102071311 1.4678909  0.5048486 1.422306 0.3494069 0.4516818 3.216172
+[2,] -0.0008470235 0.9347014  1.0201766 1.379274 0.5987414 0.9640525 2.321810
+[3,] -1.1543512436 0.9519713 -0.8671995 1.767979 0.1292567 0.1663677 2.071259
+        var3006    var3032     var3118   var3225    var3249   var3300
+[1,]  2.0003159 -0.1601746  1.21435608  1.277402  0.3494069 3.5363204
+[2,]  1.4425846 -0.3297677  2.08160031  1.147543  1.2598889 3.4205420
+[3,] -0.3388998 -1.1543512 -0.01503624 -1.154351 -1.1543512 0.7208015
+        var3306    var3318    var3366  var3372   var3392    var3423     var3493
+[1,] -1.0978915  0.7052610 -0.1195091 1.355350 0.8529625  0.3605717  0.07081812
+[2,]  0.2119949  0.8242171  0.4622469 1.280853 1.7343285  1.5958489  0.88890860
+[3,]  0.1292567 -1.1543512  0.4561095 1.340330 0.7847237 -1.1543512 -1.15435124
+        var3587   var3609   var3665    var3705    var3713  var3725     var3783
+[1,] -1.0978915  1.218070  1.494119  0.3759921 -0.2804937 2.184102  0.04971242
+[2,] -0.2236769  1.280853  1.451295  0.5329336  0.4863959 2.275446  0.91968011
+[3,] -1.1543512 -1.154351 -1.154351 -1.1543512  0.3604265 1.887133 -1.15435124
+         var3792   var3833    var3842  var3934    var3950    var3967    var4019
+[1,]  0.13154121 0.9610549  0.7360277 1.320077  0.3890194  2.2797128 2.74753843
+[2,]  0.07550045 0.4120335  1.0337064 1.270429  0.9783961  2.7950257 2.90312252
+[3,] -0.01503624 1.3893647 -0.2167749 1.701520 -1.1543512 -0.2167749 0.07037687
+       var4034    var4078    var4155  var4212   var4218    var4225     var4266
+[1,] 2.2673842 0.45168180  0.3605717 1.783935  1.003474 -1.0978915 -0.52105119
+[2,] 1.8027107 0.84080593  0.6992379 1.936803  1.388580 -0.3297677  0.03809039
+[3,] 0.9873879 0.07037687 -1.1543512 0.915021 -1.154351 -1.1543512 -0.10995828
+        var4288  var4313    var4353     var4355    var4448    var4474
+[1,] -0.2144939 1.544562  1.3886201  0.07676587 -0.6124080  0.2352199
+[2,]  1.6323987 1.270429  0.9347014  0.43747062 -0.8358990  0.5773060
+[3,] -0.1616965 1.622881 -1.1543512 -0.24570708 -0.6527231 -0.6527231
+        var4498   var4701   var4822  var4849    var4880   var5016    var5035
+[1,] -1.0978915 1.2878145 0.5751090 1.689462  0.8117799 0.5010076  0.0218920
+[2,] -0.5149603 2.8076595 0.1461872 1.653675  0.3858995 1.6606626  0.3858995
+[3,] -1.1543512 0.5765086 0.9591732 1.326453 -1.1543512 0.3005128 -1.1543512
+      var5134  var5171    var5248    var5249  var5304    var5337       var5343
+[1,] 1.752727 1.295552 -0.9779499  0.1117147 1.488507 -1.0978915 -1.0978914506
+[2,] 1.796693 0.243271 -0.6619945  0.2735540 1.424920  0.7366479 -0.0008470235
+[3,] 1.443901 1.145294 -0.4435309 -0.4072098 1.887133 -1.1543512 -1.1543512436
+       var5391    var5489   var5639     var5808    var5933    var5963
+[1,] 1.8237255 -0.6305262 -1.097891 -0.05980047 -0.1051297 -0.8867861
+[2,] 1.4159642  1.0859843 -0.835899 -0.04144184  0.9196801 -0.4491525
+[3,] 0.4940454 -1.1543512 -1.154351 -1.15435124 -1.1543512 -1.1543512
+        var6010
+[1,] 0.51628227
+[2,] 0.03809039
+[3,] 1.02139319
+          var93   var118   var241    var1120    var1243    var1346     var1455
+[1,] -0.9193153 3.038664 2.236166 -0.9193153 -0.9193153 -0.5213401 -0.01995072
+[2,]  1.1404362 3.424148 2.622571 -0.9011489  0.6591541 -0.3240630 -0.90114892
+[3,]  1.2094727 3.152813 2.247703 -0.8734031  1.1132683 -0.8734031  3.01616353
+        var1640    var1788    var1839   var1881    var1897    var1898
+[1,]  0.6405628 -0.9193153 -0.6617976 0.0912845 -0.8257657 -0.9193153
+[2,] -0.9011489 -0.9011489  2.3738926 1.1280864  0.3564654  0.8247070
+[3,] -0.8734031 -0.8734031  1.4243602 0.2586641 -0.8734031  0.9632371
+         var1903    var1973    var1991    var2025    var2115     var2179
+[1,] -0.82576574  1.2695052 -0.9193153 -0.4579938 -0.6617976 -0.91931531
+[2,] -0.64356102 -0.2709800  0.1774630 -0.7221465 -0.4397018  0.03696735
+[3,] -0.06275233 -0.3569551  1.1005456 -0.5459226 -0.1060162  0.47584442
+        var2317    var2354    var2386    var2425    var2428     var2456
+[1,] -0.9193153 -0.9193153 -0.2389723 -0.9193153 -0.8257657  0.80607065
+[2,]  0.5755466  0.5309119 -0.9011489  0.1097262 -0.2206206 -0.72214654
+[3,]  1.2864951  0.7679291 -0.6959538  0.5904799  0.4259219  0.01840101
+        var2485  var2503     var2584    var2619    var2746    var2752
+[1,]  1.4693432 1.443168 -0.52134014 -0.1454227  0.9026923 -0.9193153
+[2,] -0.1270455 1.562763 -0.90114892  1.4795100 -0.6435610  0.3288074
+[3,]  0.9023876 1.645206 -0.06275233 -0.6180501  0.2886134  0.2886134
+        var2775    var2800   var2808   var2816   var2848   var2895   var2913
+[1,] -0.9193153 -0.1910834 0.7539419 0.4892597 1.3601722 0.4892597 0.3103060
+[2,] -0.4397018  0.4350509 1.5466675 1.5941830 0.4841509 0.9663306 0.7902545
+[3,]  0.6532937  0.3458815 1.5287398 1.6304595 0.7679291 0.8865616 1.0745900
+      var3005  var3006   var3032  var3118  var3225    var3249  var3300
+[1,] 2.573157 1.535913 0.3648494 1.965553 0.281854 -0.9193153 1.605774
+[2,] 3.275596 2.558122 2.0926118 1.891969 1.470783  1.5136629 3.237201
+[3,] 3.257377 2.544301 0.7122982 1.872578 1.451523  1.2970171 3.870024
+        var3306    var3318    var3366   var3372   var3392  var3423     var3493
+[1,] -0.9193153 0.01854549  0.4165207 1.2373211 2.0874872 2.962707 -0.06001864
+[2,]  0.2408266 0.96633055 -0.1270455 0.8579914 0.5755466 1.764125 -0.08340299
+[3,] -0.1512930 0.91796031  0.1958503 1.0205052 1.3479857 1.174501  0.99229233
+        var3587  var3609    var3665    var3705    var3713  var3725    var3783
+[1,] -0.9193153 1.045192 -0.1910834 -0.9193153 -0.1017921 1.551873 -0.5890585
+[2,]  1.3496500 1.266924  1.9792968  0.3288074 -0.6435610 2.561014  1.3496500
+[3,]  0.2886134 1.367648  2.2318120  0.6733619 -0.1987793 2.520777  0.6328029
+         var3792   var3833   var3842   var3934   var3950  var3967  var4019
+[1,] -0.58905854 1.1339069 0.5349203 0.6603923 0.5123555 2.803854 1.878732
+[2,] -0.22062055 0.2710381 1.3789595 1.6246287 2.1018741 2.927803 3.038571
+[3,] -0.02133007 0.3458815 1.3869219 1.7225470 1.6378609 2.684739 3.008981
+       var4034   var4078   var4155  var4212   var4218    var4225    var4266
+[1,] 0.9476556 0.2223492 0.5349203 1.745232 0.4165207 -0.9193153  0.8555699
+[2,] 1.2669236 1.9420427 2.4922452 2.073821 1.4441262  0.5755466 -0.9011489
+[3,] 2.5413913 1.4951752 1.0613480 1.923369 1.4866000  0.0565736 -0.4159597
+        var4288   var4313    var4353    var4355    var4448    var4474
+[1,]  1.8499458 0.9179101 -0.5213401 -0.4579938 -0.5890585 -0.9193153
+[2,] -0.2206206 0.8247070  1.7444223  0.9515664 -0.9011489  0.7902545
+[3,]  0.5462324 0.9632371  1.5121022  0.9632371 -0.8734031  0.7311973
+        var4498    var4701     var4822  var4849    var4880    var5016   var5035
+[1,] -0.6617976  2.5952770  1.01829958 1.906697 -0.1454227  1.1926986 0.0912845
+[2,] -0.1270455 -0.9011489 -0.00153935 1.339682  0.9058933 -0.9011489 0.1774630
+[3,]  0.3999663  2.3050832  0.19585027 1.451523  1.1745009  1.1862983 0.3732995
+      var5134   var5171    var5248    var5249   var5304    var5337    var5343
+[1,] 1.670992 0.2525525 -0.9193153 -0.5213401 2.1323136 -0.9193153 -0.9193153
+[2,] 1.827082 2.6855955  1.2560750  1.7310643 1.3296127  0.5971254  0.4095483
+[3,] 1.818990 1.3964174  1.1504682  1.9558149 0.9483777  0.3999663  0.7122982
+       var5391  var5489    var5639    var5808   var5933    var5963     var6010
+[1,] 0.5123555 1.071368 -0.9193153 -0.9193153 0.5996599 -0.9193153 -0.91931531
+[2,] 1.5627628 1.731064 -0.9011489  0.7545490 1.1526326 -0.5030653 -0.12704550
+[3,] 1.5611853 1.232108 -0.8734031  1.0065010 0.9778732  0.6733619 -0.02133007
+[1] "numgenes selected:100"
+[1] "test acc:0.682926829268293"
+[1] "test AUC acc:0.754545454545455"
+[1] "10 fold train93.4426229508197"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 30  1
+         2  0 30
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 18  1
+        2 12 10
+[1] "train acc:0.983606557377049"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 30  1
+         2  0 30
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+Warning messages:
+1: In if (is.na(boostweight) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+2: In if (is.na(testm) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+3: In if (is.na(testclass) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+4: In mean.default(DS_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+5: In mean.default(DS_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+6: In mean.default(KI_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+> 
+> 
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("lasso"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="none",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   61 6033
+[1]   61 6033
+[1] "length of factcols"
+[1] 0
+[1]   61 6033
+[1]   41 6033
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 1 1 1 1
+Levels: 1 2
+[1] "orig train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] "orig train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] -0.5320164 -0.5856470 -1.1543512
+[1] "norm train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] "mean of feat 2"
+[1] -0.6215651
+[1] "sd of feat 2"
+[1] 0.4198486
+[1] "maxnum is "
+[1] 100
+[1] "# of genes left after filtering:"
+[1]   61 6033
+GeneSelection: iteration 1 
+Loaded glmnet 2.0-5
+
+
+Attaching package: ‘glmnet’
+
+The following object is masked from ‘package:pROC’:
+
+    auc
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 

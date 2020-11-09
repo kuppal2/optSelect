@@ -1,0 +1,22 @@
+* installing *source* package ‘optSelect’ ...
+** using staged installation
+** R
+** data
+** byte-compile and prepare package for lazy loading
+Warning: replacing previous import ‘e1071::impute’ by ‘yaImpute::impute’ when loading ‘optSelect’
+Warning: replacing previous import ‘pROC::roc’ by ‘CMA::roc’ when loading ‘optSelect’
+Warning: replacing previous import ‘e1071::tune’ by ‘CMA::tune’ when loading ‘optSelect’
+** help
+Warning: /Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/optSelect_v0.0.1/man/run_pso.Rd:49: All text must be in a section
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded from temporary location
+Warning: replacing previous import ‘e1071::impute’ by ‘yaImpute::impute’ when loading ‘optSelect’
+Warning: replacing previous import ‘pROC::roc’ by ‘CMA::roc’ when loading ‘optSelect’
+Warning: replacing previous import ‘e1071::tune’ by ‘CMA::tune’ when loading ‘optSelect’
+** testing if installed package can be loaded from final location
+Warning: replacing previous import ‘e1071::impute’ by ‘yaImpute::impute’ when loading ‘optSelect’
+Warning: replacing previous import ‘pROC::roc’ by ‘CMA::roc’ when loading ‘optSelect’
+Warning: replacing previous import ‘e1071::tune’ by ‘CMA::tune’ when loading ‘optSelect’
+** testing if installed package keeps a record of temporary installation path
+* DONE (optSelect)

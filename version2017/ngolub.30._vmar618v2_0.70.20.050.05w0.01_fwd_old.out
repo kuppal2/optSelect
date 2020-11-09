@@ -1,0 +1,3460 @@
+
+R version 3.2.2 (2015-08-14) -- "Fire Safety"
+Copyright (C) 2015 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> #.libPaths("/home/kuppal3/karan_libs/Rlibs")
+> library(snow)
+Warning message:
+package ‘snow’ was built under R version 3.2.5 
+> library(e1071)
+Warning message:
+package ‘e1071’ was built under R version 3.2.5 
+> library(yaImpute)
+
+Attaching package: ‘yaImpute’
+
+The following object is masked from ‘package:e1071’:
+
+    impute
+
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+Warning message:
+package ‘pROC’ was built under R version 3.2.5 
+> library(bioDist)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘parallel’
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, clusterSplit, makeCluster, parApply,
+    parCapply, parLapply, parRapply, parSapply, splitIndices,
+    stopCluster
+
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parRapply, parSapply
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, as.vector, cbind, colnames,
+    do.call, duplicated, eval, evalq, Filter, Find, get, grep, grepl,
+    intersect, is.unsorted, lapply, lengths, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unlist, unsplit
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: KernSmooth
+KernSmooth 2.23 loaded
+Copyright M. P. Wand 1997-2009
+> #library(CMA, lib="/home/kuppal3/karan_libs/Rlibs/")
+> library(RankAggreg)
+Warning message:
+package ‘RankAggreg’ was built under R version 3.2.5 
+> library(CMA)
+
+Attaching package: ‘CMA’
+
+The following object is masked from ‘package:pROC’:
+
+    roc
+
+The following object is masked from ‘package:e1071’:
+
+    tune
+
+Warning message:
+package ‘CMA’ was built under R version 3.2.4 
+> library(expm)
+Loading required package: Matrix
+
+Attaching package: ‘expm’
+
+The following object is masked from ‘package:Matrix’:
+
+    expm
+
+Warning messages:
+1: package ‘expm’ was built under R version 3.2.5 
+2: package ‘Matrix’ was built under R version 3.2.5 
+> 
+> cl<-makeCluster(1)
+> 
+> 
+> args<-commandArgs(trailingOnly=TRUE)
+> 
+> dirloc<-"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/"
+> #sname<-paste("/home/stu/kuppal3/Research/Feature_selection/Rcode/versionnov2014/OCFS_",args[9],".R",sep="")
+> 
+> sname<-paste(dirloc,"version2017/OCFS_",args[9],".R",sep="")
+> source(sname)
+> 
+> outloc<-paste(dirloc,"/Datasets/Golub/OCFSvmay2415_Golub",args[9],"/",sep="")
+> 
+> 
+> sname<-paste(dirloc,"Datasets/Golub/Golub.Rda",sep="")
+> load(sname)
+> 
+> #data_loc<-"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/Golub/"
+> #data_loc<-"/home/kuppal2/Documents/Projects/xmsPANDA/Other/Datasets/Golub/"
+> #load("/home/kuppal3/Research/Feature_selection/Datasets/Golub/Golub.rda")
+> #load("Golub.rda")
+> 
+> trainm<-Golub$X
+> testm<-Golub$Xt
+> trainclass<-Golub$y
+> testclass<-Golub$yt
+> 
+> cnames<-paste("var",seq(1,dim(trainm)[2]),sep="")
+> colnames(trainm)<-cnames
+> colnames(testm)<-cnames
+> 
+> trainm<-t(trainm)
+> testm<-t(testm)
+> 
+> 
+> 
+> trainm[trainm < 100] <- 100
+> trainm[trainm > 16000] <- 16000
+> 
+> testm[testm < 100] <- 100
+> testm[testm > 16000] <- 16000
+> 
+> mmfilt <- function(x,r = 5, d = 500, na.rm = TRUE) {
++  minval <- min(x, na.rm = na.rm)
++  maxval <- max(x, na.rm = na.rm)
++  (maxval/minval > r) && (maxval - minval > d)
++ }
+> 
+> #mmfun <- mmfilt()
+> #ffun <- filterfun(mmfun)
+> #good <- genefilter(X, ffun)
+> 
+> good<-apply(trainm,1,mmfilt)
+> 
+> 
+> trainm<-trainm[good,]
+> 
+> print(dim(trainm))
+[1] 3051   38
+> testm<-testm[good,]
+> 
+> 
+> trainm<-log10(trainm+1)
+>  testm<-log10(testm+1)
+> 
+> 
+> trainm<-t(trainm)
+> testm<-t(testm)
+> 
+> trainm<-cbind(trainclass,trainm)
+> testm<-cbind(testclass,testm)
+> 
+> trainm<-na.omit(trainm)
+> testm<-na.omit(testm)
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO//Datasets/Golub/OCFSvmay2415_Golubvmarch62018_v2' already exists
+> setwd(outloc)
+> 
+> trainm<-as.matrix(trainm)
+> testm<-as.matrix(testm)
+> trainclass<-trainm[,1] #CMAres$modtrainclass
+> testclass<-testm[,1] #CMAres$modtestclass
+> trainm<-trainm[,-c(1)] #CMAres$modtrainmata
+> testm<-testm[,-c(1)] #CMAres$modtestmata
+> 
+> #a: Confusions
+> #b: Neighbors
+> #c: Global
+> #d: Death
+> 
+> a<-c(0.25,0.25,0.25,0.25)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0.25,0.25,0.5,0)
+> d<-c(0.9,0.1,0,0.1)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0,0.5,0.5,0)
+> d<-c(0.9,0.1,0,0)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.2,0.3,0.4,0.1)
+> c<-c(0,0.4,0.4,0.2)
+> d<-c(0.9,0.1,0,0)
+> 
+> transition_matrix<-rbind(a,b,c,d)
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO//Datasets/Golub/OCFSvmay2415_Golubvmarch62018_v2' already exists
+> setwd(outloc)
+> temp2=t(trainm)
+> temp2=apply(temp2, 2, function(x){which(x=="MD")})
+> temp2=unlist(temp2)
+> temp2=unique(temp2)
+> if(length(temp2)>1)
++ {
++ 	trainm=trainm[,-c(temp2)]
++ 
++ 	rm(temp2)
++ }
+> 
+> boostweight=rep(0,dim(trainm)[2])
+> 
+> #if(FALSE)
+> {
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("limma"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("lasso"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("rfe"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("elasticnet"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ if(FALSE){
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("rf"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ }
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("f.test"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ }
+[1] "dim of trainm is "
+[1]   38 3051
+[1]   38 3051
+[1] "length of factcols"
+[1] 0
+[1]   38 3051
+[1]   34 3051
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "maxnum is "
+[1] 30
+[1] "# of genes left after filtering:"
+[1]   38 3051
+GeneSelection: iteration 1 
+
+Attaching package: ‘limma’
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    plotMA
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "limma:3:124.005899705015"
+[1] "limma:3:124.005899705015"
+[1] "limma:4:124.007866273353"
+[1] "limma:4:124.007866273353"
+[1] "limma:5:124.009832841691"
+[1] "limma:5:124.009832841691"
+[1] "limma:6:124.011799410029"
+[1] "limma:6:124.011799410029"
+[1] "limma:7:119.013765978368"
+[1] "limma:6:124.011799410029"
+[1] "limma:8:119.015732546706"
+[1] "limma:6:124.011799410029"
+[1] "limma:9:119.017699115044"
+[1] "limma:6:124.011799410029"
+[1] "limma:10:124.019665683382"
+[1] "limma:10:124.019665683382"
+[1] "limma:11:124.021632251721"
+[1] "limma:11:124.021632251721"
+[1] "limma:12:126.523598820059"
+[1] "limma:12:126.523598820059"
+[1] "limma:13:126.525565388397"
+[1] "limma:13:126.525565388397"
+[1] "limma:14:126.527531956736"
+[1] "limma:14:126.527531956736"
+[1] "limma:15:126.529498525074"
+[1] "limma:15:126.529498525074"
+[1] "limma:16:131.531465093412"
+[1] "limma:16:131.531465093412"
+[1] "limma:17:131.53343166175"
+[1] "limma:17:131.53343166175"
+[1] "limma:18:129.035398230089"
+[1] "limma:17:131.53343166175"
+[1] "limma:19:129.037364798427"
+[1] "limma:17:131.53343166175"
+[1] "limma:20:126.539331366765"
+[1] "limma:17:131.53343166175"
+[1] "limma:21:129.041297935103"
+[1] "limma:17:131.53343166175"
+[1] "limma:22:129.043264503441"
+[1] "limma:17:131.53343166175"
+[1] "limma:23:129.04523107178"
+[1] "dim of scoring matrix is "
+[1] 3051    1
+[1] 3051
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]  378  766  808  829 1009 1069 1413 1448 1778 1977 2124 2489 2663 2664 2670
+[16] 2813 2939
+       var760  var1745  var1834  var1882  var2288  var2402  var3252  var3320
+[1,] 2.209515 2.563481 2.418301 2.482874 2.004321 2.893762 2.004321 3.051153
+[2,] 2.770115 2.795880 2.008600 3.133219 2.004321 2.567026 2.167317 3.026533
+[3,] 2.318063 2.037426 2.491362 2.406540 2.004321 3.103462 2.045323 3.145818
+      var4107  var4499  var4847  var5772  var6200  var6201  var6218  var6539
+[1,] 2.206826 2.488551 2.475671 3.492201 2.466868 2.523746 2.004321 2.212188
+[2,] 2.311754 2.271842 2.488551 3.048830 3.314499 3.728029 2.004321 2.230449
+[3,] 2.004321 2.451786 2.491362 3.657438 2.004321 2.480007 2.004321 2.004321
+      var6855
+[1,] 3.120903
+[2,] 2.953760
+[3,] 2.776701
+       var760  var1745  var1834  var1882  var2288  var2402  var3252  var3320
+[1,] 2.004321 2.217484 2.227887 2.004321 2.004321 2.797960 2.004321 3.050380
+[2,] 2.004321 2.902003 2.389166 2.004321 2.004321 2.918030 2.004321 3.007321
+[3,] 2.356026 2.691965 2.004321 2.004321 2.004321 2.845098 2.004321 2.632457
+      var4107  var4499  var4847  var5772  var6200  var6201  var6218  var6539
+[1,] 2.004321 2.477121 2.252853 3.309204 2.526339 2.870404 2.037426 2.004321
+[2,] 2.096910 2.572872 2.025306 3.175512 2.222716 2.303196 2.230449 2.457882
+[3,] 2.004321 2.004321 2.403121 3.627468 2.178977 2.004321 2.584331 2.614897
+      var6855
+[1,] 3.171726
+[2,] 2.783189
+[3,] 3.170262
+[1] "numgenes selected:17"
+[1] "test acc:0.970588235294118"
+[1] "test AUC acc:0.964285714285714"
+[1] "10 fold train97.3684210526316"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold -1  1
+        -1 27  0
+        1   0 11
+[1] "confusion matrix test"
+         test_y
+pred_test -1  1
+       -1 20  1
+       1   0 13
+[1] "train acc:1"
+[1] "confusion matrix train"
+          nci_y
+pred_train -1  1
+        -1 27  0
+        1   0 11
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   38 3051
+[1]   38 3051
+[1] "length of factcols"
+[1] 0
+[1]   38 3051
+[1]   34 3051
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "maxnum is "
+[1] 30
+[1] "# of genes left after filtering:"
+[1]   38 3051
+GeneSelection: iteration 1 
+Loaded glmnet 2.0-10
+
+
+Attaching package: ‘glmnet’
+
+The following object is masked from ‘package:pROC’:
+
+    auc
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+genelist
+   1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
+  10   10   10   10   10   10   10   10   10   10   10   10   10   10   10   10 
+  17   18   19   20   21   22   23  829  808 2670   24  523 2124   25 2813 1448 
+  10   10   10   10   10   10   10   10    9    8    7    6    5    4    4    3 
+ 792 1995 2198   26  140  378  894 1413 1977 2663 2750 
+   2    2    2    1    1    1    1    1    1    1    1 
+[1] "varselmethod"
+[1] "forward"
+[1] "lasso:3:64.0058997050148"
+[1] "lasso:3:64.0058997050148"
+[1] "lasso:4:64.007866273353"
+[1] "lasso:4:64.007866273353"
+[1] "lasso:5:64.0098328416912"
+[1] "lasso:5:64.0098328416912"
+[1] "lasso:6:64.0117994100295"
+[1] "lasso:6:64.0117994100295"
+[1] "lasso:7:64.0137659783677"
+[1] "lasso:7:64.0137659783677"
+[1] "lasso:8:66.515732546706"
+[1] "lasso:8:66.515732546706"
+[1] "lasso:9:64.0176991150443"
+[1] "lasso:8:66.515732546706"
+[1] "lasso:10:64.0196656833825"
+[1] "lasso:8:66.515732546706"
+[1] "lasso:11:59.0216322517207"
+[1] "lasso:8:66.515732546706"
+[1] "lasso:12:69.023598820059"
+[1] "lasso:12:69.023598820059"
+[1] "lasso:13:74.0255653883972"
+[1] "lasso:13:74.0255653883972"
+[1] "lasso:14:74.0275319567355"
+[1] "lasso:14:74.0275319567355"
+[1] "lasso:15:69.0294985250737"
+[1] "lasso:14:74.0275319567355"
+[1] "lasso:16:74.031465093412"
+[1] "lasso:16:74.031465093412"
+[1] "lasso:17:74.0334316617502"
+[1] "lasso:17:74.0334316617502"
+[1] "lasso:18:79.0353982300885"
+[1] "lasso:18:79.0353982300885"
+[1] "lasso:19:79.0373647984268"
+[1] "lasso:19:79.0373647984268"
+[1] "lasso:20:84.039331366765"
+[1] "lasso:20:84.039331366765"
+[1] "lasso:21:84.0412979351032"
+[1] "lasso:21:84.0412979351032"
+[1] "lasso:22:79.0432645034415"
+[1] "lasso:21:84.0412979351032"
+[1] "lasso:23:79.0452310717797"
+[1] "lasso:21:84.0412979351032"
+[1] "lasso:24:107.380530973451"
+[1] "lasso:24:107.380530973451"
+[1] "lasso:25:119.049164208456"
+[1] "lasso:25:119.049164208456"
+[1] "lasso:26:119.051130776794"
+[1] "lasso:26:119.051130776794"
+[1] "lasso:27:119.053097345133"
+[1] "lasso:27:119.053097345133"
+[1] "lasso:28:119.055063913471"
+[1] "lasso:28:119.055063913471"
+[1] "lasso:29:119.057030481809"
+[1] "lasso:29:119.057030481809"
+[1] "lasso:30:119.058997050147"
+[1] "lasso:30:119.058997050147"
+[1] "lasso:31:119.060963618486"
+[1] "lasso:31:119.060963618486"
+[1] "lasso:32:119.062930186824"
+[1] "lasso:32:119.062930186824"
+[1] "lasso:33:129.064896755162"
+[1] "lasso:33:129.064896755162"
+[1] "lasso:34:129.0668633235"
+[1] "lasso:34:129.0668633235"
+[1] "lasso:35:129.068829891839"
+[1] "lasso:35:129.068829891839"
+[1] "lasso:36:129.070796460177"
+[1] "lasso:36:129.070796460177"
+[1] "lasso:37:129.072763028515"
+[1] "lasso:37:129.072763028515"
+[1] "lasso:38:129.074729596854"
+[1] "lasso:38:129.074729596854"
+[1] "lasso:39:129.076696165192"
+[1] "lasso:39:129.076696165192"
+[1] "lasso:40:129.07866273353"
+[1] "lasso:40:129.07866273353"
+[1] "lasso:41:129.080629301868"
+[1] "lasso:41:129.080629301868"
+[1] "lasso:42:129.082595870206"
+[1] "lasso:42:129.082595870206"
+[1] "lasso:43:129.084562438545"
+[1] "lasso:43:129.084562438545"
+[1] "dim of scoring matrix is "
+[1] 3051    1
+[1] 3051
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15
+[16]   16   17   18   19   20   21   22   23   24   25   26  140  378  523  792
+[31]  808  829  894 1413 1448 1977 1995 2124 2198 2663 2670 2750 2813
+        var36    var37    var38    var39    var40    var41    var42    var43
+[1,] 2.004321 2.334454 2.902003 4.162535 3.988514 3.930949 4.178315 4.046378
+[2,] 2.004321 2.068186 2.637490 2.789581 2.064458 3.181558 4.204147 4.132548
+[3,] 2.021189 2.678518 3.168792 3.753583 3.514946 3.564548 4.204147 4.204147
+        var45    var46    var48    var49    var50    var51    var52    var53
+[1,] 4.204147 4.204147 2.423246 2.004321 2.475671 3.829368 3.816904 3.066326
+[2,] 4.204147 4.204147 2.710963 2.187521 2.456366 3.345570 3.582631 2.816904
+[3,] 4.204147 4.204147 2.785330 2.004321 2.274158 3.521922 3.525045 2.967548
+        var54    var56    var57    var59    var60    var62    var65    var69
+[1,] 3.474653 2.123852 2.737987 2.527630 2.181844 2.450249 2.004321 2.905256
+[2,] 3.503518 2.480007 2.725095 2.622214 2.421604 2.399674 2.230449 2.879096
+[3,] 3.491081 2.720159 2.959995 2.881955 2.004321 2.555094 2.556303 3.400538
+        var72    var73   var312   var760  var1144  var1817  var1834  var1882
+[1,] 2.578639 2.004321 2.916980 2.209515 2.786041 2.133539 2.418301 2.482874
+[2,] 2.397940 2.004321 2.820201 2.770115 2.967548 2.187521 2.008600 3.133219
+[3,] 2.559907 2.004321 3.059185 2.318063 3.229938 2.037426 2.491362 2.406540
+      var2015  var3252  var3320  var4499  var4535  var4847  var5039  var6200
+[1,] 2.004321 2.004321 3.051153 2.488551 3.137671 2.475671 2.778874 2.466868
+[2,] 2.167317 2.167317 3.026533 2.271842 3.073718 2.488551 2.528917 3.314499
+[3,] 2.082785 2.045323 3.145818 2.451786 3.346744 2.491362 2.759668 2.004321
+      var6218  var6376  var6539
+[1,] 2.004321 2.004321 2.212188
+[2,] 2.004321 2.562293 2.230449
+[3,] 2.004321 2.004321 2.004321
+        var36    var37    var38    var39    var40    var41    var42    var43
+[1,] 2.004321 2.133539 2.428135 2.004321 2.004321 2.004321 3.802089 3.716003
+[2,] 2.004321 2.004321 2.572872 2.004321 2.004321 2.004321 4.031691 4.008941
+[3,] 2.004321 2.004321 2.220108 2.021189 2.004321 2.004321 4.007406 4.204147
+        var45    var46    var48    var49    var50    var51    var52    var53
+[1,] 4.204147 4.204147 2.176091 2.004321 2.361728 3.807467 4.204147 2.659916
+[2,] 3.993789 4.122936 2.340444 2.004321 2.004321 2.004321 3.307496 2.537819
+[3,] 3.995767 4.204147 2.204120 2.004321 2.004321 2.450249 2.884229 2.004321
+        var54    var56    var57    var59    var60    var62    var65    var69
+[1,] 2.794488 2.428135 2.004321 2.287802 2.383815 2.401401 2.176091 3.061452
+[2,] 2.779596 2.411620 2.644439 2.820201 2.634477 2.120574 2.004321 3.009451
+[3,] 3.222456 2.344392 2.264818 2.336460 2.418301 2.093422 2.549003 2.260071
+        var72    var73   var312   var760  var1144  var1817  var1834  var1882
+[1,] 2.004321 2.004321 2.659916 2.004321 2.895975 2.863323 2.227887 2.004321
+[2,] 2.004321 2.004321 2.710963 2.004321 2.997823 2.004321 2.389166 2.004321
+[3,] 2.885361 2.004321 2.831230 2.356026 2.789581 2.004321 2.004321 2.004321
+      var2015  var3252  var3320  var4499  var4535  var4847  var5039  var6200
+[1,] 2.004321 2.004321 3.050380 2.477121 2.247973 2.252853 2.668386 2.526339
+[2,] 2.004321 2.004321 3.007321 2.572872 2.691081 2.025306 2.806180 2.222716
+[3,] 2.004321 2.004321 2.632457 2.004321 3.100026 2.403121 2.309630 2.178977
+      var6218  var6376  var6539
+[1,] 2.037426 2.133539 2.004321
+[2,] 2.230449 3.013259 2.457882
+[3,] 2.584331 2.004321 2.614897
+[1] "numgenes selected:43"
+[1] "test acc:0.852941176470588"
+[1] "test AUC acc:0.821428571428571"
+[1] "10 fold train97.3684210526316"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold -1  1
+        -1 27  0
+        1   0 11
+[1] "confusion matrix test"
+         test_y
+pred_test -1  1
+       -1 20  5
+       1   0  9
+[1] "train acc:1"
+[1] "confusion matrix train"
+          nci_y
+pred_train -1  1
+        -1 27  0
+        1   0 11
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   38 3051
+[1]   38 3051
+[1] "length of factcols"
+[1] 0
+[1]   38 3051
+[1]   34 3051
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "maxnum is "
+[1] 30
+[1] "# of genes left after filtering:"
+[1]   38 3051
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "rfe:3:115.672566371681"
+[1] "rfe:3:115.672566371681"
+[1] "rfe:4:110.67453294002"
+[1] "rfe:3:115.672566371681"
+[1] "rfe:5:119.009832841691"
+[1] "rfe:5:119.009832841691"
+[1] "rfe:6:116.511799410029"
+[1] "rfe:5:119.009832841691"
+[1] "rfe:7:119.013765978368"
+[1] "rfe:7:119.013765978368"
+[1] "rfe:8:119.015732546706"
+[1] "rfe:8:119.015732546706"
+[1] "rfe:9:119.017699115044"
+[1] "rfe:9:119.017699115044"
+[1] "rfe:10:119.019665683382"
+[1] "rfe:10:119.019665683382"
+[1] "rfe:11:119.021632251721"
+[1] "rfe:11:119.021632251721"
+[1] "rfe:12:119.023598820059"
+[1] "rfe:12:119.023598820059"
+[1] "rfe:13:124.025565388397"
+[1] "rfe:13:124.025565388397"
+[1] "rfe:14:124.027531956736"
+[1] "rfe:14:124.027531956736"
+[1] "rfe:15:124.029498525074"
+[1] "rfe:15:124.029498525074"
+[1] "rfe:16:124.031465093412"
+[1] "rfe:16:124.031465093412"
+[1] "rfe:17:124.03343166175"
+[1] "rfe:17:124.03343166175"
+[1] "rfe:18:129.035398230089"
+[1] "rfe:18:129.035398230089"
+[1] "rfe:19:129.037364798427"
+[1] "rfe:19:129.037364798427"
+[1] "rfe:20:129.039331366765"
+[1] "rfe:20:129.039331366765"
+[1] "rfe:21:129.041297935103"
+[1] "rfe:21:129.041297935103"
+[1] "rfe:22:129.043264503441"
+[1] "rfe:22:129.043264503441"
+[1] "rfe:23:129.04523107178"
+[1] "rfe:23:129.04523107178"
+[1] "rfe:24:129.047197640118"
+[1] "rfe:24:129.047197640118"
+[1] "rfe:25:129.049164208456"
+[1] "rfe:25:129.049164208456"
+[1] "rfe:26:129.051130776794"
+[1] "rfe:26:129.051130776794"
+[1] "rfe:27:129.053097345133"
+[1] "rfe:27:129.053097345133"
+[1] "rfe:28:129.055063913471"
+[1] "rfe:28:129.055063913471"
+[1] "rfe:29:129.057030481809"
+[1] "rfe:29:129.057030481809"
+[1] "rfe:30:129.058997050147"
+[1] "rfe:30:129.058997050147"
+[1] "rfe:31:129.060963618486"
+[1] "rfe:31:129.060963618486"
+[1] "rfe:32:129.062930186824"
+[1] "rfe:32:129.062930186824"
+[1] "rfe:33:129.064896755162"
+[1] "rfe:33:129.064896755162"
+[1] "rfe:34:129.0668633235"
+[1] "rfe:34:129.0668633235"
+[1] "rfe:35:129.068829891839"
+[1] "rfe:35:129.068829891839"
+[1] "rfe:36:129.070796460177"
+[1] "rfe:36:129.070796460177"
+[1] "rfe:37:129.072763028515"
+[1] "rfe:37:129.072763028515"
+[1] "rfe:38:129.074729596854"
+[1] "rfe:38:129.074729596854"
+[1] "rfe:39:129.076696165192"
+[1] "rfe:39:129.076696165192"
+[1] "rfe:40:129.07866273353"
+[1] "rfe:40:129.07866273353"
+[1] "rfe:41:129.080629301868"
+[1] "rfe:41:129.080629301868"
+[1] "rfe:42:129.082595870206"
+[1] "rfe:42:129.082595870206"
+[1] "rfe:43:129.084562438545"
+[1] "rfe:43:129.084562438545"
+[1] "rfe:44:129.086529006883"
+[1] "rfe:44:129.086529006883"
+[1] "rfe:45:129.088495575221"
+[1] "rfe:45:129.088495575221"
+[1] "rfe:46:129.090462143559"
+[1] "rfe:46:129.090462143559"
+[1] "rfe:47:129.092428711898"
+[1] "rfe:47:129.092428711898"
+[1] "rfe:48:129.094395280236"
+[1] "rfe:48:129.094395280236"
+[1] "rfe:49:129.096361848574"
+[1] "rfe:49:129.096361848574"
+[1] "rfe:50:129.098328416912"
+[1] "rfe:50:129.098328416912"
+[1] "rfe:51:129.100294985251"
+[1] "rfe:51:129.100294985251"
+[1] "rfe:52:129.102261553589"
+[1] "rfe:52:129.102261553589"
+[1] "rfe:53:129.104228121927"
+[1] "rfe:53:129.104228121927"
+[1] "rfe:54:129.106194690265"
+[1] "rfe:54:129.106194690265"
+[1] "rfe:55:129.108161258604"
+[1] "rfe:55:129.108161258604"
+[1] "rfe:56:129.110127826942"
+[1] "rfe:56:129.110127826942"
+[1] "rfe:57:129.11209439528"
+[1] "rfe:57:129.11209439528"
+[1] "rfe:58:129.114060963618"
+[1] "rfe:58:129.114060963618"
+[1] "rfe:59:129.116027531957"
+[1] "rfe:59:129.116027531957"
+[1] "rfe:60:129.117994100295"
+[1] "rfe:60:129.117994100295"
+[1] "rfe:61:129.119960668633"
+[1] "rfe:61:129.119960668633"
+[1] "dim of scoring matrix is "
+[1] 3051    1
+[1] 3051
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]  229  274  303  377  378  475  515  521  583  738  766  773  803  808  829
+[16]  909 1009 1030 1034 1038 1042 1069 1150 1162 1391 1413 1665 1754 1767 1768
+[31] 1829 1920 2026 2065 2119 2124 2208 2306 2402 2427 2553 2561 2562 2572 2600
+[46] 2602 2653 2656 2663 2664 2670 2671 2698 2714 2734 2750 2752 2813 2845 2945
+[61] 2977
+       var487   var567   var618   var758   var760  var1046  var1120  var1133
+[1,] 2.004321 2.522444 2.004321 3.293584 2.209515 2.315970 3.325926 2.720159
+[2,] 2.004321 2.004321 3.042576 2.298853 2.770115 2.334454 3.609594 2.617000
+[3,] 2.004321 2.936011 2.893762 2.763428 2.318063 2.004321 3.571359 2.989450
+      var1304  var1685  var1745  var1779  var1829  var1834  var1882  var2052
+[1,] 2.004321 3.516271 2.563481 2.004321 2.519828 2.418301 2.482874 3.357554
+[2,] 2.518514 3.211654 2.795880 2.004321 2.909556 2.008600 3.133219 2.609594
+[3,] 3.358316 3.444669 2.037426 2.004321 2.328380 2.491362 2.406540 3.461048
+      var2288  var2335  var2345  var2349  var2354  var2402  var2606  var2642
+[1,] 2.004321 3.332640 2.004321 2.220108 3.679337 2.893762 3.008174 3.969742
+[2,] 2.004321 2.004321 3.147985 2.703291 3.431525 2.567026 3.222196 2.952308
+[3,] 2.004321 2.004321 2.004321 2.004321 3.692583 3.103462 3.243038 2.798651
+      var3189  var3252  var3847  var4052  var4079  var4082  var4196  var4399
+[1,] 2.004321 2.004321 2.595496 3.024486 2.004321 2.004321 2.250420 2.737987
+[2,] 2.004321 2.167317 2.075547 3.144885 2.086360 2.954725 3.539202 2.494155
+[3,] 2.004321 2.045323 2.824776 2.915927 2.004321 3.593175 2.620136 3.271842
+      var4595  var4680  var4820  var4847  var5062  var5300  var5552  var5614
+[1,] 2.201397 4.161727 2.883093 2.475671 3.219060 3.582404 3.961184 2.482874
+[2,] 2.004321 2.004321 2.623249 2.488551 3.027757 2.004321 3.611829 2.004321
+[3,] 2.004321 2.004321 2.004321 2.491362 2.556303 2.004321 3.504199 2.437751
+      var5932  var5952  var5954  var5976  var6041  var6049  var6180  var6185
+[1,] 3.522053 2.004321 2.004321 2.004321 3.108903 4.026492 2.004321 2.294466
+[2,] 3.761101 2.004321 2.004321 2.404834 2.733197 3.699317 3.315340 3.326541
+[3,] 2.004321 2.004321 2.004321 2.004321 2.374748 3.429752 3.563955 2.985875
+      var6200  var6201  var6218  var6219  var6277  var6308  var6345  var6376
+[1,] 2.466868 2.523746 2.004321 2.004321 2.004321 2.004321 3.751510 2.004321
+[2,] 3.314499 3.728029 2.004321 2.004321 2.004321 2.545307 3.686547 2.562293
+[3,] 2.004321 2.480007 2.004321 2.004321 2.004321 2.004321 2.004321 2.004321
+      var6378  var6539  var6606  var6884  var6967
+[1,] 2.004321 2.212188 2.187521 2.079181 2.238046
+[2,] 2.509203 2.230449 4.106938 2.004321 3.195623
+[3,] 2.004321 2.004321 2.004321 2.238046 2.505150
+       var487   var567   var618   var758   var760  var1046  var1120  var1133
+[1,] 2.466868 2.436163 2.004321 3.302547 2.004321 2.296665 3.355068 2.888179
+[2,] 2.004321 2.334454 2.450249 3.256237 2.004321 3.350248 3.042576 2.813581
+[3,] 2.910091 2.240549 2.004321 3.589279 2.356026 3.466274 3.009876 2.481443
+      var1304  var1685  var1745  var1779  var1829  var1834  var1882  var2052
+[1,] 2.957128 3.939569 2.217484 2.691081 2.004321 2.227887 2.004321 2.004321
+[2,] 2.004321 3.664172 2.902003 2.004321 2.004321 2.389166 2.004321 2.155336
+[3,] 2.004321 3.172603 2.691965 2.004321 2.776701 2.004321 2.004321 2.004321
+      var2288  var2335  var2345  var2349  var2354  var2402  var2606  var2642
+[1,] 2.004321 3.439648 2.004321 2.313867 3.560385 2.797960 3.253822 4.112906
+[2,] 2.004321 2.004321 2.350248 2.004321 2.718502 2.918030 2.856729 3.258637
+[3,] 2.004321 3.341435 3.839981 2.004321 3.806248 2.845098 3.287130 3.559667
+      var3189  var3252  var3847  var4052  var4079  var4082  var4196  var4399
+[1,] 2.004321 2.004321 2.004321 2.928396 2.004321 2.004321 2.004321 2.342423
+[2,] 2.004321 2.004321 2.004321 2.894870 2.496930 2.973128 3.103804 2.687529
+[3,] 2.602060 2.004321 2.298853 3.345766 2.004321 2.089905 3.073352 2.795185
+      var4595  var4680  var4820  var4847  var5062  var5300  var5552  var5614
+[1,] 2.387390 3.362294 2.990339 2.252853 2.893762 2.788168 3.792392 2.661813
+[2,] 2.004321 2.004321 2.409933 2.025306 2.283301 3.305136 2.492760 3.034227
+[3,] 2.004321 3.138303 2.041393 2.403121 2.992995 2.907411 3.720325 2.004321
+      var5932  var5952  var5954  var5976  var6041  var6049  var6180  var6185
+[1,] 2.004321 2.004321 2.004321 2.004321 2.004321 3.250420 2.004321 2.004321
+[2,] 2.004321 2.004321 2.004321 2.004321 2.557507 2.004321 2.004321 2.290035
+[3,] 2.380211 2.004321 2.004321 2.201397 2.752816 2.004321 2.004321 2.173186
+      var6200  var6201  var6218  var6219  var6277  var6308  var6345  var6376
+[1,] 2.526339 2.870404 2.037426 2.004321 2.004321 2.004321 2.004321 2.133539
+[2,] 2.222716 2.303196 2.230449 2.004321 2.004321 2.004321 2.794488 3.013259
+[3,] 2.178977 2.004321 2.584331 2.354108 2.004321 2.004321 2.089905 2.004321
+      var6378  var6539  var6606  var6884  var6967
+[1,] 2.004321 2.004321 2.017033 2.184691 2.004321
+[2,] 2.004321 2.457882 2.004321 2.604226 2.004321
+[3,] 2.004321 2.614897 2.004321 2.004321 2.629410
+[1] "numgenes selected:61"
+[1] "test acc:0.970588235294118"
+[1] "test AUC acc:0.964285714285714"
+[1] "10 fold train100"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold -1  1
+        -1 27  0
+        1   0 11
+[1] "confusion matrix test"
+         test_y
+pred_test -1  1
+       -1 20  1
+       1   0 13
+[1] "train acc:1"
+[1] "confusion matrix train"
+          nci_y
+pred_train -1  1
+        -1 27  0
+        1   0 11
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   38 3051
+[1]   38 3051
+[1] "length of factcols"
+[1] 0
+[1]   38 3051
+[1]   34 3051
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "maxnum is "
+[1] 30
+[1] "# of genes left after filtering:"
+[1]   38 3051
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "elasticnet:3:64.0058997050148"
+[1] "elasticnet:3:64.0058997050148"
+[1] "elasticnet:4:64.007866273353"
+[1] "elasticnet:4:64.007866273353"
+[1] "elasticnet:5:64.0098328416912"
+[1] "elasticnet:5:64.0098328416912"
+[1] "elasticnet:6:64.0117994100295"
+[1] "elasticnet:6:64.0117994100295"
+[1] "elasticnet:7:64.0137659783677"
+[1] "elasticnet:7:64.0137659783677"
+[1] "elasticnet:8:66.515732546706"
+[1] "elasticnet:8:66.515732546706"
+[1] "elasticnet:9:64.0176991150443"
+[1] "elasticnet:8:66.515732546706"
+[1] "elasticnet:10:64.0196656833825"
+[1] "elasticnet:8:66.515732546706"
+[1] "elasticnet:11:59.0216322517207"
+[1] "elasticnet:8:66.515732546706"
+[1] "elasticnet:12:69.023598820059"
+[1] "elasticnet:12:69.023598820059"
+[1] "elasticnet:13:74.0255653883972"
+[1] "elasticnet:13:74.0255653883972"
+[1] "elasticnet:14:74.0275319567355"
+[1] "elasticnet:14:74.0275319567355"
+[1] "elasticnet:15:69.0294985250737"
+[1] "elasticnet:14:74.0275319567355"
+[1] "elasticnet:16:74.031465093412"
+[1] "elasticnet:16:74.031465093412"
+[1] "elasticnet:17:74.0334316617502"
+[1] "elasticnet:17:74.0334316617502"
+[1] "elasticnet:18:79.0353982300885"
+[1] "elasticnet:18:79.0353982300885"
+[1] "elasticnet:19:79.0373647984268"
+[1] "elasticnet:19:79.0373647984268"
+[1] "elasticnet:20:84.039331366765"
+[1] "elasticnet:20:84.039331366765"
+[1] "elasticnet:21:84.0412979351032"
+[1] "elasticnet:21:84.0412979351032"
+[1] "elasticnet:22:79.0432645034415"
+[1] "elasticnet:21:84.0412979351032"
+[1] "elasticnet:23:79.0452310717797"
+[1] "elasticnet:21:84.0412979351032"
+[1] "elasticnet:24:79.047197640118"
+[1] "elasticnet:21:84.0412979351032"
+[1] "elasticnet:25:74.0491642084562"
+[1] "elasticnet:21:84.0412979351032"
+[1] "elasticnet:26:107.384464110128"
+[1] "elasticnet:26:107.384464110128"
+[1] "elasticnet:27:102.386430678466"
+[1] "elasticnet:26:107.384464110128"
+[1] "elasticnet:28:114.055063913471"
+[1] "elasticnet:28:114.055063913471"
+[1] "elasticnet:29:119.057030481809"
+[1] "elasticnet:29:119.057030481809"
+[1] "elasticnet:30:121.558997050147"
+[1] "elasticnet:30:121.558997050147"
+[1] "elasticnet:31:119.060963618486"
+[1] "elasticnet:30:121.558997050147"
+[1] "elasticnet:32:119.062930186824"
+[1] "elasticnet:30:121.558997050147"
+[1] "elasticnet:33:119.064896755162"
+[1] "elasticnet:30:121.558997050147"
+[1] "elasticnet:34:129.0668633235"
+[1] "elasticnet:34:129.0668633235"
+[1] "elasticnet:35:129.068829891839"
+[1] "elasticnet:35:129.068829891839"
+[1] "elasticnet:36:129.070796460177"
+[1] "elasticnet:36:129.070796460177"
+[1] "elasticnet:37:129.072763028515"
+[1] "elasticnet:37:129.072763028515"
+[1] "elasticnet:38:129.074729596854"
+[1] "elasticnet:38:129.074729596854"
+[1] "elasticnet:39:129.076696165192"
+[1] "elasticnet:39:129.076696165192"
+[1] "elasticnet:40:129.07866273353"
+[1] "elasticnet:40:129.07866273353"
+[1] "elasticnet:41:129.080629301868"
+[1] "elasticnet:41:129.080629301868"
+[1] "elasticnet:42:129.082595870206"
+[1] "elasticnet:42:129.082595870206"
+[1] "dim of scoring matrix is "
+[1] 3051    1
+[1] 3051
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15
+[16]   16   17   18   19   20   21   22   23   24   25   26   27  378  523  792
+[31]  808  829  894 1413 1448 1977 1995 2124 2198 2663 2670 2750
+        var36    var37    var38    var39    var40    var41    var42    var43
+[1,] 2.004321 2.334454 2.902003 4.162535 3.988514 3.930949 4.178315 4.046378
+[2,] 2.004321 2.068186 2.637490 2.789581 2.064458 3.181558 4.204147 4.132548
+[3,] 2.021189 2.678518 3.168792 3.753583 3.514946 3.564548 4.204147 4.204147
+        var45    var46    var48    var49    var50    var51    var52    var53
+[1,] 4.204147 4.204147 2.423246 2.004321 2.475671 3.829368 3.816904 3.066326
+[2,] 4.204147 4.204147 2.710963 2.187521 2.456366 3.345570 3.582631 2.816904
+[3,] 4.204147 4.204147 2.785330 2.004321 2.274158 3.521922 3.525045 2.967548
+        var54    var56    var57    var59    var60    var62    var65    var69
+[1,] 3.474653 2.123852 2.737987 2.527630 2.181844 2.450249 2.004321 2.905256
+[2,] 3.503518 2.480007 2.725095 2.622214 2.421604 2.399674 2.230449 2.879096
+[3,] 3.491081 2.720159 2.959995 2.881955 2.004321 2.555094 2.556303 3.400538
+        var72    var73    var78   var760  var1144  var1817  var1834  var1882
+[1,] 2.578639 2.004321 2.551450 2.209515 2.786041 2.133539 2.418301 2.482874
+[2,] 2.397940 2.004321 2.635484 2.770115 2.967548 2.187521 2.008600 3.133219
+[3,] 2.559907 2.004321 2.781037 2.318063 3.229938 2.037426 2.491362 2.406540
+      var2015  var3252  var3320  var4499  var4535  var4847  var5039  var6200
+[1,] 2.004321 2.004321 3.051153 2.488551 3.137671 2.475671 2.778874 2.466868
+[2,] 2.167317 2.167317 3.026533 2.271842 3.073718 2.488551 2.528917 3.314499
+[3,] 2.082785 2.045323 3.145818 2.451786 3.346744 2.491362 2.759668 2.004321
+      var6218  var6376
+[1,] 2.004321 2.004321
+[2,] 2.004321 2.562293
+[3,] 2.004321 2.004321
+        var36    var37    var38    var39    var40    var41    var42    var43
+[1,] 2.004321 2.133539 2.428135 2.004321 2.004321 2.004321 3.802089 3.716003
+[2,] 2.004321 2.004321 2.572872 2.004321 2.004321 2.004321 4.031691 4.008941
+[3,] 2.004321 2.004321 2.220108 2.021189 2.004321 2.004321 4.007406 4.204147
+        var45    var46    var48    var49    var50    var51    var52    var53
+[1,] 4.204147 4.204147 2.176091 2.004321 2.361728 3.807467 4.204147 2.659916
+[2,] 3.993789 4.122936 2.340444 2.004321 2.004321 2.004321 3.307496 2.537819
+[3,] 3.995767 4.204147 2.204120 2.004321 2.004321 2.450249 2.884229 2.004321
+        var54    var56    var57    var59    var60    var62    var65    var69
+[1,] 2.794488 2.428135 2.004321 2.287802 2.383815 2.401401 2.176091 3.061452
+[2,] 2.779596 2.411620 2.644439 2.820201 2.634477 2.120574 2.004321 3.009451
+[3,] 3.222456 2.344392 2.264818 2.336460 2.418301 2.093422 2.549003 2.260071
+        var72    var73    var78   var760  var1144  var1817  var1834  var1882
+[1,] 2.004321 2.004321 2.049218 2.004321 2.895975 2.863323 2.227887 2.004321
+[2,] 2.004321 2.004321 2.359835 2.004321 2.997823 2.004321 2.389166 2.004321
+[3,] 2.885361 2.004321 2.413300 2.356026 2.789581 2.004321 2.004321 2.004321
+      var2015  var3252  var3320  var4499  var4535  var4847  var5039  var6200
+[1,] 2.004321 2.004321 3.050380 2.477121 2.247973 2.252853 2.668386 2.526339
+[2,] 2.004321 2.004321 3.007321 2.572872 2.691081 2.025306 2.806180 2.222716
+[3,] 2.004321 2.004321 2.632457 2.004321 3.100026 2.403121 2.309630 2.178977
+      var6218  var6376
+[1,] 2.037426 2.133539
+[2,] 2.230449 3.013259
+[3,] 2.584331 2.004321
+[1] "numgenes selected:42"
+[1] "test acc:0.852941176470588"
+[1] "test AUC acc:0.821428571428571"
+[1] "10 fold train97.3684210526316"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold -1  1
+        -1 27  0
+        1   0 11
+[1] "confusion matrix test"
+         test_y
+pred_test -1  1
+       -1 20  5
+       1   0  9
+[1] "train acc:1"
+[1] "confusion matrix train"
+          nci_y
+pred_train -1  1
+        -1 27  0
+        1   0 11
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   38 3051
+[1]   38 3051
+[1] "length of factcols"
+[1] 0
+[1]   38 3051
+[1]   34 3051
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "maxnum is "
+[1] 30
+[1] "# of genes left after filtering:"
+[1]   38 3051
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "f.test:3:124.005899705015"
+[1] "f.test:3:124.005899705015"
+[1] "f.test:4:124.007866273353"
+[1] "f.test:4:124.007866273353"
+[1] "f.test:5:124.009832841691"
+[1] "f.test:5:124.009832841691"
+[1] "f.test:6:121.511799410029"
+[1] "f.test:5:124.009832841691"
+[1] "f.test:7:126.513765978368"
+[1] "f.test:7:126.513765978368"
+[1] "f.test:8:124.015732546706"
+[1] "f.test:7:126.513765978368"
+[1] "f.test:9:129.017699115044"
+[1] "f.test:9:129.017699115044"
+[1] "f.test:10:129.019665683382"
+[1] "f.test:10:129.019665683382"
+[1] "f.test:11:126.521632251721"
+[1] "f.test:10:129.019665683382"
+[1] "f.test:12:126.523598820059"
+[1] "f.test:10:129.019665683382"
+[1] "f.test:13:126.525565388397"
+[1] "f.test:10:129.019665683382"
+[1] "f.test:14:126.527531956736"
+[1] "f.test:10:129.019665683382"
+[1] "f.test:15:126.529498525074"
+[1] "f.test:10:129.019665683382"
+[1] "f.test:16:131.531465093412"
+[1] "f.test:16:131.531465093412"
+[1] "f.test:17:131.53343166175"
+[1] "f.test:17:131.53343166175"
+[1] "f.test:18:131.535398230089"
+[1] "f.test:18:131.535398230089"
+[1] "f.test:19:131.537364798427"
+[1] "f.test:19:131.537364798427"
+[1] "f.test:20:131.539331366765"
+[1] "f.test:20:131.539331366765"
+[1] "f.test:21:129.041297935103"
+[1] "f.test:20:131.539331366765"
+[1] "f.test:22:129.043264503441"
+[1] "f.test:20:131.539331366765"
+[1] "f.test:23:129.04523107178"
+[1] "f.test:20:131.539331366765"
+[1] "f.test:24:126.547197640118"
+[1] "f.test:20:131.539331366765"
+[1] "f.test:25:129.049164208456"
+[1] "f.test:20:131.539331366765"
+[1] "f.test:26:129.051130776794"
+[1] "dim of scoring matrix is "
+[1] 3051    1
+[1] 3051
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]  378  766  808  829  937 1009 1413 1448 1778 1977 1995 2124 2198 2489 2663
+[16] 2664 2670 2750 2761 2939
+       var760  var1745  var1834  var1882  var2121  var2288  var3252  var3320
+[1,] 2.209515 2.563481 2.418301 2.482874 3.149527 2.004321 2.004321 3.051153
+[2,] 2.770115 2.795880 2.008600 3.133219 3.366610 2.004321 2.167317 3.026533
+[3,] 2.318063 2.037426 2.491362 2.406540 3.445604 2.004321 2.045323 3.145818
+      var4107  var4499  var4535  var4847  var5039  var5772  var6200  var6201
+[1,] 2.206826 2.488551 3.137671 2.475671 2.778874 3.492201 2.466868 2.523746
+[2,] 2.311754 2.271842 3.073718 2.488551 2.528917 3.048830 3.314499 3.728029
+[3,] 2.004321 2.451786 3.346744 2.491362 2.759668 3.657438 2.004321 2.480007
+      var6218  var6376  var6405  var6855
+[1,] 2.004321 2.004321 2.004321 3.120903
+[2,] 2.004321 2.562293 2.322219 2.953760
+[3,] 2.004321 2.004321 2.110590 2.776701
+       var760  var1745  var1834  var1882  var2121  var2288  var3252  var3320
+[1,] 2.004321 2.217484 2.227887 2.004321 2.978637 2.004321 2.004321 3.050380
+[2,] 2.004321 2.902003 2.389166 2.004321 3.003891 2.004321 2.004321 3.007321
+[3,] 2.356026 2.691965 2.004321 2.004321 3.082426 2.004321 2.004321 2.632457
+      var4107  var4499  var4535  var4847  var5039  var5772  var6200  var6201
+[1,] 2.004321 2.477121 2.247973 2.252853 2.668386 3.309204 2.526339 2.870404
+[2,] 2.096910 2.572872 2.691081 2.025306 2.806180 3.175512 2.222716 2.303196
+[3,] 2.004321 2.004321 3.100026 2.403121 2.309630 3.627468 2.178977 2.004321
+      var6218  var6376  var6405  var6855
+[1,] 2.037426 2.133539 2.004321 3.171726
+[2,] 2.230449 3.013259 2.004321 2.783189
+[3,] 2.584331 2.004321 2.004321 3.170262
+[1] "numgenes selected:20"
+[1] "test acc:0.970588235294118"
+[1] "test AUC acc:0.964285714285714"
+[1] "10 fold train100"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold -1  1
+        -1 27  0
+        1   0 11
+[1] "confusion matrix test"
+         test_y
+pred_test -1  1
+       -1 20  1
+       1   0 13
+[1] "train acc:1"
+[1] "confusion matrix train"
+          nci_y
+pred_train -1  1
+        -1 27  0
+        1   0 11
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+There were 50 or more warnings (use warnings() to see the first 50)
+> #1
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("limma","lasso","rfe","elasticnet", "f.test"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   38 3051
+[1]   38 3051
+[1] "length of factcols"
+[1] 0
+[1]   38 3051
+[1]   34 3051
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "maxnum is "
+[1] 30
+[1] "# of genes left after filtering:"
+[1]   38 3051
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "limma:3:124.005899705015"
+[1] "limma:3:124.005899705015"
+[1] "limma:4:124.007866273353"
+[1] "limma:4:124.007866273353"
+[1] "limma:5:124.009832841691"
+[1] "limma:5:124.009832841691"
+[1] "limma:6:124.011799410029"
+[1] "limma:6:124.011799410029"
+[1] "limma:7:119.013765978368"
+[1] "limma:6:124.011799410029"
+[1] "limma:8:119.015732546706"
+[1] "limma:6:124.011799410029"
+[1] "limma:9:119.017699115044"
+[1] "limma:6:124.011799410029"
+[1] "limma:10:124.019665683382"
+[1] "limma:10:124.019665683382"
+[1] "limma:11:124.021632251721"
+[1] "limma:11:124.021632251721"
+[1] "limma:12:126.523598820059"
+[1] "limma:12:126.523598820059"
+[1] "limma:13:126.525565388397"
+[1] "limma:13:126.525565388397"
+[1] "limma:14:126.527531956736"
+[1] "limma:14:126.527531956736"
+[1] "limma:15:126.529498525074"
+[1] "limma:15:126.529498525074"
+[1] "limma:16:131.531465093412"
+[1] "limma:16:131.531465093412"
+[1] "limma:17:131.53343166175"
+[1] "limma:17:131.53343166175"
+[1] "limma:18:129.035398230089"
+[1] "limma:17:131.53343166175"
+[1] "limma:19:129.037364798427"
+[1] "limma:17:131.53343166175"
+[1] "limma:20:126.539331366765"
+[1] "limma:17:131.53343166175"
+[1] "limma:21:129.041297935103"
+[1] "limma:17:131.53343166175"
+[1] "limma:22:129.043264503441"
+[1] "limma:17:131.53343166175"
+[1] "limma:23:129.04523107178"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+genelist
+   1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
+  10   10   10   10   10   10   10   10   10   10   10   10   10   10   10   10 
+  17   18   19   20   21   22   23   24   25   26   27   28   29   30   31   32 
+  10   10   10   10   10   10   10   10   10   10   10   10   10   10   10   10 
+  33   34   35   36   37   38   39   40   41   42   43   44   45   46   47   48 
+  10   10   10   10   10   10   10   10   10   10   10   10   10   10   10   10 
+  49   50   51   52  829  808 2670   53  523 2124   54 2813 1448  792 1995 2198 
+  10   10   10   10   10    9    8    7    6    5    4    4    3    2    2    2 
+  55  140  378  894 1413 1977 2663 2750 
+   1    1    1    1    1    1    1    1 
+[1] "varselmethod"
+[1] "forward"
+[1] "lasso:3:64.0058997050148"
+[1] "lasso:3:64.0058997050148"
+[1] "lasso:4:64.007866273353"
+[1] "lasso:4:64.007866273353"
+[1] "lasso:5:64.0098328416912"
+[1] "lasso:5:64.0098328416912"
+[1] "lasso:6:64.0117994100295"
+[1] "lasso:6:64.0117994100295"
+[1] "lasso:7:64.0137659783677"
+[1] "lasso:7:64.0137659783677"
+[1] "lasso:8:66.515732546706"
+[1] "lasso:8:66.515732546706"
+[1] "lasso:9:64.0176991150443"
+[1] "lasso:8:66.515732546706"
+[1] "lasso:10:64.0196656833825"
+[1] "lasso:8:66.515732546706"
+[1] "lasso:11:59.0216322517207"
+[1] "lasso:8:66.515732546706"
+[1] "lasso:12:69.023598820059"
+[1] "lasso:12:69.023598820059"
+[1] "lasso:13:74.0255653883972"
+[1] "lasso:13:74.0255653883972"
+[1] "lasso:14:74.0275319567355"
+[1] "lasso:14:74.0275319567355"
+[1] "lasso:15:69.0294985250737"
+[1] "lasso:14:74.0275319567355"
+[1] "lasso:16:74.031465093412"
+[1] "lasso:16:74.031465093412"
+[1] "lasso:17:74.0334316617502"
+[1] "lasso:17:74.0334316617502"
+[1] "lasso:18:79.0353982300885"
+[1] "lasso:18:79.0353982300885"
+[1] "lasso:19:79.0373647984268"
+[1] "lasso:19:79.0373647984268"
+[1] "lasso:20:84.039331366765"
+[1] "lasso:20:84.039331366765"
+[1] "lasso:21:84.0412979351032"
+[1] "lasso:21:84.0412979351032"
+[1] "lasso:22:79.0432645034415"
+[1] "lasso:21:84.0412979351032"
+[1] "lasso:23:79.0452310717797"
+[1] "lasso:21:84.0412979351032"
+[1] "lasso:24:79.047197640118"
+[1] "lasso:21:84.0412979351032"
+[1] "lasso:25:74.0491642084562"
+[1] "lasso:21:84.0412979351032"
+[1] "lasso:26:69.0511307767945"
+[1] "lasso:21:84.0412979351032"
+[1] "lasso:27:69.0530973451327"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "rfe:3:120.672566371681"
+[1] "rfe:3:120.672566371681"
+[1] "rfe:4:120.67453294002"
+[1] "rfe:4:120.67453294002"
+[1] "rfe:5:120.676499508358"
+[1] "rfe:5:120.676499508358"
+[1] "rfe:6:120.678466076696"
+[1] "rfe:6:120.678466076696"
+[1] "rfe:7:120.680432645034"
+[1] "rfe:7:120.680432645034"
+[1] "rfe:8:120.682399213373"
+[1] "rfe:8:120.682399213373"
+[1] "rfe:9:124.017699115044"
+[1] "rfe:9:124.017699115044"
+[1] "rfe:10:120.686332350049"
+[1] "rfe:9:124.017699115044"
+[1] "rfe:11:120.688298918387"
+[1] "rfe:9:124.017699115044"
+[1] "rfe:12:115.690265486726"
+[1] "rfe:9:124.017699115044"
+[1] "rfe:13:115.692232055064"
+[1] "rfe:9:124.017699115044"
+[1] "rfe:14:115.694198623402"
+[1] "rfe:9:124.017699115044"
+[1] "rfe:15:115.69616519174"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "elasticnet:3:64.0058997050148"
+[1] "elasticnet:3:64.0058997050148"
+[1] "elasticnet:4:64.007866273353"
+[1] "elasticnet:4:64.007866273353"
+[1] "elasticnet:5:64.0098328416912"
+[1] "elasticnet:5:64.0098328416912"
+[1] "elasticnet:6:64.0117994100295"
+[1] "elasticnet:6:64.0117994100295"
+[1] "elasticnet:7:64.0137659783677"
+[1] "elasticnet:7:64.0137659783677"
+[1] "elasticnet:8:66.515732546706"
+[1] "elasticnet:8:66.515732546706"
+[1] "elasticnet:9:64.0176991150443"
+[1] "elasticnet:8:66.515732546706"
+[1] "elasticnet:10:64.0196656833825"
+[1] "elasticnet:8:66.515732546706"
+[1] "elasticnet:11:59.0216322517207"
+[1] "elasticnet:8:66.515732546706"
+[1] "elasticnet:12:69.023598820059"
+[1] "elasticnet:12:69.023598820059"
+[1] "elasticnet:13:74.0255653883972"
+[1] "elasticnet:13:74.0255653883972"
+[1] "elasticnet:14:74.0275319567355"
+[1] "elasticnet:14:74.0275319567355"
+[1] "elasticnet:15:69.0294985250737"
+[1] "elasticnet:14:74.0275319567355"
+[1] "elasticnet:16:74.031465093412"
+[1] "elasticnet:16:74.031465093412"
+[1] "elasticnet:17:74.0334316617502"
+[1] "elasticnet:17:74.0334316617502"
+[1] "elasticnet:18:79.0353982300885"
+[1] "elasticnet:18:79.0353982300885"
+[1] "elasticnet:19:79.0373647984268"
+[1] "elasticnet:19:79.0373647984268"
+[1] "elasticnet:20:84.039331366765"
+[1] "elasticnet:20:84.039331366765"
+[1] "elasticnet:21:84.0412979351032"
+[1] "elasticnet:21:84.0412979351032"
+[1] "elasticnet:22:79.0432645034415"
+[1] "elasticnet:21:84.0412979351032"
+[1] "elasticnet:23:79.0452310717797"
+[1] "elasticnet:21:84.0412979351032"
+[1] "elasticnet:24:79.047197640118"
+[1] "elasticnet:21:84.0412979351032"
+[1] "elasticnet:25:74.0491642084562"
+[1] "elasticnet:21:84.0412979351032"
+[1] "elasticnet:26:69.0511307767945"
+[1] "elasticnet:21:84.0412979351032"
+[1] "elasticnet:27:69.0530973451327"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "forward"
+[1] "f.test:3:105.672566371681"
+[1] "f.test:3:105.672566371681"
+[1] "f.test:4:118.17453294002"
+[1] "f.test:4:118.17453294002"
+[1] "f.test:5:115.676499508358"
+[1] "f.test:4:118.17453294002"
+[1] "f.test:6:113.178466076696"
+[1] "f.test:4:118.17453294002"
+[1] "f.test:7:108.180432645034"
+[1] "f.test:4:118.17453294002"
+[1] "f.test:8:118.182399213373"
+[1] "f.test:8:118.182399213373"
+[1] "f.test:9:118.184365781711"
+[1] "f.test:9:118.184365781711"
+[1] "f.test:10:125.686332350049"
+[1] "f.test:10:125.686332350049"
+[1] "f.test:11:128.188298918387"
+[1] "f.test:11:128.188298918387"
+[1] "f.test:12:120.690265486726"
+[1] "f.test:11:128.188298918387"
+[1] "f.test:13:125.692232055064"
+[1] "f.test:11:128.188298918387"
+[1] "f.test:14:128.194198623402"
+[1] "f.test:14:128.194198623402"
+[1] "f.test:15:125.69616519174"
+[1] "f.test:14:128.194198623402"
+[1] "f.test:16:125.698131760079"
+[1] "f.test:14:128.194198623402"
+[1] "f.test:17:125.700098328417"
+[1] "f.test:14:128.194198623402"
+[1] "f.test:18:125.702064896755"
+[1] "f.test:14:128.194198623402"
+[1] "f.test:19:125.704031465093"
+[1] "f.test:14:128.194198623402"
+[1] "f.test:20:129.039331366765"
+[1] "f.test:20:129.039331366765"
+[1] "f.test:21:129.041297935103"
+[1] "f.test:21:129.041297935103"
+[1] "f.test:22:129.043264503441"
+[1] "f.test:22:129.043264503441"
+[1] "f.test:23:129.04523107178"
+[1] "f.test:23:129.04523107178"
+[1] "f.test:24:129.047197640118"
+[1] "f.test:24:129.047197640118"
+[1] "f.test:25:129.049164208456"
+[1] "f.test:25:129.049164208456"
+[1] "f.test:26:129.051130776794"
+[1] "f.test:26:129.051130776794"
+[1] "f.test:27:129.053097345133"
+[1] "f.test:27:129.053097345133"
+[1] "f.test:28:129.055063913471"
+[1] "f.test:28:129.055063913471"
+[1] "f.test:29:129.057030481809"
+[1] "f.test:29:129.057030481809"
+[1] "f.test:30:129.058997050147"
+[1] "f.test:30:129.058997050147"
+[1] "f.test:31:129.060963618486"
+[1] "f.test:31:129.060963618486"
+[1] "f.test:32:129.062930186824"
+[1] "f.test:32:129.062930186824"
+[1] "f.test:33:129.064896755162"
+[1] "f.test:33:129.064896755162"
+[1] "f.test:34:129.0668633235"
+[1] "f.test:34:129.0668633235"
+[1] "f.test:35:129.068829891839"
+[1] "f.test:35:129.068829891839"
+[1] "f.test:36:129.070796460177"
+[1] "f.test:36:129.070796460177"
+[1] "f.test:37:129.072763028515"
+[1] "f.test:37:129.072763028515"
+[1] "f.test:38:129.074729596854"
+[1] "f.test:38:129.074729596854"
+[1] "f.test:39:129.076696165192"
+[1] "f.test:39:129.076696165192"
+[1] "f.test:40:129.07866273353"
+[1] "f.test:40:129.07866273353"
+[1] "f.test:41:129.080629301868"
+[1] "f.test:41:129.080629301868"
+[1] "f.test:42:129.082595870206"
+[1] "f.test:42:129.082595870206"
+[1] "f.test:43:129.084562438545"
+[1] "f.test:43:129.084562438545"
+[1] "f.test:44:129.086529006883"
+[1] "f.test:44:129.086529006883"
+[1] "f.test:45:129.088495575221"
+[1] "f.test:45:129.088495575221"
+[1] "f.test:46:129.090462143559"
+[1] "f.test:46:129.090462143559"
+[1] "f.test:47:129.092428711898"
+[1] "f.test:47:129.092428711898"
+[1] "f.test:48:129.094395280236"
+[1] "f.test:48:129.094395280236"
+[1] "f.test:49:129.096361848574"
+[1] "f.test:49:129.096361848574"
+[1] "f.test:50:129.098328416912"
+[1] "f.test:50:129.098328416912"
+[1] "f.test:51:129.100294985251"
+[1] "f.test:51:129.100294985251"
+[1] "f.test:52:129.102261553589"
+[1] "f.test:52:129.102261553589"
+[1] "f.test:53:129.104228121927"
+[1] "f.test:53:129.104228121927"
+[1] "f.test:54:129.106194690265"
+[1] "f.test:54:129.106194690265"
+[1] "f.test:55:129.108161258604"
+[1] "f.test:55:129.108161258604"
+[1] "f.test:56:129.110127826942"
+[1] "f.test:56:129.110127826942"
+[1] "f.test:57:129.11209439528"
+[1] "f.test:57:129.11209439528"
+[1] "f.test:58:129.114060963618"
+[1] "f.test:58:129.114060963618"
+[1] "f.test:59:129.116027531957"
+[1] "f.test:59:129.116027531957"
+[1] "f.test:60:129.117994100295"
+[1] "f.test:60:129.117994100295"
+[1] "f.test:61:129.119960668633"
+[1] "f.test:61:129.119960668633"
+[1] "f.test:62:129.121927236971"
+[1] "f.test:62:129.121927236971"
+[1] "f.test:63:129.12389380531"
+[1] "f.test:63:129.12389380531"
+[1] "f.test:64:129.125860373648"
+[1] "f.test:64:129.125860373648"
+[1] "f.test:65:129.127826941986"
+[1] "f.test:65:129.127826941986"
+[1] "f.test:66:129.129793510324"
+[1] "f.test:66:129.129793510324"
+[1] "f.test:67:129.131760078663"
+[1] "f.test:67:129.131760078663"
+[1] "f.test:68:129.133726647001"
+[1] "f.test:68:129.133726647001"
+[1] "f.test:69:129.135693215339"
+[1] "f.test:69:129.135693215339"
+[1] "f.test:70:129.137659783677"
+[1] "f.test:70:129.137659783677"
+[1] "f.test:71:129.139626352016"
+[1] "f.test:71:129.139626352016"
+[1] "f.test:72:129.141592920354"
+[1] "f.test:72:129.141592920354"
+[1] "f.test:73:129.143559488692"
+[1] "f.test:73:129.143559488692"
+[1] "f.test:74:129.14552605703"
+[1] "f.test:74:129.14552605703"
+[1] "f.test:75:129.147492625369"
+[1] "f.test:75:129.147492625369"
+[1] "f.test:76:129.149459193707"
+[1] "f.test:76:129.149459193707"
+[1] "f.test:77:129.151425762045"
+[1] "f.test:77:129.151425762045"
+[1] "f.test:78:129.153392330383"
+[1] "f.test:78:129.153392330383"
+[1] "f.test:79:129.155358898722"
+[1] "f.test:79:129.155358898722"
+[1] "f.test:80:129.15732546706"
+[1] "f.test:80:129.15732546706"
+[1] "f.test:81:129.159292035398"
+[1] "f.test:81:129.159292035398"
+[1] "f.test:82:129.161258603736"
+[1] "f.test:82:129.161258603736"
+[1] "f.test:83:129.163225172075"
+[1] "f.test:83:129.163225172075"
+[1] "f.test:84:129.165191740413"
+[1] "f.test:84:129.165191740413"
+[1] "f.test:85:129.167158308751"
+[1] "f.test:85:129.167158308751"
+[1] "f.test:86:129.169124877089"
+[1] "f.test:86:129.169124877089"
+[1] "f.test:87:129.171091445428"
+[1] "f.test:87:129.171091445428"
+[1] "f.test:88:129.173058013766"
+[1] "f.test:88:129.173058013766"
+[1] "f.test:89:129.175024582104"
+[1] "f.test:89:129.175024582104"
+[1] "f.test:90:129.176991150442"
+[1] "f.test:90:129.176991150442"
+[1] "f.test:91:129.178957718781"
+[1] "f.test:91:129.178957718781"
+[1] "f.test:92:129.180924287119"
+[1] "f.test:92:129.180924287119"
+[1] "f.test:93:129.182890855457"
+[1] "f.test:93:129.182890855457"
+[1] "f.test:94:129.184857423795"
+[1] "f.test:94:129.184857423795"
+[1] "f.test:95:129.186823992134"
+[1] "f.test:95:129.186823992134"
+[1] "f.test:96:129.188790560472"
+[1] "f.test:96:129.188790560472"
+[1] "f.test:97:129.19075712881"
+[1] "f.test:97:129.19075712881"
+[1] "f.test:98:129.192723697148"
+[1] "f.test:98:129.192723697148"
+[1] "f.test:99:129.194690265487"
+[1] "f.test:99:129.194690265487"
+[1] "f.test:100:129.196656833825"
+[1] "f.test:100:129.196656833825"
+[1] "f.test:101:129.198623402163"
+[1] "f.test:101:129.198623402163"
+[1] "f.test:102:129.200589970501"
+[1] "f.test:102:129.200589970501"
+[1] "f.test:103:129.20255653884"
+[1] "f.test:103:129.20255653884"
+[1] "f.test:104:129.204523107178"
+[1] "f.test:104:129.204523107178"
+[1] "f.test:105:129.206489675516"
+[1] "f.test:105:129.206489675516"
+[1] "f.test:106:129.208456243854"
+[1] "f.test:106:129.208456243854"
+[1] "f.test:107:129.210422812193"
+[1] "f.test:107:129.210422812193"
+[1] "f.test:108:129.212389380531"
+[1] "f.test:108:129.212389380531"
+[1] "f.test:109:129.214355948869"
+[1] "f.test:109:129.214355948869"
+[1] "f.test:110:129.216322517207"
+[1] "f.test:110:129.216322517207"
+[1] "f.test:111:129.218289085546"
+[1] "f.test:111:129.218289085546"
+[1] "f.test:112:129.220255653884"
+[1] "f.test:112:129.220255653884"
+[1] "f.test:113:129.222222222222"
+[1] "f.test:113:129.222222222222"
+[1] "f.test:114:129.22418879056"
+[1] "f.test:114:129.22418879056"
+[1] "f.test:115:129.226155358899"
+[1] "f.test:115:129.226155358899"
+[1] "f.test:116:129.228121927237"
+[1] "f.test:116:129.228121927237"
+[1] "f.test:117:129.230088495575"
+[1] "f.test:117:129.230088495575"
+[1] "f.test:118:129.232055063913"
+[1] "f.test:118:129.232055063913"
+[1] "f.test:119:129.234021632252"
+[1] "f.test:119:129.234021632252"
+[1] "f.test:120:129.23598820059"
+[1] "f.test:120:129.23598820059"
+[1] "f.test:121:129.237954768928"
+[1] "f.test:121:129.237954768928"
+[1] "f.test:122:129.239921337266"
+[1] "f.test:122:129.239921337266"
+[1] "f.test:123:129.241887905605"
+[1] "f.test:123:129.241887905605"
+[1] "f.test:124:129.243854473943"
+[1] "f.test:124:129.243854473943"
+[1] "f.test:125:129.245821042281"
+[1] "f.test:125:129.245821042281"
+[1] "f.test:126:129.247787610619"
+[1] "f.test:126:129.247787610619"
+[1] "f.test:127:129.249754178958"
+[1] "f.test:127:129.249754178958"
+[1] "f.test:128:129.251720747296"
+[1] "f.test:128:129.251720747296"
+[1] "f.test:129:129.253687315634"
+[1] "f.test:129:129.253687315634"
+[1] "f.test:130:129.255653883972"
+[1] "f.test:130:129.255653883972"
+[1] "f.test:131:129.257620452311"
+[1] "f.test:131:129.257620452311"
+[1] "f.test:132:129.259587020649"
+[1] "f.test:132:129.259587020649"
+[1] "f.test:133:129.261553588987"
+[1] "f.test:133:129.261553588987"
+[1] "f.test:134:129.263520157325"
+[1] "f.test:134:129.263520157325"
+[1] "f.test:135:129.265486725664"
+[1] "f.test:135:129.265486725664"
+[1] "f.test:136:129.267453294002"
+[1] "f.test:136:129.267453294002"
+[1] "f.test:137:129.26941986234"
+[1] "f.test:137:129.26941986234"
+[1] "f.test:138:129.271386430678"
+[1] "f.test:138:129.271386430678"
+[1] "f.test:139:129.273352999017"
+[1] "f.test:139:129.273352999017"
+[1] "f.test:140:129.275319567355"
+[1] "f.test:140:129.275319567355"
+[1] "f.test:141:129.277286135693"
+[1] "f.test:141:129.277286135693"
+[1] "f.test:142:129.279252704031"
+[1] "f.test:142:129.279252704031"
+[1] "f.test:143:129.28121927237"
+[1] "f.test:143:129.28121927237"
+[1] "f.test:144:129.283185840708"
+[1] "f.test:144:129.283185840708"
+[1] "f.test:145:129.285152409046"
+[1] "f.test:145:129.285152409046"
+[1] "f.test:146:129.287118977384"
+[1] "f.test:146:129.287118977384"
+[1] "f.test:147:129.289085545723"
+[1] "f.test:147:129.289085545723"
+[1] "f.test:148:129.291052114061"
+[1] "f.test:148:129.291052114061"
+[1] "f.test:149:129.293018682399"
+[1] "f.test:149:129.293018682399"
+[1] "f.test:150:129.294985250737"
+[1] "f.test:150:129.294985250737"
+[1] "f.test:151:129.296951819076"
+[1] "f.test:151:129.296951819076"
+[1] "f.test:152:129.298918387414"
+[1] "f.test:152:129.298918387414"
+[1] "f.test:153:129.300884955752"
+[1] "f.test:153:129.300884955752"
+[1] "f.test:154:129.30285152409"
+[1] "f.test:154:129.30285152409"
+[1] "f.test:155:129.304818092429"
+[1] "f.test:155:129.304818092429"
+[1] "f.test:156:129.306784660767"
+[1] "f.test:156:129.306784660767"
+[1] "f.test:157:129.308751229105"
+[1] "f.test:157:129.308751229105"
+[1] "f.test:158:129.310717797443"
+[1] "f.test:158:129.310717797443"
+[1] "f.test:159:129.312684365782"
+[1] "f.test:159:129.312684365782"
+[1] "f.test:160:129.31465093412"
+[1] "f.test:160:129.31465093412"
+[1] "f.test:161:129.316617502458"
+[1] "f.test:161:129.316617502458"
+[1] "f.test:162:129.318584070796"
+[1] "f.test:162:129.318584070796"
+[1] "f.test:163:129.320550639135"
+[1] "f.test:163:129.320550639135"
+[1] "f.test:164:129.322517207473"
+[1] "f.test:164:129.322517207473"
+[1] "f.test:165:129.324483775811"
+[1] "f.test:165:129.324483775811"
+[1] "f.test:166:129.326450344149"
+[1] "f.test:166:129.326450344149"
+[1] "f.test:167:129.328416912488"
+[1] "f.test:167:129.328416912488"
+[1] "f.test:168:129.330383480826"
+[1] "f.test:168:129.330383480826"
+[1] "f.test:169:129.332350049164"
+[1] "f.test:169:129.332350049164"
+[1] "f.test:170:129.334316617502"
+[1] "f.test:170:129.334316617502"
+[1] "f.test:171:129.336283185841"
+[1] "f.test:171:129.336283185841"
+[1] "f.test:172:129.338249754179"
+[1] "f.test:172:129.338249754179"
+[1] "f.test:173:129.340216322517"
+[1] "f.test:173:129.340216322517"
+[1] "f.test:174:129.342182890855"
+[1] "f.test:174:129.342182890855"
+[1] "f.test:175:129.344149459194"
+[1] "f.test:175:129.344149459194"
+[1] "f.test:176:129.346116027532"
+[1] "f.test:176:129.346116027532"
+[1] "f.test:177:129.34808259587"
+[1] "f.test:177:129.34808259587"
+[1] "f.test:178:129.350049164208"
+[1] "f.test:178:129.350049164208"
+[1] "f.test:179:129.352015732547"
+[1] "f.test:179:129.352015732547"
+[1] "f.test:180:129.353982300885"
+[1] "f.test:180:129.353982300885"
+[1] "f.test:181:129.355948869223"
+[1] "f.test:181:129.355948869223"
+[1] "f.test:182:129.357915437561"
+[1] "f.test:182:129.357915437561"
+[1] "f.test:183:129.3598820059"
+[1] "f.test:183:129.3598820059"
+[1] "f.test:184:129.361848574238"
+[1] "f.test:184:129.361848574238"
+[1] "f.test:185:129.363815142576"
+[1] "f.test:185:129.363815142576"
+[1] "f.test:186:129.365781710914"
+[1] "f.test:186:129.365781710914"
+[1] "f.test:187:129.367748279253"
+[1] "f.test:187:129.367748279253"
+[1] "f.test:188:129.369714847591"
+[1] "f.test:188:129.369714847591"
+[1] "f.test:189:129.371681415929"
+[1] "f.test:189:129.371681415929"
+[1] "f.test:190:129.373647984267"
+[1] "f.test:190:129.373647984267"
+[1] "f.test:191:129.375614552606"
+[1] "f.test:191:129.375614552606"
+[1] "f.test:192:129.377581120944"
+[1] "f.test:192:129.377581120944"
+[1] "f.test:193:129.379547689282"
+[1] "f.test:193:129.379547689282"
+[1] "f.test:194:129.38151425762"
+[1] "f.test:194:129.38151425762"
+[1] "f.test:195:129.383480825959"
+[1] "f.test:195:129.383480825959"
+[1] "f.test:196:129.385447394297"
+[1] "f.test:196:129.385447394297"
+[1] "f.test:197:129.387413962635"
+[1] "f.test:197:129.387413962635"
+[1] "f.test:198:129.389380530973"
+[1] "f.test:198:129.389380530973"
+[1] "f.test:199:129.391347099312"
+[1] "f.test:199:129.391347099312"
+[1] "f.test:200:129.39331366765"
+[1] "f.test:200:129.39331366765"
+[1] "f.test:201:129.395280235988"
+[1] "f.test:201:129.395280235988"
+[1] "f.test:202:129.397246804326"
+[1] "f.test:202:129.397246804326"
+[1] "f.test:203:129.399213372665"
+[1] "f.test:203:129.399213372665"
+[1] "f.test:204:129.401179941003"
+[1] "f.test:204:129.401179941003"
+[1] "f.test:205:129.403146509341"
+[1] "f.test:205:129.403146509341"
+[1] "f.test:206:129.405113077679"
+[1] "f.test:206:129.405113077679"
+[1] "f.test:207:129.407079646018"
+[1] "f.test:207:129.407079646018"
+[1] "f.test:208:129.409046214356"
+[1] "f.test:208:129.409046214356"
+[1] "f.test:209:129.411012782694"
+[1] "f.test:209:129.411012782694"
+[1] "f.test:210:129.412979351032"
+[1] "f.test:210:129.412979351032"
+[1] "f.test:211:129.414945919371"
+[1] "f.test:211:129.414945919371"
+[1] "f.test:212:129.416912487709"
+[1] "f.test:212:129.416912487709"
+[1] "f.test:213:129.418879056047"
+[1] "f.test:213:129.418879056047"
+[1] "f.test:214:129.420845624385"
+[1] "f.test:214:129.420845624385"
+[1] "f.test:215:129.422812192724"
+[1] "f.test:215:129.422812192724"
+[1] "f.test:216:129.424778761062"
+[1] "f.test:216:129.424778761062"
+[1] "f.test:217:129.4267453294"
+[1] "f.test:217:129.4267453294"
+[1] "f.test:218:129.428711897738"
+[1] "f.test:218:129.428711897738"
+[1] "f.test:219:129.430678466077"
+[1] "f.test:219:129.430678466077"
+[1] "f.test:220:129.432645034415"
+[1] "f.test:220:129.432645034415"
+[1] "f.test:221:129.434611602753"
+[1] "f.test:221:129.434611602753"
+[1] "f.test:222:129.436578171091"
+[1] "f.test:222:129.436578171091"
+[1] "f.test:223:129.43854473943"
+[1] "f.test:223:129.43854473943"
+[1] "f.test:224:129.440511307768"
+[1] "f.test:224:129.440511307768"
+[1] "f.test:225:129.442477876106"
+[1] "f.test:225:129.442477876106"
+[1] "f.test:226:129.444444444444"
+[1] "f.test:226:129.444444444444"
+[1] "f.test:227:129.446411012783"
+[1] "f.test:227:129.446411012783"
+[1] "f.test:228:129.448377581121"
+[1] "f.test:228:129.448377581121"
+[1] "f.test:229:129.450344149459"
+[1] "f.test:229:129.450344149459"
+[1] "f.test:230:129.452310717797"
+[1] "f.test:230:129.452310717797"
+[1] "f.test:231:129.454277286136"
+[1] "f.test:231:129.454277286136"
+[1] "f.test:232:129.456243854474"
+[1] "f.test:232:129.456243854474"
+[1] "f.test:233:129.458210422812"
+[1] "f.test:233:129.458210422812"
+[1] "f.test:234:129.46017699115"
+[1] "f.test:234:129.46017699115"
+[1] "f.test:235:129.462143559489"
+[1] "f.test:235:129.462143559489"
+[1] "f.test:236:129.464110127827"
+[1] "f.test:236:129.464110127827"
+[1] "f.test:237:129.466076696165"
+[1] "f.test:237:129.466076696165"
+[1] "f.test:238:129.468043264503"
+[1] "f.test:238:129.468043264503"
+[1] "f.test:239:129.470009832842"
+[1] "f.test:239:129.470009832842"
+[1] "f.test:240:129.47197640118"
+[1] "f.test:240:129.47197640118"
+[1] "f.test:241:129.473942969518"
+[1] "f.test:241:129.473942969518"
+[1] "f.test:242:129.475909537856"
+[1] "f.test:242:129.475909537856"
+[1] "f.test:243:129.477876106195"
+[1] "f.test:243:129.477876106195"
+[1] "f.test:244:129.479842674533"
+[1] "f.test:244:129.479842674533"
+[1] "f.test:245:129.481809242871"
+[1] "f.test:245:129.481809242871"
+[1] "f.test:246:129.483775811209"
+[1] "f.test:246:129.483775811209"
+[1] "f.test:247:129.485742379548"
+[1] "f.test:247:129.485742379548"
+[1] "f.test:248:129.487708947886"
+[1] "f.test:248:129.487708947886"
+[1] "f.test:249:129.489675516224"
+[1] "f.test:249:129.489675516224"
+[1] "f.test:250:129.491642084562"
+[1] "f.test:250:129.491642084562"
+[1] "f.test:251:129.493608652901"
+[1] "f.test:251:129.493608652901"
+[1] "f.test:252:129.495575221239"
+[1] "f.test:252:129.495575221239"
+[1] "f.test:253:129.497541789577"
+[1] "f.test:253:129.497541789577"
+[1] "f.test:254:129.499508357915"
+[1] "f.test:254:129.499508357915"
+[1] "f.test:255:129.501474926254"
+[1] "f.test:255:129.501474926254"
+[1] "f.test:256:129.503441494592"
+[1] "f.test:256:129.503441494592"
+[1] "f.test:257:129.50540806293"
+[1] "f.test:257:129.50540806293"
+[1] "f.test:258:129.507374631268"
+[1] "f.test:258:129.507374631268"
+[1] "f.test:259:129.509341199607"
+[1] "f.test:259:129.509341199607"
+[1] "f.test:260:129.511307767945"
+[1] "f.test:260:129.511307767945"
+[1] "f.test:261:129.513274336283"
+[1] "f.test:261:129.513274336283"
+[1] "f.test:262:129.515240904621"
+[1] "f.test:262:129.515240904621"
+[1] "f.test:263:129.51720747296"
+[1] "f.test:263:129.51720747296"
+[1] "f.test:264:129.519174041298"
+[1] "f.test:264:129.519174041298"
+[1] "f.test:265:129.521140609636"
+[1] "f.test:265:129.521140609636"
+[1] "f.test:266:129.523107177974"
+[1] "f.test:266:129.523107177974"
+[1] "dim of scoring matrix is "
+[1] 3051    5
+[1] 3051
+[1] "DS index stage 1"
+[1] 0.15351
+[1] "bestgenelist"
+  [1]    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15
+ [16]   16   17   18   19   20   21   56   62   68   81   96  108  140  141  168
+ [31]  174  181  204  215  232  253  259  304  329  345  377  378  394  401  418
+ [46]  419  422  436  489  496  498  515  521  523  526  532  546  561  566  624
+ [61]  628  650  688  709  717  735  738  746  750  756  766  773  781  786  789
+ [76]  792  801  803  808  824  827  829  839  848  849  853  860  862  866  888
+ [91]  894  896  904  910  921  922  932  937  942  963  964  968  988 1005 1009
+[106] 1019 1030 1034 1037 1038 1042 1044 1045 1048 1062 1064 1066 1069 1079 1086
+[121] 1122 1124 1141 1161 1162 1164 1243 1271 1300 1307 1312 1334 1338 1361 1368
+[136] 1378 1391 1411 1413 1417 1448 1497 1516 1523 1524 1556 1569 1576 1585 1598
+[151] 1601 1611 1616 1665 1676 1696 1732 1737 1754 1767 1772 1774 1778 1780 1784
+[166] 1811 1817 1824 1825 1829 1830 1834 1837 1863 1882 1883 1901 1907 1909 1911
+[181] 1916 1920 1927 1928 1939 1954 1959 1977 1978 1995 1998 2002 2004 2020 2026
+[196] 2036 2101 2105 2124 2179 2198 2233 2266 2274 2289 2305 2321 2335 2336 2370
+[211] 2386 2393 2402 2418 2420 2421 2436 2456 2489 2494 2499 2510 2531 2536 2541
+[226] 2552 2553 2559 2560 2562 2572 2589 2600 2616 2619 2645 2647 2656 2661 2663
+[241] 2664 2669 2670 2671 2673 2681 2698 2700 2702 2714 2734 2736 2743 2749 2750
+[256] 2752 2761 2770 2773 2800 2801 2813 2821 2829 2851 2860 2865 2869 2870 2874
+[271] 2879 2917 2920 2921 2922 2937 2939 2941 2950 2958 2977 2985 3046 3051
+        var36    var37    var38    var39    var40    var41    var42    var43
+[1,] 2.004321 2.334454 2.902003 4.162535 3.988514 3.930949 4.178315 4.046378
+[2,] 2.004321 2.068186 2.637490 2.789581 2.064458 3.181558 4.204147 4.132548
+[3,] 2.021189 2.678518 3.168792 3.753583 3.514946 3.564548 4.204147 4.204147
+        var45    var46    var48    var49    var50    var51    var52    var53
+[1,] 4.204147 4.204147 2.423246 2.004321 2.475671 3.829368 3.816904 3.066326
+[2,] 4.204147 4.204147 2.710963 2.187521 2.456366 3.345570 3.582631 2.816904
+[3,] 4.204147 4.204147 2.785330 2.004321 2.274158 3.521922 3.525045 2.967548
+        var54    var56    var57    var59    var60   var157   var167   var173
+[1,] 3.474653 2.123852 2.737987 2.527630 2.181844 2.952308 2.439333 2.004321
+[2,] 3.503518 2.480007 2.725095 2.622214 2.421604 2.875061 2.636488 2.525045
+[3,] 3.491081 2.720159 2.959995 2.881955 2.004321 3.021189 2.806858 2.004321
+       var200   var229   var248   var312   var321   var370   var379   var396
+[1,] 2.778874 3.091667 2.214844 2.916980 2.369216 2.855519 3.184975 2.448706
+[2,] 2.990339 2.614897 2.247973 2.820201 2.687529 3.287802 2.729974 2.800717
+[3,] 3.153510 3.053846 2.127105 3.059185 2.371068 2.892651 3.170848 2.531479
+       var438   var459   var490   var532   var538   var620   var668   var697
+[1,] 2.857332 2.004321 3.020775 3.618884 2.745855 2.621176 3.638190 2.792392
+[2,] 2.394452 2.613842 3.190612 4.062883 2.678518 2.604226 3.407391 2.385606
+[3,] 2.971740 2.704151 3.182415 4.083718 2.698101 2.555094 3.268578 2.881385
+       var758   var760   var804   var818   var872   var874   var878   var922
+[1,] 3.293584 2.209515 3.576111 2.603144 2.004321 3.084934 3.117934 2.350248
+[2,] 2.298853 2.770115 3.461048 2.723456 2.278754 3.384712 3.229682 3.031408
+[3,] 2.763428 2.318063 3.777934 2.618048 2.004321 3.098298 3.210853 2.173186
+      var1078  var1092  var1095  var1120  var1133  var1144  var1152  var1171
+[1,] 3.305136 2.582063 2.004321 3.325926 2.720159 2.786041 2.324282 2.765669
+[2,] 2.813581 3.365675 2.592177 3.609594 2.617000 2.967548 2.267172 2.687529
+[3,] 2.758912 2.332438 2.037426 3.571359 2.989450 3.229938 2.437751 2.806858
+      var1207  var1241  var1249  var1394  var1400  var1450  var1551  var1615
+[1,] 2.737193 2.683047 2.735599 3.424065 3.069668 2.004321 2.445604 2.004321
+[2,] 3.471292 2.558709 3.473195 3.830332 3.289812 2.004321 2.899273 3.054996
+[3,] 3.390759 2.876218 2.686636 3.529943 3.020775 2.004321 2.633468 2.367356
+      var1630  var1674  var1685  var1704  var1710  var1725  var1745  var1779
+[1,] 2.757396 3.733919 3.516271 3.508126 2.531479 2.004321 2.563481 2.004321
+[2,] 3.461499 4.204147 3.211654 4.039612 2.518514 2.004321 2.795880 2.004321
+[3,] 3.435207 3.789369 3.444669 4.204147 2.852480 2.004321 2.037426 2.004321
+      var1798  var1807  var1811  var1817  var1827  var1829  var1834  var1868
+[1,] 2.170262 2.252853 3.164947 2.133539 2.676694 2.519828 2.418301 2.004321
+[2,] 3.269279 2.527630 3.416807 2.187521 2.531479 2.909556 2.008600 2.004321
+[3,] 2.936011 2.539076 2.004321 2.037426 2.813581 2.328380 2.491362 2.004321
+      var1879  var1882  var1909  var1926  var1928  var1941  var1953  var1955
+[1,] 2.004321 2.482874 3.587037 2.004321 3.583085 2.632457 2.004321 3.255755
+[2,] 2.004321 3.133219 2.709270 2.004321 3.480294 2.496930 2.915400 2.893207
+[3,] 2.004321 2.406540 3.290702 2.004321 3.860218 2.675778 2.350248 3.065953
+      var1962  var2001  var2015  var2020  var2043  var2056  var2078  var2084
+[1,] 3.745543 2.359835 2.004321 2.816241 2.004321 2.702431 2.004321 2.561101
+[2,] 3.725830 2.267172 2.167317 3.108565 3.336860 2.642465 2.004321 2.195900
+[3,] 3.412461 2.432969 2.082785 3.109579 2.004321 2.394452 2.004321 2.531479
+      var2111  var2121  var2128  var2179  var2181  var2186  var2242  var2275
+[1,] 2.922206 3.149527 2.639486 2.843855 2.594393 3.173186 2.004321 2.877371
+[2,] 3.487563 3.366610 2.457882 2.004321 2.367356 3.784261 2.041393 3.080266
+[3,] 2.785330 3.445604 2.795185 2.672098 2.803457 3.358316 2.004321 2.745075
+      var2288  var2309  var2335  var2345  var2348  var2349  var2354  var2356
+[1,] 2.004321 2.469822 3.332640 2.004321 2.885361 2.220108 3.679337 2.123852
+[2,] 2.004321 2.004321 2.004321 3.147985 2.911158 2.703291 3.431525 2.487138
+[3,] 2.004321 2.929930 2.004321 2.004321 3.189771 2.004321 3.692583 2.037426
+      var2359  var2363  var2389  var2391  var2394  var2402  var2426  var2441
+[1,] 2.247973 2.004321 2.406540 2.262451 3.105851 2.893762 2.808886 2.429752
+[2,] 2.408240 2.964731 2.004321 2.777427 3.273464 2.567026 2.586587 2.540329
+[3,] 2.453318 2.004321 2.836324 2.503791 2.937016 3.103462 2.928908 2.905796
+      var2534  var2546  var2592  var2641  var2642  var2647  var2830  var2909
+[1,] 2.369216 2.981819 2.247973 2.973590 3.969742 3.105169 2.004321 3.244030
+[2,] 2.429752 2.967080 3.057286 2.990339 2.952308 2.901458 2.526339 3.204934
+[3,] 2.459392 2.910091 2.064458 3.040602 2.798651 3.105169 2.004321 3.441224
+      var2981  var2997  var3005  var3056  var3065  var3123  var3137  var3163
+[1,] 2.813581 2.004321 2.103804 3.525045 2.004321 2.017033 3.336660 2.571709
+[2,] 2.004321 2.004321 2.853090 3.001301 2.004321 2.423246 3.148603 3.075182
+[3,] 2.238046 2.004321 2.491362 3.320146 2.004321 2.049218 3.311754 2.632457
+      var3189  var3243  var3252  var3258  var3320  var3430  var3487  var3504
+[1,] 2.004321 2.444045 2.004321 3.113609 3.051153 2.079181 2.004321 2.281033
+[2,] 2.004321 2.245513 2.167317 3.139879 3.026533 2.669317 2.562293 2.004321
+[3,] 2.004321 2.184691 2.045323 3.175222 3.145818 2.100371 2.004321 2.691081
+      var3507  var3605  var3631  var3640  var3660  var3688  var3692  var3710
+[1,] 2.515874 2.745075 2.004321 2.004321 2.990783 2.413300 2.004321 2.522444
+[2,] 2.713491 3.026942 2.235528 2.004321 2.511883 2.342423 2.212188 2.923244
+[3,] 2.530200 2.964731 2.004321 2.004321 2.932474 2.363612 2.311754 2.004321
+      var3722  var3847  var3877  var3932  var4004  var4024  var4052  var4079
+[1,] 3.047275 2.595496 2.245513 2.499687 3.447158 2.547775 3.024486 2.004321
+[2,] 3.093071 2.075547 2.093422 2.913284 2.636488 3.350054 3.144885 2.086360
+[3,] 3.070776 2.824776 2.004321 2.689309 3.016616 2.910624 2.915927 2.004321
+      var4091  var4096  var4107  var4110  var4117  var4167  var4177  var4189
+[1,] 2.004321 2.585461 2.206826 2.004321 2.176091 3.301030 2.444045 2.004321
+[2,] 2.250420 2.600973 2.311754 2.004321 2.004321 3.038620 2.021189 2.004321
+[3,] 2.004321 3.018284 2.004321 2.004321 2.004321 3.323665 2.004321 2.523746
+      var4190  var4196  var4197  var4211  var4229  var4279  var4324  var4328
+[1,] 2.004321 2.250420 2.004321 3.600973 2.004321 2.187521 3.206556 3.479575
+[2,] 2.004321 3.539202 2.676694 3.443263 2.625312 2.004321 2.004321 3.534661
+[3,] 2.004321 2.620136 2.004321 3.567614 2.004321 2.004321 2.766413 3.887898
+      var4366  var4373  var4375  var4377  var4389  var4399  var4407  var4409
+[1,] 2.385606 2.720159 2.707570 2.800717 2.663701 2.737987 2.705864 2.004321
+[2,] 2.824776 3.031408 3.463744 2.869232 2.181844 2.494155 3.204391 2.004321
+[3,] 2.623249 2.686636 3.599883 2.029384 2.363612 3.271842 2.857935 2.004321
+      var4438  var4461  var4472  var4499  var4501  var4535  var4541  var4546
+[1,] 3.239550 2.996949 2.767898 2.488551 2.783904 3.137671 2.178977 2.760422
+[2,] 3.040602 3.099335 2.511883 2.271842 2.580925 3.073718 2.544068 2.778874
+[3,] 3.100715 2.699838 2.629410 2.451786 2.707570 3.346744 2.344392 2.938520
+      var4549  var4582  var4595  var4616  var4780  var4792  var4847  var4973
+[1,] 2.619093 3.134177 2.201397 2.579784 2.096910 3.198932 2.475671 2.714330
+[2,] 2.717671 2.376577 2.004321 2.326336 2.716838 3.019532 2.488551 2.546543
+[3,] 2.281033 3.093772 2.004321 2.004321 2.367356 3.095169 2.491362 2.332438
+      var5039  var5122  var5191  var5228  var5254  var5298  var5336  var5373
+[1,] 2.778874 3.298198 3.247237 2.481443 2.997823 2.004321 2.096910 2.212188
+[2,] 2.528917 3.273233 3.304491 2.469822 2.732394 2.561101 2.564666 2.004321
+[3,] 2.759668 3.412124 3.551084 2.004321 3.158965 2.004321 2.004321 2.480007
+      var5376  var5463  var5501  var5537  var5552  var5593  var5598  var5599
+[1,] 2.004321 2.506505 3.926600 2.004321 3.961184 3.203033 2.004321 2.004321
+[2,] 2.004321 2.411620 3.283527 2.924796 3.611829 2.915400 2.004321 2.004321
+[3,] 2.004321 2.747412 3.494015 2.004321 3.504199 3.162266 2.004321 2.004321
+      var5637  var5683  var5772  var5794  var5808  var5833  var5884  var5890
+[1,] 3.183270 3.151982 3.492201 2.707570 2.004321 2.004321 2.863917 3.161368
+[2,] 3.296884 3.428783 3.048830 2.595496 2.004321 2.212188 3.095518 3.018700
+[3,] 3.363988 2.644439 3.657438 2.923244 2.181844 2.004321 3.136721 3.290702
+      var5899  var5931  var5932  var5942  var5950  var5954  var5976  var6005
+[1,] 3.241795 3.511349 3.522053 2.921686 2.181844 2.004321 2.004321 2.600973
+[2,] 3.161967 3.131619 3.761101 3.212454 2.004321 2.004321 2.404834 2.958564
+[3,] 3.223236 2.887054 2.004321 2.983626 2.283301 2.004321 2.004321 2.957607
+      var6041  var6094  var6104  var6167  var6169  var6185  var6196  var6200
+[1,] 3.108903 3.002598 2.004321 3.137671 2.496930 2.294466 2.859739 2.466868
+[2,] 2.733197 2.729165 2.004321 3.200303 2.442480 3.326541 3.464936 3.314499
+[3,] 2.374748 2.945469 2.004321 2.873902 2.053078 2.985875 2.371068 2.004321
+      var6201  var6215  var6218  var6219  var6225  var6247  var6277  var6279
+[1,] 2.523746 2.900913 2.004321 2.004321 3.464191 3.295787 2.004321 2.004321
+[2,] 3.728029 2.921166 2.004321 2.004321 2.760422 3.751048 2.004321 2.283301
+[3,] 2.480007 3.143639 2.004321 2.004321 2.957128 2.610660 2.004321 2.004321
+      var6281  var6308  var6345  var6347  var6362  var6373  var6376  var6378
+[1,] 2.779596 2.004321 3.751510 3.228400 2.336460 2.842609 2.004321 2.004321
+[2,] 2.639486 2.545307 3.686547 2.518514 2.424882 2.910091 2.562293 2.509203
+[3,] 2.738781 2.004321 2.004321 2.925828 2.385606 2.909021 2.004321 2.004321
+      var6405  var6428  var6438  var6514  var6515  var6539  var6561  var6573
+[1,] 2.004321 2.968483 2.127105 2.547775 2.462398 2.212188 3.024486 2.835056
+[2,] 2.322219 2.498311 2.440909 2.824776 2.460898 2.230449 2.895423 2.086360
+[3,] 2.110590 2.968950 2.004321 2.380211 2.651278 2.004321 3.059942 2.082785
+      var6623  var6645  var6672  var6676  var6677  var6685  var6702  var6793
+[1,] 2.711807 2.943000 2.663701 2.408240 2.628389 2.804821 3.366236 2.220108
+[2,] 2.518514 2.770852 2.663701 2.276462 2.567026 2.517196 3.093071 2.004321
+[3,] 2.578639 3.136721 2.257679 2.004321 2.856124 2.684845 3.297323 2.004321
+      var6797  var6803  var6806  var6847  var6855  var6857  var6895  var6919
+[1,] 2.964731 2.583199 2.746634 2.591065 3.120903 2.004321 2.868644 2.243038
+[2,] 3.612996 3.557146 3.434090 2.363612 2.953760 2.004321 3.342620 2.491362
+[3,] 3.447158 3.476832 3.234770 2.664642 2.776701 2.004321 2.923244 2.356026
+      var6967  var6989  var7119  var7128
+[1,] 2.238046 3.039811 3.199481 2.283301
+[2,] 3.195623 3.112940 2.795880 2.004321
+[3,] 2.505150 3.085291 2.877371 2.359835
+        var36    var37    var38    var39    var40    var41    var42    var43
+[1,] 2.004321 2.133539 2.428135 2.004321 2.004321 2.004321 3.802089 3.716003
+[2,] 2.004321 2.004321 2.572872 2.004321 2.004321 2.004321 4.031691 4.008941
+[3,] 2.004321 2.004321 2.220108 2.021189 2.004321 2.004321 4.007406 4.204147
+        var45    var46    var48    var49    var50    var51    var52    var53
+[1,] 4.204147 4.204147 2.176091 2.004321 2.361728 3.807467 4.204147 2.659916
+[2,] 3.993789 4.122936 2.340444 2.004321 2.004321 2.004321 3.307496 2.537819
+[3,] 3.995767 4.204147 2.204120 2.004321 2.004321 2.450249 2.884229 2.004321
+        var54    var56    var57    var59    var60   var157   var167   var173
+[1,] 2.794488 2.428135 2.004321 2.287802 2.383815 3.200303 2.517196 2.004321
+[2,] 2.779596 2.411620 2.644439 2.820201 2.634477 2.741152 2.361728 2.004321
+[3,] 3.222456 2.344392 2.264818 2.336460 2.418301 2.694605 2.257679 2.487138
+       var200   var229   var248   var312   var321   var370   var379   var396
+[1,] 2.519828 2.648360 2.217484 2.659916 2.503791 3.088845 2.989450 2.619093
+[2,] 2.736397 2.918555 2.274158 2.710963 2.576341 3.010300 3.034227 2.328380
+[3,] 2.999565 2.933487 2.004321 2.831230 2.130334 2.745075 3.041787 2.491362
+       var438   var459   var490   var532   var538   var620   var668   var697
+[1,] 2.123852 2.008600 2.170262 3.757927 2.222716 2.528917 3.466719 2.184691
+[2,] 2.715167 2.004321 2.813581 3.526210 2.004321 2.608526 3.024486 2.561101
+[3,] 3.044148 2.264818 2.667453 3.914819 2.938520 2.671173 3.024075 2.933487
+       var758   var760   var804   var818   var872   var874   var878   var922
+[1,] 3.302547 2.004321 3.608312 2.532754 2.252853 2.584331 2.843855 2.004321
+[2,] 3.256237 2.004321 3.200303 2.496930 2.004321 3.401745 3.143327 2.004321
+[3,] 3.589279 2.356026 3.527372 2.240549 2.004321 2.701568 3.415307 2.004321
+      var1078  var1092  var1095  var1120  var1133  var1144  var1152  var1171
+[1,] 3.000868 2.004321 2.004321 3.355068 2.888179 2.895975 2.017033 2.535294
+[2,] 2.941014 2.649335 2.365488 3.042576 2.813581 2.997823 2.833147 2.806180
+[3,] 3.334253 2.389166 2.060698 3.009876 2.481443 2.789581 2.418301 2.731589
+      var1207  var1241  var1249  var1394  var1400  var1450  var1551  var1615
+[1,] 2.903090 2.324282 3.008174 3.630733 3.022428 2.247973 2.650308 2.937016
+[2,] 2.489958 2.697229 2.110590 2.664642 2.834421 2.004321 3.018700 2.431364
+[3,] 2.747412 2.717671 2.983175 3.210586 2.910091 2.264818 3.048442 2.779596
+      var1630  var1674  var1685  var1704  var1710  var1725  var1745  var1779
+[1,] 2.923244 3.798582 3.939569 3.617315 2.621176 2.004321 2.217484 2.691081
+[2,] 2.257679 3.533136 3.664172 3.165244 2.649335 2.004321 2.902003 2.004321
+[3,] 2.887054 3.666518 3.172603 3.673482 2.642465 2.004321 2.691965 2.004321
+      var1798  var1807  var1811  var1817  var1827  var1829  var1834  var1868
+[1,] 2.970812 2.004321 2.004321 2.863323 2.808211 2.004321 2.227887 2.657056
+[2,] 2.004321 2.561101 2.004321 2.004321 2.755875 2.004321 2.389166 2.004321
+[3,] 2.896526 2.004321 2.883093 2.004321 2.606381 2.776701 2.004321 3.739097
+      var1879  var1882  var1909  var1926  var1928  var1941  var1953  var1955
+[1,] 2.004321 2.004321 2.973128 2.004321 3.725013 2.507856 2.004321 2.526339
+[2,] 2.004321 2.004321 2.701568 2.004321 3.373831 2.618048 2.004321 2.923244
+[3,] 2.004321 2.004321 3.851136 2.004321 3.427973 2.146128 2.049218 2.948413
+      var1962  var2001  var2015  var2020  var2043  var2056  var2078  var2084
+[1,] 3.477989 2.408240 2.004321 2.797960 2.004321 2.503791 2.004321 2.004321
+[2,] 3.459694 2.474216 2.004321 2.702431 2.451786 2.859739 2.004321 2.365488
+[3,] 4.077840 2.478566 2.004321 2.260071 2.004321 2.669317 2.004321 2.338456
+      var2111  var2121  var2128  var2179  var2181  var2186  var2242  var2275
+[1,] 3.240300 2.978637 2.606381 2.731589 2.984977 3.862489 2.004321 3.080266
+[2,] 2.850646 3.003891 2.442480 2.802089 2.680336 3.344589 2.004321 2.820201
+[3,] 3.075182 3.082426 2.390935 3.104487 2.004321 3.453777 2.004321 2.758155
+      var2288  var2309  var2335  var2345  var2348  var2349  var2354  var2356
+[1,] 2.004321 2.004321 3.439648 2.004321 2.526339 2.313867 3.560385 2.004321
+[2,] 2.004321 2.004321 2.004321 2.350248 2.583199 2.004321 2.718502 2.004321
+[3,] 2.004321 3.143327 3.341435 3.839981 2.850033 2.004321 3.806248 2.004321
+      var2359  var2363  var2389  var2391  var2394  var2402  var2426  var2441
+[1,] 2.269513 2.100371 2.679428 2.507856 3.066699 2.797960 2.920645 2.004321
+[2,] 2.204120 3.072617 2.348305 2.708421 3.249198 2.918030 2.783904 2.572872
+[3,] 2.454845 2.776701 2.178977 2.453318 2.628389 2.845098 2.549003 2.225309
+      var2534  var2546  var2592  var2641  var2642  var2647  var2830  var2909
+[1,] 2.564666 2.943000 2.004321 2.742725 4.112906 3.057666 2.004321 2.556303
+[2,] 2.130334 3.172603 2.053078 2.953760 3.258637 2.683047 2.454845 2.906335
+[3,] 2.232996 2.948413 2.004321 2.965202 3.559667 2.790285 2.004321 3.254790
+      var2981  var2997  var3005  var3056  var3065  var3123  var3137  var3163
+[1,] 2.401401 2.004321 2.004321 2.487138 2.004321 2.004321 3.063333 2.603144
+[2,] 2.498311 2.004321 2.096910 2.880814 2.004321 2.004321 2.774517 2.399674
+[3,] 2.621176 2.004321 2.004321 3.219585 2.004321 2.004321 3.365488 2.004321
+      var3189  var3243  var3252  var3258  var3320  var3430  var3487  var3504
+[1,] 2.004321 2.004321 2.004321 2.837588 3.050380 2.466868 2.004321 2.004321
+[2,] 2.004321 2.447158 2.004321 2.765669 3.007321 2.428135 2.100371 2.934498
+[3,] 2.602060 2.004321 2.004321 3.046105 2.632457 2.190332 2.004321 2.004321
+      var3507  var3605  var3631  var3640  var3660  var3688  var3692  var3710
+[1,] 2.292256 2.564666 2.004321 2.318063 2.004321 2.564666 2.004321 2.176091
+[2,] 2.161368 2.514548 2.378398 2.004321 2.875061 2.214844 2.004321 2.086360
+[3,] 2.465383 2.515874 2.004321 2.004321 2.681241 2.800029 2.037426 2.004321
+      var3722  var3847  var3877  var3932  var4004 var4024  var4052  var4079
+[1,] 2.932981 2.004321 2.004321 2.056905 2.910624 2.32838 2.928396 2.004321
+[2,] 2.881955 2.004321 2.786751 2.653213 2.753583 2.31597 2.894870 2.496930
+[3,] 3.192567 2.298853 2.004321 2.466868 3.044148 2.61066 3.345766 2.004321
+      var4091  var4096  var4107  var4110  var4117  var4167  var4177  var4189
+[1,] 2.004321 2.954725 2.004321 2.004321 2.348305 3.032216 2.235528 2.332438
+[2,] 2.170262 2.411620 2.096910 2.004321 2.411620 2.996949 2.440909 2.649335
+[3,] 2.004321 2.173186 2.004321 2.004321 2.195900 3.114277 2.298853 2.004321
+      var4190  var4196  var4197  var4211  var4229  var4279  var4324  var4328
+[1,] 2.004321 2.004321 2.472756 3.272074 2.004321 2.004321 3.138618 3.667173
+[2,] 2.004321 3.103804 2.004321 3.442793 2.004321 2.004321 2.619093 3.330819
+[3,] 2.004321 3.073352 2.004321 3.645717 2.403121 2.004321 2.505150 3.566673
+      var4366  var4373  var4375  var4377  var4389  var4399  var4407  var4409
+[1,] 2.004321 2.451786 2.894870 2.812913 2.507856 2.342423 2.789581 2.004321
+[2,] 2.437751 3.038620 2.509203 2.827369 2.354108 2.687529 2.478566 2.004321
+[3,] 2.336460 2.704151 2.726727 2.487138 2.267172 2.795185 3.006466 2.004321
+      var4438  var4461  var4472  var4499  var4501  var4535  var4541  var4546
+[1,] 3.259116 2.910624 2.287802 2.477121 2.487138 2.247973 2.004321 2.387390
+[2,] 3.200303 2.650308 2.110590 2.572872 2.712650 2.691081 2.004321 2.890980
+[3,] 3.076640 2.943000 2.823474 2.004321 2.686636 3.100026 2.549003 3.100715
+      var4549  var4582  var4595  var4616  var4780  var4792  var4847  var4973
+[1,] 2.296665 2.804821 2.387390 2.004321 2.252853 2.981819 2.252853 2.523746
+[2,] 2.100371 2.935003 2.004321 2.004321 2.595496 3.119915 2.025306 2.530200
+[3,] 2.029384 2.825426 2.004321 2.004321 2.004321 3.049218 2.403121 2.632457
+      var5039  var5122  var5191  var5228  var5254  var5298  var5336  var5373
+[1,] 2.668386 3.149219 3.328787 2.004321 2.526339 2.004321 2.269513 2.004321
+[2,] 2.806180 3.322426 2.506505 2.004321 2.674861 2.653213 2.432969 2.004321
+[3,] 2.309630 3.043755 3.169674 2.004321 2.968483 2.004321 2.004321 2.004321
+      var5376  var5463  var5501  var5537  var5552  var5593  var5598  var5599
+[1,] 2.004321 2.371068 3.612996 2.107210 3.792392 3.607348 2.004321 2.004321
+[2,] 2.004321 2.514548 3.385249 2.004321 2.492760 2.944483 2.004321 2.004321
+[3,] 2.004321 2.460898 3.634175 2.004321 3.720325 3.059942 2.004321 2.004321
+      var5637  var5683  var5772  var5794  var5808  var5833  var5884  var5890
+[1,] 3.313867 2.913284 3.309204 2.633468 2.004321 2.004321 2.981819 3.101403
+[2,] 3.521007 2.387390 3.175512 2.862131 2.004321 2.004321 2.701568 3.065580
+[3,] 3.301898 2.729165 3.627468 2.271842 2.004321 2.664642 2.737987 2.814913
+      var5899  var5931  var5932  var5942  var5950  var5954  var5976  var6005
+[1,] 3.039811 2.004321 2.004321 2.812913 2.209515 2.004321 2.004321 2.767156
+[2,] 3.169086 2.887054 2.004321 2.965202 2.496930 2.004321 2.004321 3.088845
+[3,] 2.562293 2.618048 2.380211 2.868056 2.004321 2.004321 2.201397 2.568202
+      var6041  var6094  var6104  var6167  var6169  var6185  var6196  var6200
+[1,] 2.004321 2.691081 2.004321 2.877371 2.247973 2.004321 3.319938 2.526339
+[2,] 2.557507 2.471292 2.004321 3.468643 2.659916 2.290035 2.489958 2.222716
+[3,] 2.752816 2.765669 2.004321 3.376759 2.017033 2.173186 2.113943 2.178977
+      var6201  var6215  var6218  var6219  var6225  var6247  var6277  var6279
+[1,] 2.870404 3.072985 2.037426 2.004321 3.169674 3.550106 2.004321 2.161368
+[2,] 2.303196 2.693727 2.230449 2.004321 3.440752 3.151982 2.004321 2.004321
+[3,] 2.004321 2.537819 2.584331 2.354108 3.225826 2.445604 2.004321 2.004321
+      var6281  var6308  var6345  var6347  var6362  var6373  var6376  var6378
+[1,] 2.677607 2.004321 2.004321 2.691081 2.064458 2.595496 2.133539 2.004321
+[2,] 2.401401 2.004321 2.794488 2.937518 2.204120 2.904716 3.013259 2.004321
+[3,] 2.790285 2.004321 2.089905 2.806858 2.021189 2.292256 2.004321 2.004321
+      var6405  var6428  var6438  var6514  var6515  var6539  var6561  var6573
+[1,] 2.004321 2.004321 2.004321 2.600973 2.487138 2.004321 3.026533 2.348305
+[2,] 2.004321 2.004321 2.004321 2.283301 2.136721 2.457882 2.903090 2.587711
+[3,] 2.004321 2.812913 2.004321 2.170262 2.660865 2.614897 2.748963 2.672098
+      var6623  var6645  var6672  var6676  var6677  var6685  var6702  var6793
+[1,] 2.318063 2.568202 2.523746 2.222716 2.494155 2.510545 3.071514 2.004321
+[2,] 2.627366 3.183839 2.307496 2.609594 2.469822 2.691081 2.850646 2.004321
+[3,] 2.509203 2.717671 2.374748 2.271842 2.164353 2.704151 3.569959 2.004321
+      var6797  var6803  var6806  var6847  var6855  var6857  var6895  var6919
+[1,] 2.822168 2.960471 2.905256 2.725912 3.171726 2.903090 2.615950 2.454845
+[2,] 2.647383 2.733999 2.682145 2.004321 2.783189 3.662758 2.457882 2.276462
+[3,] 3.109579 3.057666 3.067443 2.004321 3.170262 2.356026 2.614897 2.071882
+      var6967  var6989  var7119  var7128
+[1,] 2.004321 2.951338 3.324899 2.227887
+[2,] 2.004321 3.156549 3.121888 2.004321
+[3,] 2.629410 2.836324 3.014521 2.004321
+[1] "numgenes selected:284"
+[1] "test acc:0.970588235294118"
+[1] "test AUC acc:0.964285714285714"
+[1] "10 fold train100"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold -1  1
+        -1 27  0
+        1   0 11
+[1] "confusion matrix test"
+         test_y
+pred_test -1  1
+       -1 20  1
+       1   0 13
+[1] "train acc:1"
+[1] "confusion matrix train"
+          nci_y
+pred_train -1  1
+        -1 27  0
+        1   0 11
+[1] "DS index stage 1"
+[1] 0.15351
+[1] "KI index stage 1"
+[1] -0.07203642
+There were 50 or more warnings (use warnings() to see the first 50)
+> 
+> cma_feat_list<-colnames(trainm)
+> 
+> save(CMAres,file="CMAres.Rda")
+> write.table(cma_feat_list,file="selected_cma_feat_list.txt",sep="t",row.names=FALSE)
+> 
+> # modtraindata=modtrain, modtestdata=modtest, blindtest=testacc, modtrainclass=nci_y, modtestclass=test_y
+> #if(FALSE)
+> {
++ trainm<-CMAres$modtraindata
++ testm<-CMAres$modtestdata
++ trainclass<-CMAres$modtrainclass
++ testclass<-CMAres$modtestclass
++ learningsets<-CMAres$learningsets
++ }
+> 
+> if(FALSE)
++ {
++ trainclass<-trainm[,1] #CMAres$modtrainclass
++ testclass<-testm[,1] #CMAres$modtestclass
++ trainm<-trainm[,-c(1)] #CMAres$modtrainmata
++ testm<-testm[,-c(1)] #CMAres$modtestmata
++ 
++ }
+> 
+> d_dim<-dim(trainm)
+> 
+> print("Original dimension")
+[1] "Original dimension"
+> print(d_dim)
+[1]  38 284
+> 
+> system.time(psores<-run_pso(outloc=outloc,trainm,trainclass,testm,testclass,transition_matrix,c1=2.05,
++ c2=2.05,
++ itr=10,
++ globalpso_maxitr=10,
++ global_max_itr=5,
++ num_part=20,
++ kname="radial",
++ errortype="BER",
++ weightA<-as.numeric(args[1]),
++ weightB<-as.numeric(args[2]),
++ weightC<-as.numeric(args[3]),
++ weightD<-as.numeric(args[4]),
++ featweight.max=0.01,
++ featweight.min=0.01,
++ numfolds=10,
++ followerprob=as.numeric(args[6]),
++ confusionprob=as.numeric(args[7]),
++ leaderprob=as.numeric(args[8]),
++ wmax=1,
++ wmin=1,
++ behavior_reset_itr=5,
++ maxitrreset=10,
++ num_neighbors=3,
++ minselect.pct=0.5,
++ evalMode="CV2",
++ minfitnessthresh=50,
++ maxnum=as.numeric(args[10]),minnum=3,inertia_method=args[5],particlebehav_method="randbased",constriction_factor=1,
++ select.global.best=TRUE,numnodes=4,evalFunc=eval_fit_kfold_diff,itr.terminate=FALSE,train.pct=0.8))
+[1] "c1: 2.05"
+[1] "c2: 2.05"
+[1] "itr: 10"
+[1] "globalpso_maxitr: 10"
+[1] "global_max_itr: 5"
+[1] "num_part: 20"
+[1] "kname: radial"
+[1] "errortype: BER"
+[1] "weightA: 0.7"
+[1] "weightB: 0.2"
+[1] "weightC: 0.05"
+[1] "weightD: 0.05"
+[1] "featweight.max: 0.01"
+[1] "featweight.min: 0.01"
+[1] "numfolds: 10"
+[1] "followerprob: 0.45"
+[1] "confusionprob: 0.2"
+[1] "leaderprob: 0.25"
+[1] "wmax: 1"
+[1] "wmin: 1"
+[1] "behavior_reset_itr: 5"
+[1] "maxitrreset: 10"
+[1] "num_neighbors: 3"
+[1] "minselect.pct: 0.5"
+[1] "minfitnessthresh: 50"
+[1] "maxnum: 30"
+[1] "minnum: 3"
+[1] "inertia_method: global"
+[1] "particlebehav_method: randbased"
+[1] "constriction_factor: 1"
+[1] "select.global.best: TRUE"
+[1] "train 10 fold"
+[1] 100
+[1] "here"
+[1] "s"
+[1] 30.4
+[1]  38 284
+[1] 10
+[1] "learning sets: 1"
+ [1]  6 28 12  2 16  7 25 20 29 13 15  3 19  9 30 26 21 38 27 10  5 14 23 34  8
+[26] 24  4 31 36  1
+[1] "Starting global iteration number : 1"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -33.71378
+[1] "Best solution:"
+  [1] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+ [26] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+ [51] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+ [76] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[101] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[126] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[151] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[176] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[201] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[226] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[251] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[276] NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -40.12047
+[1] "Best solution:"
+  [1] 0 0 0 0 0 1 0 0 0 0 0 0 0 1 1 0 1 1 0 0 1 1 1 0 0 0 1 1 0 0 0 1 1 1 0 0 0
+ [38] 1 0 0 1 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 1 0 0 0 1 1 0 0 0 1 0 0 1 1
+ [75] 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 1 0 0 1 1 0 0 0 0 0 1 0
+[112] 1 0 0 0 1 1 0 0 0 1 1 0 0 0 1 0 0 0 0 0 0 1 1 0 1 1 1 0 1 0 1 1 1 0 0 1 1
+[149] 0 0 1 1 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 1 0 1 0 1 0 0 1 0 0 1 0 1 0 1
+[186] 0 0 1 0 0 0 1 0 0 0 0 0 0 1 1 1 0 1 0 0 1 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0
+[223] 1 1 0 0 0 0 1 1 1 1 0 1 0 0 0 0 1 0 0 0 1 0 1 0 0 0 1 0 0 0 0 1 0 0 0 1 0
+[260] 0 0 1 1 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 1 0 1 1 0
+[1] 89
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "Best fitness updated to:"
+[1] -40.1592
+[1] "Best solution:"
+  [1] 1 0 1 1 0 0 0 0 0 0 1 0 0 0 0 1 0 1 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 1 0 0 0
+ [38] 0 1 1 1 0 1 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 0 1 1 1 0 0 0 1 1 0 1 0 0
+ [75] 1 0 0 0 0 0 0 0 1 0 0 1 0 0 1 1 1 0 1 1 1 0 1 0 0 1 1 1 1 1 0 0 0 0 0 1 0
+[112] 0 1 0 0 0 1 0 0 0 0 0 0 1 0 1 0 1 1 1 0 1 1 0 0 1 0 1 1 0 0 0 0 1 0 0 0 1
+[149] 1 0 0 0 0 1 0 1 1 0 0 0 1 1 0 0 0 0 0 0 1 0 0 1 0 1 0 1 0 0 1 0 0 0 0 0 0
+[186] 0 0 1 1 1 0 1 0 0 0 0 0 0 1 0 0 1 0 0 1 0 0 1 0 1 1 0 1 1 0 0 1 0 1 1 0 0
+[223] 0 0 1 1 1 1 1 0 1 0 0 0 1 0 0 0 0 1 1 0 0 0 1 0 0 0 1 0 0 0 0 0 1 1 1 0 0
+[260] 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 1 0 0 1 1 1 1 0 1
+[1] 100
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "Best fitness updated to:"
+[1] -40.25075
+[1] "Best solution:"
+  [1] 1 0 1 1 1 0 0 0 0 0 1 0 1 1 0 0 1 1 0 0 0 1 1 0 1 0 0 0 1 0 1 0 0 0 1 0 0
+ [38] 1 0 0 0 0 0 0 0 1 0 0 1 1 0 0 0 1 1 0 0 1 1 0 0 1 1 1 0 0 0 1 1 1 1 0 0 1
+ [75] 0 1 0 0 1 0 1 0 0 0 0 1 0 0 1 0 1 1 1 0 0 0 1 0 0 1 0 1 1 0 1 0 1 0 0 0 0
+[112] 0 1 1 0 0 0 1 1 0 1 1 0 1 0 1 0 1 0 0 0 1 1 1 0 0 0 0 0 0 1 0 0 0 0 0 1 1
+[149] 1 0 1 0 0 0 1 1 0 1 0 0 0 0 0 1 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1
+[186] 1 0 1 0 0 0 1 1 0 0 0 0 1 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0
+[223] 1 1 1 1 0 0 1 0 1 1 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[260] 0 0 1 1 1 0 0 0 0 1 0 0 0 0 0 0 1 1 1 1 0 0 0 0 0
+[1] 96
+[1] "iteration number: "
+[1] 8
+[1] "Best fitness updated to:"
+[1] -40.28949
+[1] "Best solution:"
+  [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0 1 0 0 0 0 1 0 1 0 0 0
+ [38] 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1
+ [75] 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0
+[112] 0 0 0 0 0 1 0 0 0 1 1 0 0 0 1 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 1 0 1 0 0 0 1
+[149] 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[186] 0 0 1 0 0 1 0 0 0 0 0 0 0 1 1 1 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[223] 1 1 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+[260] 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0
+[1] 47
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "Best fitness updated to:"
+[1] -40.30709
+[1] "Best solution:"
+  [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 1 0 0 1
+ [38] 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+ [75] 0 0 0 1 0 0 0 0 0 1 0 1 0 0 0 0 0 1 1 1 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0 0
+[112] 1 0 0 0 0 1 0 0 1 1 1 0 0 0 0 0 1 0 0 0 0 1 0 0 1 1 1 0 0 1 0 0 1 0 0 0 1
+[149] 0 0 1 1 1 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[186] 0 1 1 0 0 0 1 0 0 0 0 0 1 1 0 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[223] 0 0 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+[260] 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0
+[1] 51
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "Best fitness updated to:"
+[1] -40.31766
+[1] "Best solution:"
+  [1] 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 0 1 0 0 0
+ [38] 0 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1
+ [75] 0 0 0 1 1 0 0 0 0 1 0 0 0 0 0 0 0 1 0 1 0 0 0 1 0 0 0 0 0 1 0 1 0 0 0 0 0
+[112] 0 0 0 0 0 1 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 0 0 0 1 0 1 0 0 0 0
+[149] 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[186] 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[223] 0 1 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 1 0 0 1 0 1 0 0 0 1 0 0 0 0 0 0 0 0 1 0
+[260] 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0
+[1] 45
+[1] "iteration number: "
+[1] 13
+[1] "Best fitness updated to:"
+[1] -40.32118
+[1] "Best solution:"
+  [1] 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 0 1 0 0 1
+ [38] 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1
+ [75] 1 0 0 1 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0
+[112] 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 0 0 0 1 0 1 0 0 0 0
+[149] 0 0 1 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[186] 0 0 1 0 0 1 0 0 0 0 0 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[223] 0 0 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+[260] 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0
+[1] 42
+[1] "iteration number: "
+[1] 14
+[1] "Best fitness updated to:"
+[1] -40.3247
+[1] "Best solution:"
+  [1] 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 0 1 0 0 1
+ [38] 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1
+ [75] 1 0 0 1 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0
+[112] 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 0 0 0 1 0 1 0 0 0 0
+[149] 0 0 1 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[186] 0 0 1 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[223] 0 0 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+[260] 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0
+[1] 41
+[1] "iteration number: "
+[1] 15
+[1] "Best fitness updated to:"
+[1] -40.32822
+[1] "Best solution:"
+  [1] 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 0 1 0 0 1
+ [38] 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1
+ [75] 1 0 0 1 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 1 0 1 0 0 0 0 0
+[112] 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 0 0 0 1 0 1 0 0 0 0
+[149] 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[186] 0 0 1 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[223] 0 0 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+[260] 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0
+[1] 41
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "Best fitness updated to:"
+[1] -40.33174
+[1] "Best solution:"
+  [1] 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 1 0 1 0 0 0 1 0 0 1 0 0 0
+ [38] 0 1 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1
+ [75] 1 0 0 1 1 0 0 0 0 1 0 0 0 0 0 0 1 0 1 1 0 0 1 1 0 0 0 0 0 0 0 1 0 0 0 0 0
+[112] 0 1 0 0 0 1 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0
+[149] 0 0 0 1 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0
+[186] 0 0 0 0 0 1 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[223] 0 0 0 0 1 0 1 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[260] 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0
+[1] 44
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "Best fitness updated to:"
+[1] -40.33526
+[1] "Best solution:"
+  [1] 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 0 1 0 0 0
+ [38] 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1
+ [75] 1 0 0 1 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0
+[112] 0 0 0 0 0 1 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 0 0 0 0 0 1 0 0 0 0
+[149] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[186] 0 0 1 0 0 1 0 0 0 0 0 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[223] 0 0 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+[260] 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0
+[1] 38
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "iteration number: "
+[1] 31
+[1] "Best fitness updated to:"
+[1] -40.3423
+[1] "Best solution:"
+  [1] 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 0 1 0 0 0
+ [38] 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1
+ [75] 1 0 0 1 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0
+[112] 0 0 0 0 0 1 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 0 0 0 0 0 1 0 0 0 0
+[149] 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[186] 0 0 1 0 0 1 0 0 0 0 0 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[223] 0 0 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+[260] 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0
+[1] 40
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "iteration number: "
+[1] 42
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 101
+ [1] 2 2 2 1 4 2 2 1 2 1 2 2 2 2 2 3 2 3 4 3
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 95
+ [1] 2 2 2 1 4 2 2 1 2 1 2 2 2 2 2 3 2 3 4 3
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "Best fitness updated to:"
+[1] -40.34582
+[1] "Best solution:"
+  [1] 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 0 1 0 0 0
+ [38] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1
+ [75] 1 0 0 1 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0
+[112] 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0
+[149] 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[186] 0 0 1 0 0 1 0 0 0 0 0 0 0 1 1 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[223] 0 0 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+[260] 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0
+[1] 36
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "Best fitness updated to:"
+[1] -40.34935
+[1] "Best solution:"
+  [1] 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0
+ [38] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1
+ [75] 1 0 0 1 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0
+[112] 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0
+[149] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[186] 0 0 1 0 0 1 0 0 0 0 0 0 0 1 1 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[223] 0 0 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+[260] 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0
+[1] 35
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 81
+ [1] 3 1 3 2 3 3 2 1 3 1 2 2 4 1 2 1 1 2 1 2
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 95
+ [1] 2 2 2 1 4 2 2 1 2 1 2 2 2 2 2 3 2 3 4 3
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "iteration number: "
+[1] 96
+[1] "iteration number: "
+[1] 97
+[1] "iteration number: "
+[1] 98
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 80
+ [1] 2 2 2 1 4 2 2 1 2 1 2 2 2 2 2 3 2 3 4 3
+[1] "iteration number: "
+[1] 99
+[1] "iteration number: "
+[1] 100
+[1] "iteration number: "
+[1] 101
+[1] "iteration number: "
+[1] 102
+[1] "iteration number: "
+[1] 103
+[1] "iteration number: "
+[1] 104
+[1] "iteration number: "
+[1] 105
+[1] "iteration number: "
+[1] 106
+[1] "iteration number: "
+[1] 107
+[1] "iteration number: "
+[1] 108
+[1] "iteration number: "
+[1] 109
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 89
+ [1] 2 2 2 1 4 2 2 1 2 1 2 2 2 2 2 3 2 3 4 3
+[1] "iteration number: "
+[1] 110
+[1] "iteration number: "
+[1] 111
+[1] "iteration number: "
+[1] 112
+[1] "iteration number: "
+[1] 113
+[1] "Best fitness updated to:"
+[1] -40.35287
+[1] "Best solution:"
+  [1] 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0
+ [38] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1
+ [75] 1 0 0 1 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 0 0
+[112] 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0
+[149] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[186] 0 0 0 0 0 1 0 0 0 0 0 0 0 1 1 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0
+[223] 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+[260] 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0 0
+[1] 35
+[1] "iteration number: "
+[1] 114
+[1] "iteration number: "
+[1] 115
+[1] "iteration number: "
+[1] 116
+[1] "Best fitness updated to:"
+[1] -40.35639
+[1] "Best solution:"
+  [1] 1 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0
+ [38] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1
+ [75] 1 0 0 1 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0
+[112] 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0
+[149] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[186] 0 0 0 0 0 1 0 0 0 0 0 0 0 1 1 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0
+[223] 0 0 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+[260] 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0
+[1] 35
+[1] "iteration number: "
+[1] 117
+[1] "iteration number: "
+[1] 118
+[1] "iteration number: "
+[1] 119
+[1] "iteration number: "
+[1] 120
+[1] "iteration number: "
+[1] 121
+[1] "iteration number: "
+[1] 122
+[1] "iteration number: "
+[1] 123
+[1] "iteration number: "
+[1] 124
+[1] "iteration number: "
+[1] 125
+[1] "iteration number: "
+[1] 126
+[1] "iteration number: "
+[1] 127
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 73
+ [1] 2 2 2 1 4 2 2 1 2 1 2 2 2 2 2 3 2 3 4 3
+[1] "iteration number: "
+[1] 128
+[1] "iteration number: "
+[1] 129
+[1] "iteration number: "
+[1] 130
+[1] "iteration number: "
+[1] 131
+[1] "iteration number: "
+[1] 132
+[1] "iteration number: "
+[1] 133
+[1] "iteration number: "
+[1] 134
+[1] "Best fitness updated to:"
+[1] -40.36343
+[1] "Best solution:"
+  [1] 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0
+ [38] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+ [75] 1 0 0 1 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0
+[112] 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 1 0 0 0 0
+[149] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[186] 0 0 0 0 0 1 0 0 0 0 0 0 0 1 1 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[223] 0 0 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+[260] 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0
+[1] 33
+[1] "iteration number: "
+[1] 135
+[1] "iteration number: "
+[1] 136
+[1] "iteration number: "
+[1] 137
+[1] "Best fitness updated to:"
+[1] -40.36695
+[1] "Best solution:"
+  [1] 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0
+ [38] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+ [75] 1 0 0 1 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0
+[112] 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0
+[149] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[186] 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[223] 0 0 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+[260] 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0
+[1] 29
+[1] "iteration number: "
+[1] 138
+[1] "iteration number: "
+[1] 139
+[1] "iteration number: "
+[1] 140
+[1] "iteration number: "
+[1] 141
+[1] "iteration number: "
+[1] 142
+[1] "iteration number: "
+[1] 143
+[1] "iteration number: "
+[1] 144
+[1] "iteration number: "
+[1] 145
+[1] "iteration number: "
+[1] 146
+[1] "iteration number: "
+[1] 147
+[1] "iteration number: "
+[1] 148
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 72
+ [1] 2 2 2 1 4 2 2 1 2 1 2 2 2 2 2 3 2 3 4 3
+[1] "iteration number: "
+[1] 149
+[1] "iteration number: "
+[1] 150
+[1] "iteration number: "
+[1] 151
+[1] "iteration number: "
+[1] 152
+[1] "iteration number: "
+[1] 153
+[1] "Best fitness updated to:"
+[1] -40.37047
+[1] "Best solution:"
+  [1] 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0
+ [38] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1
+ [75] 1 0 0 1 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 1 0 1 0 0 0 0 0
+[112] 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0
+[149] 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[186] 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[223] 0 0 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+[260] 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0
+[1] 32
+[1] "iteration number: "
+[1] 154
+[1] "iteration number: "
+[1] 155
+[1] "iteration number: "
+[1] 156
+[1] "iteration number: "
+[1] 157
+[1] "iteration number: "
+[1] 158
+[1] "iteration number: "
+[1] 159
+[1] "iteration number: "
+[1] 160
+[1] "iteration number: "
+[1] 161
+[1] "iteration number: "
+[1] 162
+[1] "iteration number: "
+[1] 163
+[1] "iteration number: "
+[1] 164
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 73
+ [1] 3 1 3 2 3 3 2 1 3 1 2 2 4 1 2 1 1 2 1 2
+[1] "iteration number: "
+[1] 165
+[1] "iteration number: "
+[1] 166
+[1] "iteration number: "
+[1] 167
+[1] "iteration number: "
+[1] 168
+[1] "iteration number: "
+[1] 169
+[1] "iteration number: "
+[1] 170
+[1] "iteration number: "
+[1] 171
+[1] "iteration number: "
+[1] 172
+[1] "iteration number: "
+[1] 173
+[1] "iteration number: "
+[1] 174
+[1] "iteration number: "
+[1] 175
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 73
+ [1] 3 1 3 2 3 3 2 1 3 1 2 2 4 1 2 1 1 2 1 2
+[1] "iteration number: "
+[1] 176
+[1] "iteration number: "
+[1] 177
+[1] "iteration number: "
+[1] 178
+[1] "iteration number: "
+[1] 179
+[1] "iteration number: "
+[1] 180
+[1] "iteration number: "
+[1] 181
+[1] "iteration number: "
+[1] 182
+[1] "iteration number: "
+[1] 183
+[1] "iteration number: "
+[1] 184
+[1] "iteration number: "
+[1] 185
+[1] "iteration number: "
+[1] 186
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 69
+ [1] 3 1 3 2 3 3 2 1 3 1 2 2 4 1 2 1 1 2 1 2
+[1] "iteration number: "
+[1] 187
+[1] "iteration number: "
+[1] 188
+[1] "iteration number: "
+[1] 189
+[1] "iteration number: "
+[1] 190
+[1] "iteration number: "
+[1] 191
+[1] "iteration number: "
+[1] 192
+[1] "iteration number: "
+[1] 193
+[1] "iteration number: "
+[1] 194
+[1] "iteration number: "
+[1] 195
+[1] "iteration number: "
+[1] 196
+[1] "iteration number: "
+[1] 197
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 71
+ [1] 3 1 3 2 3 3 2 1 3 1 2 2 4 1 2 1 1 2 1 2
+[1] "iteration number: "
+[1] 198
+[1] "iteration number: "
+[1] 199
+[1] "iteration number: "
+[1] 200
+[1] "iteration number: "
+[1] 201
+[1] "iteration number: "
+[1] 202
+[1] "iteration number: "
+[1] 203
+[1] "iteration number: "
+[1] 204
+[1] "iteration number: "
+[1] 205
+[1] "iteration number: "
+[1] 206
+[1] "iteration number: "
+[1] 207
+[1] "iteration number: "
+[1] 208
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 75
+ [1] 2 2 2 1 4 2 2 1 2 1 2 2 2 2 2 3 2 3 4 3
+[1] "iteration number: "
+[1] 209
+[1] "iteration number: "
+[1] 210
+[1] "iteration number: "
+[1] 211
+[1] "iteration number: "
+[1] 212
+[1] "iteration number: "
+[1] 213
+[1] "iteration number: "
+[1] 214
+[1] "iteration number: "
+[1] 215
+[1] "iteration number: "
+[1] 216
+[1] "iteration number: "
+[1] 217
+[1] "iteration number: "
+[1] 218
+[1] "iteration number: "
+[1] 219
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 88
+[1] "No change for 6 iterations. Exiting PSO."
+ [1]   3  17  22  34  58  65  75  78  79  84  94  98 106 121 122 136 169 191 200
+[20] 203 206 229 230 234 240 258 263 271
+[1] 1
+[1] "##################################"
+[1] "Results summary for itr:1"
+[1] "number of features selected using population mean"
+[1] 30
+[1] "number of features selected using current global best"
+[1] 28
+[1] "feat ind length"
+[1] 28
+[1] "best accuracy"
+[1] 40.37047
+[1] "test acc:1"
+[1] "##################################"
+[1] "learning sets: 2"
+ [1] 10 18 16  8  2 28  6 11 19  9  1  4 12 32 17 33 24  7 15  3 14 23 37 25 36
+[26] 38 30 34 22 29
+[1] "Starting global iteration number : 2"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -40.21955
+[1] "Best solution:"
+  [1] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+ [26] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+ [51] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+ [76] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[101] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[126] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[151] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[176] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[201] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[226] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[251] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[276] NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -43.09084
+[1] "Best solution:"
+  [1] 0 0 0 0 0 1 0 0 0 0 0 0 0 1 1 0 1 1 0 0 1 1 1 0 0 0 1 1 0 0 0 1 1 1 0 0 0
+ [38] 1 0 0 1 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 1 0 0 0 1 1 0 0 0 1 0 0 1 1
+ [75] 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 1 0 0 1 1 0 0 0 0 0 1 0
+[112] 1 0 0 0 1 1 0 0 0 1 1 0 0 0 1 0 0 0 0 0 0 1 1 0 1 1 1 0 1 0 1 1 1 0 0 1 1
+[149] 0 0 1 1 1 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 1 0 1 0 1 0 0 1 0 0 1 0 1 0 1
+[186] 0 0 1 0 0 0 1 0 0 0 0 0 0 1 1 1 0 1 0 0 1 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0
+[223] 1 1 0 0 0 0 1 1 1 1 0 1 0 0 0 0 1 0 0 0 1 0 1 0 0 0 1 0 0 0 0 1 0 0 0 1 0
+[260] 0 0 1 1 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 1 0 1 1 0
+[1] 89
+[1] "iteration number: "
+[1] 3
+[1] "Best fitness updated to:"
+[1] -43.10493
+[1] "Best solution:"
+  [1] 0 0 1 1 0 0 0 0 0 0 1 0 0 0 0 1 0 1 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 1 0 0 0
+ [38] 0 1 1 1 0 1 0 0 0 0 0 1 0 0 0 1 1 1 0 0 0 0 0 0 0 1 1 1 0 0 1 1 1 0 1 0 0
+ [75] 1 1 0 0 0 0 0 0 1 0 0 1 0 0 1 0 1 0 1 1 1 0 1 0 0 0 1 1 1 1 0 0 0 0 0 0 0
+[112] 0 0 0 0 0 1 0 1 0 0 0 0 1 0 1 0 1 1 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 0 0 0 1
+[149] 1 0 0 0 0 1 0 0 0 0 0 0 1 1 0 0 0 0 0 0 1 0 0 1 0 1 0 1 0 0 1 0 1 0 0 0 0
+[186] 1 0 0 1 1 0 1 1 0 0 0 0 0 1 0 0 1 0 0 1 0 0 1 0 1 0 0 1 1 1 0 1 0 1 0 0 0
+[223] 0 0 1 0 0 1 1 0 1 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 1 1 0 0
+[260] 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 1 0 0 1 1 1 1 0 1
+[1] 95
+[1] "iteration number: "
+[1] 4
+[1] "Best fitness updated to:"
+[1] -43.76594
+[1] "Best solution:"
+  [1] 0 0 1 1 0 0 0 0 0 0 1 0 0 0 0 1 0 1 0 0 0 0 1 0 0 0 0 0 0 0 1 0 0 1 0 0 0
+ [38] 0 1 1 1 0 1 0 0 0 0 0 1 0 0 0 1 1 1 0 0 0 0 0 0 0 1 1 1 0 0 1 1 1 0 1 0 0
+ [75] 1 1 0 0 0 0 0 0 1 0 0 1 0 0 1 0 1 0 1 1 1 0 1 0 0 0 1 1 1 1 0 0 0 0 0 0 0
+[112] 0 1 0 0 0 1 0 0 0 0 0 0 1 0 1 0 1 1 1 0 1 1 0 0 1 0 1 1 0 0 1 0 1 0 0 0 1
+[149] 1 0 0 0 0 1 0 1 0 0 0 0 1 1 0 0 0 0 0 0 1 0 0 1 0 1 0 1 0 0 1 0 1 0 0 0 0
+[186] 0 0 1 1 1 0 1 0 0 0 0 0 0 1 0 0 1 0 0 1 0 0 1 0 1 0 0 1 1 1 0 1 0 1 0 0 0
+[223] 0 0 1 0 1 1 1 0 1 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 1 1 0 0
+[260] 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 1 0 0 1 1 1 1 0 1
+[1] 96
+[1] "iteration number: "
+[1] 5
+[1] "Best fitness updated to:"
+[1] -43.79344
+[1] "Best solution:"
+  [1] 1 1 0 0 0 0 0 0 0 0 0 1 0 1 0 0 1 0 0 0 0 1 1 0 0 0 1 0 0 0 0 1 1 1 0 0 0
+ [38] 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1
+ [75] 1 0 0 1 1 0 1 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 1 1 0 0 0 0 0 1 0 1 0 0 0 0 0
+[112] 0 0 0 0 0 1 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 0 1 0 1 0 1 0 0 0 0
+[149] 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+[186] 0 0 0 0 0 1 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[223] 0 1 0 0 0 0 1 1 0 0 0 1 0 0 0 0 1 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+[260] 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0
+[1] 53
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "Best fitness updated to:"
+[1] -43.81808
+[1] "Best solution:"
+  [1] 0 1 1 0 0 0 0 0 1 0 1 1 0 0 1 1 1 1 0 0 0 0 1 0 0 0 1 0 0 0 1 1 1 1 0 0 0
+ [38] 0 1 0 0 0 1 0 1 0 0 0 1 0 0 1 0 1 1 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 0 0 0
+ [75] 1 0 0 0 1 0 1 0 1 1 0 0 1 0 1 0 0 0 1 1 1 0 1 1 0 1 0 1 1 1 1 1 1 0 0 1 0
+[112] 0 0 0 0 0 1 0 1 1 1 0 0 1 0 1 0 0 1 1 0 0 1 0 0 0 1 1 1 1 0 0 0 1 0 0 1 0
+[149] 0 0 0 1 0 1 0 0 1 1 0 0 1 1 0 0 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 0 1 0 0 1 1
+[186] 0 0 0 0 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 1 0 1 0 0 0 1 0 0 1 0 1 0 0 0
+[223] 1 0 1 0 0 1 1 1 1 0 1 1 1 0 0 0 0 1 1 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0
+[260] 0 1 0 1 0 0 0 0 0 1 0 1 0 1 0 0 1 0 0 0 1 0 0 0 1
+[1] 103
+[1] "iteration number: "
+[1] 8
+[1] "Best fitness updated to:"
+[1] -43.93076
+[1] "Best solution:"
+  [1] 0 1 1 0 0 0 0 0 0 0 0 1 0 0 1 0 1 0 0 0 0 1 1 0 0 0 1 0 0 0 0 1 0 1 0 0 0
+ [38] 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+ [75] 1 0 0 1 1 0 1 0 0 1 0 0 0 0 0 0 0 1 0 1 0 0 0 1 0 0 0 0 0 1 1 1 0 0 0 0 0
+[112] 0 0 0 0 0 1 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 1 0 1 0 0 0 0
+[149] 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[186] 0 0 0 0 0 1 1 0 0 0 0 0 0 0 1 1 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[223] 1 1 0 0 0 0 1 1 0 0 0 1 0 0 0 0 1 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+[260] 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0
+[1] 53
+[1] "iteration number: "
+[1] 9
+[1] "Best fitness updated to:"
+[1] -43.98006
+[1] "Best solution:"
+  [1] 1 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 1 0 0 0 1 0 0 0 0 1 0 1 0 0 0
+ [38] 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1
+ [75] 1 0 0 1 1 0 1 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 1 0 1 0 0 0 0 0
+[112] 0 0 0 0 0 1 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 0 0 0 1 0 1 0 0 0 0
+[149] 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[186] 0 0 0 0 0 1 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[223] 0 1 0 0 0 0 1 1 0 0 0 1 0 0 0 0 1 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+[260] 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0
+[1] 46
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "iteration number: "
+[1] 20
+[1] "Best fitness updated to:"
+[1] -43.98358
+[1] "Best solution:"
+  [1] 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 1 1 0 0 0 1 0 0 0 1 0 0 1 0 0 0
+ [38] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 1
+ [75] 1 0 0 1 1 0 0 0 0 1 0 0 0 0 0 0 1 0 0 1 0 0 1 1 0 0 0 0 0 0 0 1 0 0 0 0 0
+[112] 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 1 0 0 0 0
+[149] 0 0 0 1 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0
+[186] 0 0 0 0 0 1 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[223] 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0
+[260] 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0
+[1] 40
+[1] "iteration number: "
+[1] 21

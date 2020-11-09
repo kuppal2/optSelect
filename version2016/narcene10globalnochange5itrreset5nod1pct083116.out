@@ -1,0 +1,333 @@
+
+R version 3.2.2 (2015-08-14) -- "Fire Safety"
+Copyright (C) 2015 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> #.libPaths("/home/stu/kuppal3/karan_libs/Rlibs")
+> library(snow)
+> library(e1071)
+> library(yaImpute)
+
+Attaching package: ‘yaImpute’
+
+The following object is masked from ‘package:e1071’:
+
+    impute
+
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+> library(bioDist)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘parallel’
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, clusterSplit, makeCluster, parApply,
+    parCapply, parLapply, parRapply, parSapply, splitIndices,
+    stopCluster
+
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parRapply, parSapply
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, as.vector, cbind, colnames,
+    do.call, duplicated, eval, evalq, Filter, Find, get, grep, grepl,
+    intersect, is.unsorted, lapply, lengths, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unlist, unsplit
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: KernSmooth
+KernSmooth 2.23 loaded
+Copyright M. P. Wand 1997-2009
+> #library(CMA, lib="/home/stu/kuppal3/karan_libs/Rlibs/")
+> library(RankAggreg)
+> library(CMA)
+
+Attaching package: ‘CMA’
+
+The following object is masked from ‘package:pROC’:
+
+    roc
+
+The following object is masked from ‘package:e1071’:
+
+    tune
+
+Warning message:
+package ‘CMA’ was built under R version 3.2.4 
+> library(expm)
+Loading required package: Matrix
+
+Attaching package: ‘expm’
+
+The following object is masked from ‘package:Matrix’:
+
+    expm
+
+> 
+> cl<-makeCluster(1)
+> 
+> 
+> args<-commandArgs(trailingOnly=TRUE)
+> #sname<-paste("/home/stu/kuppal3/Research/Feature_selection/Rcode/version2016/OCFS_",args[9],".R",sep="")
+> 
+> sname<-paste("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/version2016/OCFS_",args[9],".R",sep="")
+> source(sname)
+> print(sname)
+[1] "/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/version2016/OCFS_vmay2415_v32_FINAL.R"
+> 
+> #data_loc<-"/home/stu/kuppal3/Research/Feature_selection/Datasets/Prostate/" 
+> data_loc<-"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/"
+> 
+> setwd(data_loc)
+> #load("/home/stu/kuppal3/Research/Feature_selection/Datasets/MAQCII_BreastCancer/MaqcIIbr.Rda")
+> 
+> 
+> outloc<-paste(data_loc,"OCFSv062016_v32_Prostate_sensitivity_itr",args[9],"/",sep="")
+> 
+> 
+> load("ARCENE.Rda")
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/OCFSv062016_v32_Prostate_sensitivity_itrvmay2415_v32_FINAL' already exists
+> setwd(outloc)
+> 
+> 
+> 
+> trainm<-ARCENE$X
+> testm<-ARCENE$Xt
+> trainclass<-ARCENE$Y
+> testclass<-ARCENE$Yt
+> 
+> cnames<-paste("var",seq(1,dim(trainm)[2]),sep="")
+> colnames(trainm)<-cnames
+> colnames(testm)<-cnames
+> 
+> 
+> trainm<-trainm[,-c(10001)]
+> testm<-testm[,-c(10001)]
+> 
+> 
+> trainm<-t(trainm)
+> testm<-t(testm)
+> 
+> args<-commandArgs(trailingOnly=TRUE)
+> 
+> 
+> trainm<-t(trainm)
+> testm<-t(testm)
+> 
+> cnames<-paste("var",seq(1,dim(trainm)[2]),sep="")
+> colnames(trainm)<-cnames
+> colnames(testm)<-cnames
+> 
+> trainm<-as.data.frame(trainm)
+> testm<-as.data.frame(testm)
+> 
+> 
+> trainm<-cbind(trainclass,trainm)
+> testm<-cbind(testclass,testm)
+> 
+> cnames<-c("trainclass",cnames)
+> colnames(trainm)<-cnames
+> 
+> cnames<-c("testclass",cnames[-1])
+> colnames(testm)<-cnames
+> 
+> trainm<-na.omit(trainm)
+> testm<-na.omit(testm)
+> 
+> 
+> 
+> 
+> 
+> #OCFSvmay2415v2reg_itr1_LassoRFELIMMAELpres1backwsel_l0.25f0.45c0.25_top10pctmaxitrs100minselmedianrandbehavfeatw0.01_CV2accA100B1wrand6methodsmax100wrand/"
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/OCFSv062016_v32_Prostate_sensitivity_itrvmay2415_v32_FINAL' already exists
+> setwd(outloc)
+> 
+> trainm<-as.matrix(trainm)
+> testm<-as.matrix(testm)
+> trainclass<-trainm[,1] #CMAres$modtrainclass
+> testclass<-testm[,1] #CMAres$modtestclass
+> trainm<-trainm[,-c(1)] #CMAres$modtrainmata
+> testm<-testm[,-c(1)] #CMAres$modtestmata
+> 
+> #a: Confusions
+> #b: Neighbors
+> #c: Global
+> #d: Death
+> 
+> a<-c(0.25,0.25,0.25,0.25)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0.25,0.25,0.5,0)
+> d<-c(0.9,0.1,0,0.1)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0,0.5,0.5,0)
+> d<-c(0.9,0.1,0,0)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.2,0.3,0.4,0.1)
+> c<-c(0,0.4,0.4,0.2)
+> d<-c(0.9,0.1,0,0)
+> 
+> transition_matrix<-rbind(a,b,c,d)
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/OCFSv062016_v32_Prostate_sensitivity_itrvmay2415_v32_FINAL' already exists
+> setwd(outloc)
+> temp2=t(trainm)
+> temp2=apply(temp2, 2, function(x){which(x=="MD")})
+> temp2=unlist(temp2)
+> temp2=unique(temp2)
+> if(length(temp2)>1)
++ {
++ 	trainm=trainm[,-c(temp2)]
++ 
++ 	rm(temp2)
++ }
+> 
+> boostweight=rep(0,dim(trainm)[2])
+> 
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("limma"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="none",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   100 10000
+[1]   100 10000
+[1] "length of factcols"
+[1] 0
+[1]   100 10000
+[1]   100 10000
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] -1 -1 -1 1 
+Levels: -1 1
+[1] "orig train matrix"
+     var1 var2 var3 var4 var5 var6 var7 var8 var9 var10
+[1,]    0   71    0   95    0  538  404   20    0     0
+[2,]    0   41   82  165   60  554  379    0   71     0
+[3,]    0    0    1   40    0  451  402    0    0     0
+[4,]    0   56   44  275   14  511  470    0    0     0
+[5,]  105    0  141  348    0  268  329    0    0     1
+[1] "orig train matrix"
+     var1 var2 var3 var4 var5 var6 var7 var8 var9 var10
+[1,]    0   71    0   95    0  538  404   20    0     0
+[2,]    0   41   82  165   60  554  379    0   71     0
+[3,]    0    0    1   40    0  451  402    0    0     0
+[4,]    0   56   44  275   14  511  470    0    0     0
+[5,]  105    0  141  348    0  268  329    0    0     1
+[1]  0 82  1
+[1] "norm train matrix"
+     var1 var2 var3 var4 var5 var6 var7 var8 var9 var10
+[1,]    0   71    0   95    0  538  404   20    0     0
+[2,]    0   41   82  165   60  554  379    0   71     0
+[3,]    0    0    1   40    0  451  402    0    0     0
+[4,]    0   56   44  275   14  511  470    0    0     0
+[5,]  105    0  141  348    0  268  329    0    0     1
+[1] "mean of feat 2"
+[1] 35.33
+[1] "sd of feat 2"
+[1] 37.69094
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   100 10000
+GeneSelection: iteration 1 
+
+Attaching package: ‘limma’
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    plotMA
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 

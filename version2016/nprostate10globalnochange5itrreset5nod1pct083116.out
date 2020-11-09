@@ -1,0 +1,494 @@
+
+R version 3.2.2 (2015-08-14) -- "Fire Safety"
+Copyright (C) 2015 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> #.libPaths("/home/stu/kuppal3/karan_libs/Rlibs")
+> library(snow)
+> library(e1071)
+> library(yaImpute)
+
+Attaching package: ‘yaImpute’
+
+The following object is masked from ‘package:e1071’:
+
+    impute
+
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+> library(bioDist)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘parallel’
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, clusterSplit, makeCluster, parApply,
+    parCapply, parLapply, parRapply, parSapply, splitIndices,
+    stopCluster
+
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parRapply, parSapply
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, as.vector, cbind, colnames,
+    do.call, duplicated, eval, evalq, Filter, Find, get, grep, grepl,
+    intersect, is.unsorted, lapply, lengths, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unlist, unsplit
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: KernSmooth
+KernSmooth 2.23 loaded
+Copyright M. P. Wand 1997-2009
+> #library(CMA, lib="/home/stu/kuppal3/karan_libs/Rlibs/")
+> library(RankAggreg)
+> library(CMA)
+
+Attaching package: ‘CMA’
+
+The following object is masked from ‘package:pROC’:
+
+    roc
+
+The following object is masked from ‘package:e1071’:
+
+    tune
+
+Warning message:
+package ‘CMA’ was built under R version 3.2.4 
+> library(expm)
+Loading required package: Matrix
+
+Attaching package: ‘expm’
+
+The following object is masked from ‘package:Matrix’:
+
+    expm
+
+> 
+> cl<-makeCluster(1)
+> 
+> 
+> args<-commandArgs(trailingOnly=TRUE)
+> #sname<-paste("/home/stu/kuppal3/Research/Feature_selection/Rcode/version2016/OCFS_",args[9],".R",sep="")
+> 
+> sname<-paste("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/version2016/OCFS_",args[9],".R",sep="")
+> source(sname)
+> print(sname)
+[1] "/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/version2016/OCFS_vmay2415_v32_FINAL.R"
+> 
+> #data_loc<-"/home/stu/kuppal3/Research/Feature_selection/Datasets/Prostate/" 
+> data_loc<-"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/Prostate/"
+> 
+> setwd(data_loc)
+> #load("/home/stu/kuppal3/Research/Feature_selection/Datasets/MAQCII_BreastCancer/MaqcIIbr.Rda")
+> 
+> 
+> outloc<-paste(data_loc,"OCFSv062016_v32_Prostate_sensitivity_itr",args[9],"/",sep="")
+> 
+> 
+> load("Prostate.Rda")
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/Prostate/OCFSv062016_v32_Prostate_sensitivity_itrvmay2415_v32_FINAL' already exists
+> setwd(outloc)
+> 
+> 
+> 
+> trainm<-Prostate$X
+> testm<-Prostate$Xt
+> trainclass<-Prostate$Y
+> testclass<-Prostate$Yt
+> 
+> cnames<-paste("var",seq(1,dim(trainm)[2]),sep="")
+> colnames(trainm)<-cnames
+> colnames(testm)<-cnames
+> 
+> trainm<-t(trainm)
+> testm<-t(testm)
+> 
+> args<-commandArgs(trailingOnly=TRUE)
+> 
+> 
+> trainm<-t(trainm)
+> testm<-t(testm)
+> 
+> trainm<-cbind(trainclass,trainm)
+> testm<-cbind(testclass,testm)
+Warning message:
+In .Method(..., deparse.level = deparse.level) :
+  number of rows of result is not a multiple of vector length (arg 1)
+> 
+> trainm<-na.omit(trainm)
+> testm<-na.omit(testm)
+> 
+> 
+> 
+> 
+> 
+> #OCFSvmay2415v2reg_itr1_LassoRFELIMMAELpres1backwsel_l0.25f0.45c0.25_top10pctmaxitrs100minselmedianrandbehavfeatw0.01_CV2accA100B1wrand6methodsmax100wrand/"
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/Prostate/OCFSv062016_v32_Prostate_sensitivity_itrvmay2415_v32_FINAL' already exists
+> setwd(outloc)
+> 
+> trainm<-as.matrix(trainm)
+> testm<-as.matrix(testm)
+> trainclass<-trainm[,1] #CMAres$modtrainclass
+> testclass<-testm[,1] #CMAres$modtestclass
+> trainm<-trainm[,-c(1)] #CMAres$modtrainmata
+> testm<-testm[,-c(1)] #CMAres$modtestmata
+> 
+> #a: Confusions
+> #b: Neighbors
+> #c: Global
+> #d: Death
+> 
+> a<-c(0.25,0.25,0.25,0.25)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0.25,0.25,0.5,0)
+> d<-c(0.9,0.1,0,0.1)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0,0.5,0.5,0)
+> d<-c(0.9,0.1,0,0)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.2,0.3,0.4,0.1)
+> c<-c(0,0.4,0.4,0.2)
+> d<-c(0.9,0.1,0,0)
+> 
+> transition_matrix<-rbind(a,b,c,d)
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/Prostate/OCFSv062016_v32_Prostate_sensitivity_itrvmay2415_v32_FINAL' already exists
+> setwd(outloc)
+> temp2=t(trainm)
+> temp2=apply(temp2, 2, function(x){which(x=="MD")})
+> temp2=unlist(temp2)
+> temp2=unique(temp2)
+> if(length(temp2)>1)
++ {
++ 	trainm=trainm[,-c(temp2)]
++ 
++ 	rm(temp2)
++ }
+> 
+> boostweight=rep(0,dim(trainm)[2])
+> 
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("limma"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="none",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   61 6033
+[1]   61 6033
+[1] "length of factcols"
+[1] 0
+[1]   61 6033
+[1]   41 6033
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 1 1 1 1
+Levels: 1 2
+[1] "orig train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] "orig train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] -0.5320164 -0.5856470 -1.1543512
+[1] "norm train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] "mean of feat 2"
+[1] -0.6215651
+[1] "sd of feat 2"
+[1] 0.4198486
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   61 6033
+GeneSelection: iteration 1 
+
+Attaching package: ‘limma’
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    plotMA
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+[1] "dim of scoring matrix is "
+[1] 6033    1
+[1] 6033
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1] 1640 1839 2425 2456 2619 3006 3665 4155 5016 5808
+        var1640     var1839     var2425    var2456   var2619    var3006
+[1,] -0.4324850 -0.06663936 -0.09095791 -0.3330800 0.6272297  2.0003159
+[2,] -0.4491525 -0.12821383 -0.17475155  0.1796585 1.2275524  1.4425846
+[3,]  0.4164084 -1.15435124 -0.33889981  0.1843351 0.8523566 -0.3388998
+       var3665    var4155   var5016     var5808
+[1,]  1.494119  0.3605717 0.5010076 -0.05980047
+[2,]  1.451295  0.6992379 1.6606626 -0.04144184
+[3,] -1.154351 -1.1543512 0.3005128 -1.15435124
+        var1640    var1839    var2425     var2456    var2619  var3006
+[1,]  0.6405628 -0.6617976 -0.9193153  0.80607065 -0.1454227 1.535913
+[2,] -0.9011489  2.3738926  0.1097262 -0.72214654  1.4795100 2.558122
+[3,] -0.8734031  1.4243602  0.5904799  0.01840101 -0.6180501 2.544301
+        var3665   var4155    var5016    var5808
+[1,] -0.1910834 0.5349203  1.1926986 -0.9193153
+[2,]  1.9792968 2.4922452 -0.9011489  0.7545490
+[3,]  2.2318120 1.0613480  1.1862983  1.0065010
+[1] "numgenes selected:10"
+[1] "test acc:0.707317073170732"
+[1] "test AUC acc:0.771212121212121"
+[1] "10 fold train95.0819672131148"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 30  3
+         2  0 28
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 19  1
+        2 11 10
+[1] "train acc:0.950819672131147"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 30  3
+         2  0 28
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+Warning messages:
+1: In if (is.na(boostweight) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+2: In if (is.na(testm) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+3: In if (is.na(testclass) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+4: In mean.default(DS_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+5: In mean.default(DS_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+6: In mean.default(KI_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+> 
+> 
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("lasso"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="none",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   61 6033
+[1]   61 6033
+[1] "length of factcols"
+[1] 0
+[1]   61 6033
+[1]   41 6033
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 1 1 1 1
+Levels: 1 2
+[1] "orig train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] "orig train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] -0.5320164 -0.5856470 -1.1543512
+[1] "norm train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] "mean of feat 2"
+[1] -0.6215651
+[1] "sd of feat 2"
+[1] 0.4198486
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   61 6033
+GeneSelection: iteration 1 
+Loaded glmnet 2.0-5
+
+
+Attaching package: ‘glmnet’
+
+The following object is masked from ‘package:pROC’:
+
+    auc
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 

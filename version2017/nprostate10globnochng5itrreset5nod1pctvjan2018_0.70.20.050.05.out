@@ -1,0 +1,4693 @@
+
+R version 3.2.2 (2015-08-14) -- "Fire Safety"
+Copyright (C) 2015 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> #.libPaths("/home/kuppal3/karan_libs/Rlibs")
+> library(snow)
+Warning message:
+package ‘snow’ was built under R version 3.2.5 
+> library(e1071)
+Warning message:
+package ‘e1071’ was built under R version 3.2.5 
+> library(yaImpute)
+
+Attaching package: ‘yaImpute’
+
+The following object is masked from ‘package:e1071’:
+
+    impute
+
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+Warning message:
+package ‘pROC’ was built under R version 3.2.5 
+> library(bioDist)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘parallel’
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, clusterSplit, makeCluster, parApply,
+    parCapply, parLapply, parRapply, parSapply, splitIndices,
+    stopCluster
+
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parRapply, parSapply
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, as.vector, cbind, colnames,
+    do.call, duplicated, eval, evalq, Filter, Find, get, grep, grepl,
+    intersect, is.unsorted, lapply, lengths, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unlist, unsplit
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: KernSmooth
+KernSmooth 2.23 loaded
+Copyright M. P. Wand 1997-2009
+> #library(CMA, lib="/home/kuppal3/karan_libs/Rlibs/")
+> library(RankAggreg)
+Warning message:
+package ‘RankAggreg’ was built under R version 3.2.5 
+> library(CMA)
+
+Attaching package: ‘CMA’
+
+The following object is masked from ‘package:pROC’:
+
+    roc
+
+The following object is masked from ‘package:e1071’:
+
+    tune
+
+Warning message:
+package ‘CMA’ was built under R version 3.2.4 
+> library(expm)
+Loading required package: Matrix
+
+Attaching package: ‘expm’
+
+The following object is masked from ‘package:Matrix’:
+
+    expm
+
+Warning messages:
+1: package ‘expm’ was built under R version 3.2.5 
+2: package ‘Matrix’ was built under R version 3.2.5 
+> 
+> cl<-makeCluster(1)
+> 
+> 
+> args<-commandArgs(trailingOnly=TRUE)
+> 
+> dirloc<-"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/"
+> #sname<-paste("/home/stu/kuppal3/Research/Feature_selection/Rcode/versionnov2014/OCFS_",args[9],".R",sep="")
+> 
+> sname<-paste(dirloc,"version2017/OCFS_",args[9],".R",sep="")
+> source(sname)
+> 
+> outloc<-paste(dirloc,"/Datasets/Prostate/OCFSvmay2415_Prostate",args[9],"/",sep="")
+> 
+> 
+> sname<-paste(dirloc,"Datasets/Prostate/Prostate.Rda",sep="")
+> load(sname)
+> 
+> trainm<-Prostate$X
+> testm<-Prostate$Xt
+> trainclass<-Prostate$Y
+> testclass<-Prostate$Yt
+> 
+> 
+> 
+> 
+> 
+> trainm<-cbind(trainclass,trainm)
+> testm<-cbind(testclass,testm)
+> 
+> trainm<-na.omit(trainm)
+> testm<-na.omit(testm)
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO//Datasets/Prostate/OCFSvmay2415_Prostatevdec2317' already exists
+> setwd(outloc)
+> 
+> trainm<-as.matrix(trainm)
+> testm<-as.matrix(testm)
+> trainclass<-trainm[,1] #CMAres$modtrainclass
+> testclass<-testm[,1] #CMAres$modtestclass
+> trainm<-trainm[,-c(1)] #CMAres$modtrainmata
+> testm<-testm[,-c(1)] #CMAres$modtestmata
+> 
+> #a: Confusions
+> #b: Neighbors
+> #c: Global
+> #d: Death
+> 
+> a<-c(0.25,0.25,0.25,0.25)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0.25,0.25,0.5,0)
+> d<-c(0.9,0.1,0,0.1)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0,0.5,0.5,0)
+> d<-c(0.9,0.1,0,0)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.2,0.3,0.4,0.1)
+> c<-c(0,0.4,0.4,0.2)
+> d<-c(0.9,0.1,0,0)
+> 
+> transition_matrix<-rbind(a,b,c,d)
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO//Datasets/Prostate/OCFSvmay2415_Prostatevdec2317' already exists
+> setwd(outloc)
+> temp2=t(trainm)
+> temp2=apply(temp2, 2, function(x){which(x=="MD")})
+> temp2=unlist(temp2)
+> temp2=unique(temp2)
+> if(length(temp2)>1)
++ {
++ 	trainm=trainm[,-c(temp2)]
++ 
++ 	rm(temp2)
++ }
+> 
+> boostweight=rep(0,dim(trainm)[2])
+> 
+> d_dim<-dim(trainm)
+> 
+> print("Original dimension")
+[1] "Original dimension"
+> print(d_dim)
+[1]   61 6033
+> 
+> system.time(psores<-run_pso(outloc=outloc,trainm,trainclass,testm,testclass,transition_matrix,c1=2.05,
++ c2=2.05,
++ itr=10,
++ globalpso_maxitr=10,
++ global_max_itr=5,
++ num_part=20,
++ kname="radial",
++ errortype="BER",
++ weightA<-as.numeric(args[1]),
++ weightB<-as.numeric(args[2]),
++ weightC<-as.numeric(args[3]),
++ weightD<-as.numeric(args[4]),
++ featweight.max=0.01,
++ featweight.min=0.01,
++ numfolds=10,
++ followerprob=as.numeric(args[6]),
++ confusionprob=as.numeric(args[7]),
++ leaderprob=as.numeric(args[8]),
++ wmax=1,
++ wmin=1,
++ behavior_reset_itr=5,
++ maxitrreset=10,
++ num_neighbors=3,
++ minselect.pct=0.5,
++ evalMode="CV2",
++ minfitnessthresh=50,
++ maxnum=as.numeric(args[10]),minnum=3,inertia_method=args[5],particlebehav_method="randbased",constriction_factor=1,
++ select.global.best=TRUE,numnodes=4,evalFunc=eval_fit_kfold_diff,itr.terminate=FALSE,train.pct=0.8,evalmethod="CV"))
+[1] "featselmethods: 0.7"
+[1] "c1: 2.05"
+[1] "c2: 2.05"
+[1] "itr: 10"
+[1] "globalpso_maxitr: 10"
+[1] "global_max_itr: 5"
+[1] "num_part: 20"
+[1] "kname: radial"
+[1] "errortype: BER"
+[1] "weightA: 0.2"
+[1] "weightB: 0.05"
+[1] "weightC: 0.05"
+[1] "weightD: 0.2"
+[1] "featweight.max: 0.01"
+[1] "featweight.min: 0.01"
+[1] "numfolds: 10"
+[1] "followerprob: 0.45"
+[1] "confusionprob: 0.2"
+[1] "leaderprob: 0.25"
+[1] "wmax: 1"
+[1] "wmin: 1"
+[1] "behavior_reset_itr: 5"
+[1] "maxitrreset: 10"
+[1] "num_neighbors: 3"
+[1] "minselect.pct: 0.5"
+[1] "minfitnessthresh: 50"
+[1] "maxnum: 10"
+[1] "minnum: 3"
+[1] "inertia_method: global"
+[1] "particlebehav_method: randbased"
+[1] "constriction_factor: 1"
+[1] "select.global.best: TRUE"
+[1] "train.pct: 0.8"
+[1] "dim of trainm is "
+[1]   61 6033
+[1]   61 6033
+[1] "length of factcols"
+[1] 0
+[1]   61 6033
+[1]   41 6033
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "mean of feat 2"
+[1] -0.1220752
+[1] "sd of feat 2"
+[1] 1.164888
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   61 6033
+[1] "maxnum"
+[1] 10
+[1] 2
+GeneSelection: iteration 1 
+
+Attaching package: ‘limma’
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    plotMA
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 11 
+GeneSelection: iteration 12 
+GeneSelection: iteration 13 
+GeneSelection: iteration 14 
+GeneSelection: iteration 15 
+GeneSelection: iteration 16 
+GeneSelection: iteration 17 
+GeneSelection: iteration 18 
+GeneSelection: iteration 19 
+GeneSelection: iteration 20 
+GeneSelection: iteration 21 
+GeneSelection: iteration 22 
+GeneSelection: iteration 23 
+GeneSelection: iteration 24 
+GeneSelection: iteration 25 
+GeneSelection: iteration 26 
+GeneSelection: iteration 27 
+GeneSelection: iteration 28 
+GeneSelection: iteration 29 
+GeneSelection: iteration 30 
+GeneSelection: iteration 31 
+GeneSelection: iteration 32 
+GeneSelection: iteration 33 
+GeneSelection: iteration 34 
+GeneSelection: iteration 35 
+GeneSelection: iteration 36 
+GeneSelection: iteration 37 
+GeneSelection: iteration 38 
+GeneSelection: iteration 39 
+GeneSelection: iteration 40 
+GeneSelection: iteration 41 
+GeneSelection: iteration 42 
+GeneSelection: iteration 43 
+GeneSelection: iteration 44 
+GeneSelection: iteration 45 
+GeneSelection: iteration 46 
+GeneSelection: iteration 47 
+GeneSelection: iteration 48 
+GeneSelection: iteration 49 
+GeneSelection: iteration 50 
+GeneSelection: iteration 51 
+GeneSelection: iteration 52 
+GeneSelection: iteration 53 
+GeneSelection: iteration 54 
+GeneSelection: iteration 55 
+GeneSelection: iteration 56 
+GeneSelection: iteration 57 
+GeneSelection: iteration 58 
+GeneSelection: iteration 59 
+GeneSelection: iteration 60 
+GeneSelection: iteration 61 
+GeneSelection: iteration 62 
+GeneSelection: iteration 63 
+GeneSelection: iteration 64 
+GeneSelection: iteration 65 
+GeneSelection: iteration 66 
+GeneSelection: iteration 67 
+GeneSelection: iteration 68 
+GeneSelection: iteration 69 
+GeneSelection: iteration 70 
+GeneSelection: iteration 71 
+GeneSelection: iteration 72 
+GeneSelection: iteration 73 
+GeneSelection: iteration 74 
+GeneSelection: iteration 75 
+GeneSelection: iteration 76 
+GeneSelection: iteration 77 
+GeneSelection: iteration 78 
+GeneSelection: iteration 79 
+GeneSelection: iteration 80 
+GeneSelection: iteration 81 
+GeneSelection: iteration 82 
+GeneSelection: iteration 83 
+GeneSelection: iteration 84 
+GeneSelection: iteration 85 
+GeneSelection: iteration 86 
+GeneSelection: iteration 87 
+GeneSelection: iteration 88 
+GeneSelection: iteration 89 
+GeneSelection: iteration 90 
+GeneSelection: iteration 91 
+GeneSelection: iteration 92 
+GeneSelection: iteration 93 
+GeneSelection: iteration 94 
+GeneSelection: iteration 95 
+GeneSelection: iteration 96 
+GeneSelection: iteration 97 
+GeneSelection: iteration 98 
+GeneSelection: iteration 99 
+GeneSelection: iteration 100 
+[1] "varselmethod"
+[1] "none"
+[1] "dim of scoring matrix is "
+[1] 6033    1
+[1] 6033
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]  478  610  694  721  735  914 2941 3002 3600 3647
+                                                                     
+[1,]  0.3523077 -0.9436425  3.418485 -0.8544772  3.6118660 -0.6832863
+[2,] -0.8300460  1.1785517 -0.874537 -0.7576007 -0.8149619  1.7123557
+[3,] -0.2684535 -1.3201326 -0.495250 -0.8662605 -0.8291011  1.0313727
+                                                 
+[1,] -0.2274168  0.48996778  2.9995593 -0.6064776
+[2,]  0.4726325 -0.89862866 -1.1621560  2.1909283
+[3,] -1.1636745 -0.08058525  0.4958446  1.4493698
+                                                                      
+[1,]  2.8785633  0.4530718 -0.9573321 -0.8405985 -0.8645951 -0.7478173
+[2,] -0.8229654  0.4364162 -0.4752287 -0.8313892 -0.5544799  1.0224178
+[3,] -0.4537037 -1.3101486 -0.8832488 -0.8617489 -0.8250375 -1.1491934
+                                               
+[1,]  0.9749025  1.5184903 -0.9600797 0.4494994
+[2,] -1.1416733 -0.4619267 -1.1504606 0.2482434
+[3,]  0.1145004 -0.9067891  0.7498193 0.6337699
+[1] "numgenes selected:10"
+[1] "test acc:0.560975609756098"
+[1] "test AUC acc:0.595"
+[1] "10 fold train85.2459016393443"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 36  2
+         2  0 23
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 12 14
+        2  4 11
+[1] "train acc:0.967213114754098"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 36  2
+         2  0 23
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "train 10 fold"
+[1] 88.52459
+[1] "here"
+[1] "s"
+[1] 48.8
+[1] 61 10
+[1] 10
+[1] "learning sets: 1"
+ [1] 33 53 59 24 17 35  8 14 47  4 30 16 38  7 10 51 52 60 27 43  6 39 46 20  9
+[26] 11 32 37 12 22 31 25 36 54 21 55 44  3 34 57 29 49 18 58 19 13 40 48
+[1] "Starting global iteration number : 1"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -23.3208
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -27.66878
+[1] "Best solution:"
+ [1] 0 1 1 1 0 1 0 0 1 1
+[1] 6
+[1] "iteration number: "
+[1] 3
+[1] "Best fitness updated to:"
+[1] -28.50694
+[1] "Best solution:"
+ [1] 1 1 1 0 0 1 1 0 1 1
+[1] 7
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "Minimum fitness threshold not reached after 6 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 7
+[1] "Minimum fitness threshold not reached after 7 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 8
+[1] "Minimum fitness threshold not reached after 8 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 9
+[1] "Minimum fitness threshold not reached after 9 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 10
+[1] "Best fitness updated to:"
+[1] -29.36728
+[1] "Best solution:"
+ [1] 0 1 1 1 0 0 1 1 1 1
+[1] 7
+[1] "Minimum fitness threshold not reached after 10 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 11
+[1] "Minimum fitness threshold not reached after 11 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 12
+[1] "Minimum fitness threshold not reached after 12 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 13
+[1] "Minimum fitness threshold not reached after 13 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 14
+[1] "Minimum fitness threshold not reached after 14 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 15
+[1] "Minimum fitness threshold not reached after 15 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 16
+[1] "Minimum fitness threshold not reached after 16 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 17
+[1] "Minimum fitness threshold not reached after 17 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 18
+[1] "Minimum fitness threshold not reached after 18 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 19
+[1] "Minimum fitness threshold not reached after 19 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 20
+[1] "Minimum fitness threshold not reached after 20 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 21
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 10
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 21 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 22
+[1] "Minimum fitness threshold not reached after 22 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 23
+[1] "Minimum fitness threshold not reached after 23 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 24
+[1] "Minimum fitness threshold not reached after 24 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 25
+[1] "Minimum fitness threshold not reached after 25 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 26
+[1] "Minimum fitness threshold not reached after 26 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 27
+[1] "Minimum fitness threshold not reached after 27 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 28
+[1] "Minimum fitness threshold not reached after 28 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 29
+[1] "Minimum fitness threshold not reached after 29 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 30
+[1] "Minimum fitness threshold not reached after 30 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 31
+[1] "Minimum fitness threshold not reached after 31 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 32
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 9
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 32 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 33
+[1] "Minimum fitness threshold not reached after 33 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 34
+[1] "Minimum fitness threshold not reached after 34 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 35
+[1] "Minimum fitness threshold not reached after 35 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 36
+[1] "Minimum fitness threshold not reached after 36 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 37
+[1] "Minimum fitness threshold not reached after 37 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 38
+[1] "Minimum fitness threshold not reached after 38 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 39
+[1] "Minimum fitness threshold not reached after 39 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 40
+[1] "Minimum fitness threshold not reached after 40 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 41
+[1] "Minimum fitness threshold not reached after 41 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 42
+[1] "Minimum fitness threshold not reached after 42 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 43
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 9
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 43 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 44
+[1] "Minimum fitness threshold not reached after 44 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 45
+[1] "Minimum fitness threshold not reached after 45 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 46
+[1] "Minimum fitness threshold not reached after 46 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 47
+[1] "Minimum fitness threshold not reached after 47 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 48
+[1] "Minimum fitness threshold not reached after 48 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 49
+[1] "Minimum fitness threshold not reached after 49 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 50
+[1] "Minimum fitness threshold not reached after 50 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 51
+[1] "Minimum fitness threshold not reached after 51 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 52
+[1] "Minimum fitness threshold not reached after 52 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 53
+[1] "Minimum fitness threshold not reached after 53 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 54
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 9
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 54 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 55
+[1] "Minimum fitness threshold not reached after 55 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 56
+[1] "Minimum fitness threshold not reached after 56 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 57
+[1] "Minimum fitness threshold not reached after 57 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 58
+[1] "Minimum fitness threshold not reached after 58 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 59
+[1] "Minimum fitness threshold not reached after 59 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 60
+[1] "Minimum fitness threshold not reached after 60 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 61
+[1] "Minimum fitness threshold not reached after 61 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 62
+[1] "Minimum fitness threshold not reached after 62 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 63
+[1] "Minimum fitness threshold not reached after 63 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 64
+[1] "Minimum fitness threshold not reached after 64 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 65
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 8
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 65 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 66
+[1] "Minimum fitness threshold not reached after 66 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 67
+[1] "Minimum fitness threshold not reached after 67 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 68
+[1] "Minimum fitness threshold not reached after 68 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 69
+[1] "Minimum fitness threshold not reached after 69 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 70
+[1] "Minimum fitness threshold not reached after 70 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 71
+[1] "Minimum fitness threshold not reached after 71 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 72
+[1] "Minimum fitness threshold not reached after 72 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 73
+[1] "Minimum fitness threshold not reached after 73 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 74
+[1] "Minimum fitness threshold not reached after 74 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 75
+[1] "Minimum fitness threshold not reached after 75 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 76
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 8
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 76 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 77
+[1] "Minimum fitness threshold not reached after 77 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 78
+[1] "Minimum fitness threshold not reached after 78 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 79
+[1] "Minimum fitness threshold not reached after 79 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 80
+[1] "Minimum fitness threshold not reached after 80 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 81
+[1] "Minimum fitness threshold not reached after 81 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 82
+[1] "Minimum fitness threshold not reached after 82 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 83
+[1] "Minimum fitness threshold not reached after 83 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 84
+[1] "Minimum fitness threshold not reached after 84 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 85
+[1] "Minimum fitness threshold not reached after 85 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 86
+[1] "Minimum fitness threshold not reached after 86 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 87
+[1] "RE-INITIALIZING..."
+[1] 7
+[1] 5
+[1] 8
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 87 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 88
+[1] "Minimum fitness threshold not reached after 88 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 89
+[1] "Minimum fitness threshold not reached after 89 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 90
+[1] "Minimum fitness threshold not reached after 90 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 91
+[1] "Minimum fitness threshold not reached after 91 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 92
+[1] "Minimum fitness threshold not reached after 92 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 93
+[1] "Minimum fitness threshold not reached after 93 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 94
+[1] "Minimum fitness threshold not reached after 94 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 95
+[1] "Minimum fitness threshold not reached after 95 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 96
+[1] "Minimum fitness threshold not reached after 96 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 97
+[1] "Minimum fitness threshold not reached after 97 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 98
+[1] "RE-INITIALIZING..."
+[1] 8
+[1] 5
+[1] 8
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "No change for 8 iterations. Exiting PSO."
+[1] 2 3 4 6
+[1] 1
+[1] "##################################"
+[1] "Results summary for itr:1"
+[1] "number of features selected using population mean"
+[1] 5
+[1] "number of features selected using current global best"
+[1] 4
+[1] "feat ind length"
+[1] 4
+[1] "best accuracy"
+[1] 29.36728
+[1] "test acc:1"
+[1] "##################################"
+[1] "learning sets: 2"
+ [1] 60 26 18  4 59  3  1 42 13 39 23 21 48 19 36 58  8 11 25 53  5 32 61 17 20
+[26] 28 14 56 33 37 40  9  2 43 41 27 38 31 50 35 49 55 46 29 57 51 34 52
+[1] "Starting global iteration number : 2"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -24.24399
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -30.19583
+[1] "Best solution:"
+ [1] 0 1 1 1 0 1 0 0 1 1
+[1] 6
+[1] "iteration number: "
+[1] 3
+[1] "Best fitness updated to:"
+[1] -32.8383
+[1] "Best solution:"
+ [1] 1 1 0 1 1 0 0 0 0 0
+[1] 4
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "Best fitness updated to:"
+[1] -33.48498
+[1] "Best solution:"
+ [1] 1 1 1 1 0 0 0 0 1 0
+[1] 5
+[1] "Minimum fitness threshold not reached after 6 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 7
+[1] "Minimum fitness threshold not reached after 7 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 8
+[1] "Minimum fitness threshold not reached after 8 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 9
+[1] "Minimum fitness threshold not reached after 9 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 10
+[1] "Minimum fitness threshold not reached after 10 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 11
+[1] "Minimum fitness threshold not reached after 11 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 12
+[1] "Minimum fitness threshold not reached after 12 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 13
+[1] "Minimum fitness threshold not reached after 13 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 14
+[1] "Best fitness updated to:"
+[1] -33.70176
+[1] "Best solution:"
+ [1] 1 1 0 0 0 1 0 0 1 1
+[1] 5
+[1] "Minimum fitness threshold not reached after 14 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 15
+[1] "Minimum fitness threshold not reached after 15 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 16
+[1] "Minimum fitness threshold not reached after 16 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 17
+[1] "Minimum fitness threshold not reached after 17 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 18
+[1] "Minimum fitness threshold not reached after 18 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 19
+[1] "Minimum fitness threshold not reached after 19 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 20
+[1] "Minimum fitness threshold not reached after 20 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 21
+[1] "Minimum fitness threshold not reached after 21 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 22
+[1] "Minimum fitness threshold not reached after 22 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 23
+[1] "Minimum fitness threshold not reached after 23 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 24
+[1] "Minimum fitness threshold not reached after 24 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 25
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 10
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 25 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 26
+[1] "Minimum fitness threshold not reached after 26 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 27
+[1] "Minimum fitness threshold not reached after 27 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 28
+[1] "Minimum fitness threshold not reached after 28 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 29
+[1] "Minimum fitness threshold not reached after 29 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 30
+[1] "Minimum fitness threshold not reached after 30 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 31
+[1] "Minimum fitness threshold not reached after 31 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 32
+[1] "Minimum fitness threshold not reached after 32 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 33
+[1] "Minimum fitness threshold not reached after 33 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 34
+[1] "Minimum fitness threshold not reached after 34 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 35
+[1] "Minimum fitness threshold not reached after 35 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 36
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 9
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 36 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 37
+[1] "Minimum fitness threshold not reached after 37 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 38
+[1] "Minimum fitness threshold not reached after 38 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 39
+[1] "Minimum fitness threshold not reached after 39 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 40
+[1] "Minimum fitness threshold not reached after 40 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 41
+[1] "Minimum fitness threshold not reached after 41 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 42
+[1] "Minimum fitness threshold not reached after 42 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 43
+[1] "Minimum fitness threshold not reached after 43 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 44
+[1] "Minimum fitness threshold not reached after 44 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 45
+[1] "Minimum fitness threshold not reached after 45 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 46
+[1] "Minimum fitness threshold not reached after 46 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 47
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 8
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 47 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 48
+[1] "Minimum fitness threshold not reached after 48 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 49
+[1] "Minimum fitness threshold not reached after 49 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 50
+[1] "Minimum fitness threshold not reached after 50 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 51
+[1] "Minimum fitness threshold not reached after 51 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 52
+[1] "Minimum fitness threshold not reached after 52 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 53
+[1] "Minimum fitness threshold not reached after 53 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 54
+[1] "Minimum fitness threshold not reached after 54 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 55
+[1] "Minimum fitness threshold not reached after 55 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 56
+[1] "Minimum fitness threshold not reached after 56 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 57
+[1] "Minimum fitness threshold not reached after 57 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 58
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 6
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 58 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 59
+[1] "Minimum fitness threshold not reached after 59 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 60
+[1] "Minimum fitness threshold not reached after 60 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 61
+[1] "Minimum fitness threshold not reached after 61 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 62
+[1] "Minimum fitness threshold not reached after 62 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 63
+[1] "Minimum fitness threshold not reached after 63 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 64
+[1] "Minimum fitness threshold not reached after 64 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 65
+[1] "Minimum fitness threshold not reached after 65 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 66
+[1] "Minimum fitness threshold not reached after 66 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 67
+[1] "Minimum fitness threshold not reached after 67 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 68
+[1] "Minimum fitness threshold not reached after 68 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 69
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 6
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 69 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 70
+[1] "Minimum fitness threshold not reached after 70 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 71
+[1] "Minimum fitness threshold not reached after 71 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 72
+[1] "Minimum fitness threshold not reached after 72 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 73
+[1] "Minimum fitness threshold not reached after 73 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 74
+[1] "Minimum fitness threshold not reached after 74 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 75
+[1] "Minimum fitness threshold not reached after 75 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 76
+[1] "Minimum fitness threshold not reached after 76 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 77
+[1] "Minimum fitness threshold not reached after 77 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 78
+[1] "Minimum fitness threshold not reached after 78 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 79
+[1] "Minimum fitness threshold not reached after 79 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 80
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 6
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 80 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 81
+[1] "Minimum fitness threshold not reached after 81 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 82
+[1] "Minimum fitness threshold not reached after 82 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 83
+[1] "Minimum fitness threshold not reached after 83 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 84
+[1] "Minimum fitness threshold not reached after 84 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 85
+[1] "Minimum fitness threshold not reached after 85 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 86
+[1] "Minimum fitness threshold not reached after 86 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 87
+[1] "Minimum fitness threshold not reached after 87 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 88
+[1] "Minimum fitness threshold not reached after 88 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 89
+[1] "Minimum fitness threshold not reached after 89 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 90
+[1] "Minimum fitness threshold not reached after 90 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 91
+[1] "RE-INITIALIZING..."
+[1] 7
+[1] 5
+[1] 6
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 91 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 92
+[1] "Minimum fitness threshold not reached after 92 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 93
+[1] "Minimum fitness threshold not reached after 93 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 94
+[1] "Minimum fitness threshold not reached after 94 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 95
+[1] "Minimum fitness threshold not reached after 95 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 96
+[1] "Minimum fitness threshold not reached after 96 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 97
+[1] "Minimum fitness threshold not reached after 97 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 98
+[1] "Minimum fitness threshold not reached after 98 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 99
+[1] "Minimum fitness threshold not reached after 99 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 100
+[1] "Minimum fitness threshold not reached after 100 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 101
+[1] "Minimum fitness threshold not reached after 101 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 102
+[1] "RE-INITIALIZING..."
+[1] 8
+[1] 5
+[1] 6
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "No change for 8 iterations. Exiting PSO."
+[1]  2  5  6  9 10
+[1] 2
+[1] "##################################"
+[1] "Results summary for itr:2"
+[1] "number of features selected using population mean"
+[1] 4
+[1] "number of features selected using current global best"
+[1] 5
+[1] "feat ind length"
+[1] 5
+[1] "best accuracy"
+[1] 33.70176
+[1] "test acc:1"
+[1] "##################################"
+[1] "learning sets: 3"
+ [1] 54 25 58 45 13 43 53 31  1 35 38 56 28  9 48 30 55 49  2 40 41  4 57 46 47
+[26] 16 24 10 27 12 23 20 22 18 29  6 21  5  8 59 32 42 26 11 37  3 50 36
+[1] "Starting global iteration number : 3"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -20.49679
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -27.75642
+[1] "Best solution:"
+ [1] 0 1 1 1 0 1 0 0 1 1
+[1] 6
+[1] "iteration number: "
+[1] 3
+[1] "Best fitness updated to:"
+[1] -28.9646
+[1] "Best solution:"
+ [1] 1 1 0 1 0 1 0 0 1 1
+[1] 6
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "Minimum fitness threshold not reached after 6 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 7
+[1] "Best fitness updated to:"
+[1] -31.19197
+[1] "Best solution:"
+ [1] 1 1 0 0 1 1 0 0 1 0
+[1] 5
+[1] "Minimum fitness threshold not reached after 7 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 8
+[1] "Minimum fitness threshold not reached after 8 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 9
+[1] "Minimum fitness threshold not reached after 9 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 10
+[1] "Minimum fitness threshold not reached after 10 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 11
+[1] "Minimum fitness threshold not reached after 11 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 12
+[1] "Minimum fitness threshold not reached after 12 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 13
+[1] "Minimum fitness threshold not reached after 13 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 14
+[1] "Minimum fitness threshold not reached after 14 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 15
+[1] "Minimum fitness threshold not reached after 15 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 16
+[1] "Best fitness updated to:"
+[1] -32.58301
+[1] "Best solution:"
+ [1] 0 1 0 0 0 1 0 0 0 1
+[1] 3
+[1] "Minimum fitness threshold not reached after 16 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 17
+[1] "Minimum fitness threshold not reached after 17 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 18
+[1] "Minimum fitness threshold not reached after 18 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 19
+[1] "Minimum fitness threshold not reached after 19 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 20
+[1] "Minimum fitness threshold not reached after 20 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 21
+[1] "Minimum fitness threshold not reached after 21 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 22
+[1] "Minimum fitness threshold not reached after 22 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 23
+[1] "Minimum fitness threshold not reached after 23 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 24
+[1] "Minimum fitness threshold not reached after 24 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 25
+[1] "Minimum fitness threshold not reached after 25 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 26
+[1] "Minimum fitness threshold not reached after 26 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 27
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 9
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 27 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 28
+[1] "Minimum fitness threshold not reached after 28 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 29
+[1] "Minimum fitness threshold not reached after 29 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 30
+[1] "Minimum fitness threshold not reached after 30 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 31
+[1] "Minimum fitness threshold not reached after 31 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 32
+[1] "Minimum fitness threshold not reached after 32 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 33
+[1] "Minimum fitness threshold not reached after 33 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 34
+[1] "Minimum fitness threshold not reached after 34 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 35
+[1] "Minimum fitness threshold not reached after 35 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 36
+[1] "Minimum fitness threshold not reached after 36 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 37
+[1] "Minimum fitness threshold not reached after 37 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 38
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 8
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 38 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 39
+[1] "Minimum fitness threshold not reached after 39 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 40
+[1] "Minimum fitness threshold not reached after 40 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 41
+[1] "Minimum fitness threshold not reached after 41 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 42
+[1] "Minimum fitness threshold not reached after 42 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 43
+[1] "Minimum fitness threshold not reached after 43 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 44
+[1] "Minimum fitness threshold not reached after 44 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 45
+[1] "Minimum fitness threshold not reached after 45 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 46
+[1] "Minimum fitness threshold not reached after 46 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 47
+[1] "Minimum fitness threshold not reached after 47 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 48
+[1] "Minimum fitness threshold not reached after 48 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 49
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 6
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 49 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 50
+[1] "Minimum fitness threshold not reached after 50 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 51
+[1] "Minimum fitness threshold not reached after 51 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 52
+[1] "Minimum fitness threshold not reached after 52 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 53
+[1] "Minimum fitness threshold not reached after 53 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 54
+[1] "Minimum fitness threshold not reached after 54 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 55
+[1] "Minimum fitness threshold not reached after 55 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 56
+[1] "Minimum fitness threshold not reached after 56 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 57
+[1] "Minimum fitness threshold not reached after 57 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 58
+[1] "Minimum fitness threshold not reached after 58 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 59
+[1] "Minimum fitness threshold not reached after 59 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 60
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 6
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 60 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 61
+[1] "Minimum fitness threshold not reached after 61 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 62
+[1] "Minimum fitness threshold not reached after 62 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 63
+[1] "Minimum fitness threshold not reached after 63 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 64
+[1] "Minimum fitness threshold not reached after 64 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 65
+[1] "Minimum fitness threshold not reached after 65 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 66
+[1] "Minimum fitness threshold not reached after 66 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 67
+[1] "Minimum fitness threshold not reached after 67 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 68
+[1] "Minimum fitness threshold not reached after 68 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 69
+[1] "Minimum fitness threshold not reached after 69 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 70
+[1] "Minimum fitness threshold not reached after 70 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 71
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 6
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 71 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 72
+[1] "Minimum fitness threshold not reached after 72 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 73
+[1] "Minimum fitness threshold not reached after 73 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 74
+[1] "Minimum fitness threshold not reached after 74 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 75
+[1] "Minimum fitness threshold not reached after 75 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 76
+[1] "Minimum fitness threshold not reached after 76 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 77
+[1] "Minimum fitness threshold not reached after 77 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 78
+[1] "Minimum fitness threshold not reached after 78 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 79
+[1] "Minimum fitness threshold not reached after 79 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 80
+[1] "Minimum fitness threshold not reached after 80 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 81
+[1] "Minimum fitness threshold not reached after 81 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 82
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 6
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 82 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 83
+[1] "Minimum fitness threshold not reached after 83 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 84
+[1] "Minimum fitness threshold not reached after 84 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 85
+[1] "Minimum fitness threshold not reached after 85 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 86
+[1] "Minimum fitness threshold not reached after 86 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 87
+[1] "Minimum fitness threshold not reached after 87 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 88
+[1] "Minimum fitness threshold not reached after 88 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 89
+[1] "Minimum fitness threshold not reached after 89 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 90
+[1] "Minimum fitness threshold not reached after 90 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 91
+[1] "Minimum fitness threshold not reached after 91 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 92
+[1] "Minimum fitness threshold not reached after 92 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 93
+[1] "RE-INITIALIZING..."
+[1] 7
+[1] 5
+[1] 6
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 93 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 94
+[1] "Minimum fitness threshold not reached after 94 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 95
+[1] "Minimum fitness threshold not reached after 95 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 96
+[1] "Minimum fitness threshold not reached after 96 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 97
+[1] "Minimum fitness threshold not reached after 97 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 98
+[1] "Minimum fitness threshold not reached after 98 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 99
+[1] "Minimum fitness threshold not reached after 99 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 100
+[1] "Minimum fitness threshold not reached after 100 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 101
+[1] "Minimum fitness threshold not reached after 101 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 102
+[1] "Minimum fitness threshold not reached after 102 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 103
+[1] "Minimum fitness threshold not reached after 103 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 104
+[1] "RE-INITIALIZING..."
+[1] 8
+[1] 5
+[1] 6
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "No change for 8 iterations. Exiting PSO."
+[1]  2  6 10
+[1] 3
+[1] "##################################"
+[1] "Results summary for itr:3"
+[1] "number of features selected using population mean"
+[1] 4
+[1] "number of features selected using current global best"
+[1] 3
+[1] "feat ind length"
+[1] 3
+[1] "best accuracy"
+[1] 32.58301
+[1] "test acc:0.923076923076923"
+[1] "##################################"
+[1] "learning sets: 4"
+ [1] 24 37 54 57 55 13 33 28  4 52 34 31  3 47 14 30 15 25  7 26 38 50 22 51  9
+[26]  8 56 39 35 12 49 16 18  5 23 48 29  2 10 60 46 20 32 27 45 58 44 59
+[1] "Starting global iteration number : 4"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -24.96524
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -30.5974
+[1] "Best solution:"
+ [1] 0 1 1 1 0 1 0 0 1 1
+[1] 6
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "Best fitness updated to:"
+[1] -31.10413
+[1] "Best solution:"
+ [1] 0 1 0 1 0 0 1 0 1 1
+[1] 5
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "Best fitness updated to:"
+[1] -31.18284
+[1] "Best solution:"
+ [1] 1 0 1 1 0 1 1 0 1 0
+[1] 6
+[1] "Minimum fitness threshold not reached after 6 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 7
+[1] "Best fitness updated to:"
+[1] -31.18579
+[1] "Best solution:"
+ [1] 1 0 0 1 0 0 0 0 0 1
+[1] 3
+[1] "Minimum fitness threshold not reached after 7 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 8
+[1] "Minimum fitness threshold not reached after 8 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 9
+[1] "Best fitness updated to:"
+[1] -33.45353
+[1] "Best solution:"
+ [1] 0 1 1 0 0 1 0 0 1 1
+[1] 5
+[1] "Minimum fitness threshold not reached after 9 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 10
+[1] "Minimum fitness threshold not reached after 10 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 11
+[1] "Minimum fitness threshold not reached after 11 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 12
+[1] "Minimum fitness threshold not reached after 12 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 13
+[1] "Minimum fitness threshold not reached after 13 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 14
+[1] "Minimum fitness threshold not reached after 14 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 15
+[1] "Minimum fitness threshold not reached after 15 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 16
+[1] "Minimum fitness threshold not reached after 16 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 17
+[1] "Minimum fitness threshold not reached after 17 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 18
+[1] "Minimum fitness threshold not reached after 18 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 19
+[1] "Minimum fitness threshold not reached after 19 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 20
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 10
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 20 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 21
+[1] "Minimum fitness threshold not reached after 21 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 22
+[1] "Minimum fitness threshold not reached after 22 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 23
+[1] "Minimum fitness threshold not reached after 23 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 24
+[1] "Minimum fitness threshold not reached after 24 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 25
+[1] "Minimum fitness threshold not reached after 25 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 26
+[1] "Minimum fitness threshold not reached after 26 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 27
+[1] "Minimum fitness threshold not reached after 27 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 28
+[1] "Minimum fitness threshold not reached after 28 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 29
+[1] "Minimum fitness threshold not reached after 29 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 30
+[1] "Minimum fitness threshold not reached after 30 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 31
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 10
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 31 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 32
+[1] "Minimum fitness threshold not reached after 32 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 33
+[1] "Minimum fitness threshold not reached after 33 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 34
+[1] "Minimum fitness threshold not reached after 34 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 35
+[1] "Minimum fitness threshold not reached after 35 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 36
+[1] "Minimum fitness threshold not reached after 36 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 37
+[1] "Minimum fitness threshold not reached after 37 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 38
+[1] "Minimum fitness threshold not reached after 38 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 39
+[1] "Minimum fitness threshold not reached after 39 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 40
+[1] "Minimum fitness threshold not reached after 40 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 41
+[1] "Minimum fitness threshold not reached after 41 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 42
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 10
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 42 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 43
+[1] "Minimum fitness threshold not reached after 43 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 44
+[1] "Minimum fitness threshold not reached after 44 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 45
+[1] "Minimum fitness threshold not reached after 45 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 46
+[1] "Minimum fitness threshold not reached after 46 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 47
+[1] "Minimum fitness threshold not reached after 47 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 48
+[1] "Minimum fitness threshold not reached after 48 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 49
+[1] "Minimum fitness threshold not reached after 49 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 50
+[1] "Minimum fitness threshold not reached after 50 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 51
+[1] "Minimum fitness threshold not reached after 51 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 52
+[1] "Minimum fitness threshold not reached after 52 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 53
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 10
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 53 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 54
+[1] "Minimum fitness threshold not reached after 54 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 55
+[1] "Minimum fitness threshold not reached after 55 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 56
+[1] "Minimum fitness threshold not reached after 56 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 57
+[1] "Minimum fitness threshold not reached after 57 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 58
+[1] "Minimum fitness threshold not reached after 58 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 59
+[1] "Minimum fitness threshold not reached after 59 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 60
+[1] "Minimum fitness threshold not reached after 60 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 61
+[1] "Minimum fitness threshold not reached after 61 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 62
+[1] "Minimum fitness threshold not reached after 62 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 63
+[1] "Minimum fitness threshold not reached after 63 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 64
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 10
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 64 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 65
+[1] "Minimum fitness threshold not reached after 65 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 66
+[1] "Minimum fitness threshold not reached after 66 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 67
+[1] "Minimum fitness threshold not reached after 67 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 68
+[1] "Minimum fitness threshold not reached after 68 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 69
+[1] "Minimum fitness threshold not reached after 69 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 70
+[1] "Minimum fitness threshold not reached after 70 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 71
+[1] "Minimum fitness threshold not reached after 71 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 72
+[1] "Minimum fitness threshold not reached after 72 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 73
+[1] "Minimum fitness threshold not reached after 73 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 74
+[1] "Minimum fitness threshold not reached after 74 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 75
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 10
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 75 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 76
+[1] "Minimum fitness threshold not reached after 76 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 77
+[1] "Minimum fitness threshold not reached after 77 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 78
+[1] "Minimum fitness threshold not reached after 78 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 79
+[1] "Minimum fitness threshold not reached after 79 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 80
+[1] "Minimum fitness threshold not reached after 80 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 81
+[1] "Minimum fitness threshold not reached after 81 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 82
+[1] "Minimum fitness threshold not reached after 82 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 83
+[1] "Minimum fitness threshold not reached after 83 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 84
+[1] "Minimum fitness threshold not reached after 84 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 85
+[1] "Minimum fitness threshold not reached after 85 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 86
+[1] "RE-INITIALIZING..."
+[1] 7
+[1] 5
+[1] 10
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 86 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 87
+[1] "Minimum fitness threshold not reached after 87 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 88
+[1] "Minimum fitness threshold not reached after 88 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 89
+[1] "Minimum fitness threshold not reached after 89 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 90
+[1] "Minimum fitness threshold not reached after 90 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 91
+[1] "Minimum fitness threshold not reached after 91 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 92
+[1] "Minimum fitness threshold not reached after 92 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 93
+[1] "Minimum fitness threshold not reached after 93 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 94
+[1] "Minimum fitness threshold not reached after 94 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 95
+[1] "Minimum fitness threshold not reached after 95 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 96
+[1] "Minimum fitness threshold not reached after 96 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 97
+[1] "RE-INITIALIZING..."
+[1] 8
+[1] 5
+[1] 10
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "No change for 8 iterations. Exiting PSO."
+[1] 2 4 6 7 8 9
+[1] 4
+[1] "##################################"
+[1] "Results summary for itr:4"
+[1] "number of features selected using population mean"
+[1] 4
+[1] "number of features selected using current global best"
+[1] 6
+[1] "feat ind length"
+[1] 6
+[1] "best accuracy"
+[1] 33.45353
+[1] "test acc:0.846153846153846"
+[1] "##################################"
+[1] "learning sets: 5"
+ [1] 56 19  1 55 33 25 17  2 39 46 58 26 27  4 57 28 60 32 53 37 14 21 12  3 52
+[26] 59 41  5 42 36 50  6  8 29 31 16 38 44 22 13 11 49 24 61 48 34  7 47
+[1] "Starting global iteration number : 5"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -24.05145
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -28.83857
+[1] "Best solution:"
+ [1] 0 1 1 1 0 1 0 0 1 1
+[1] 6
+[1] "iteration number: "
+[1] 3
+[1] "Best fitness updated to:"
+[1] -29.46068
+[1] "Best solution:"
+ [1] 1 1 0 1 1 0 0 0 0 0
+[1] 4
+[1] "iteration number: "
+[1] 4
+[1] "Best fitness updated to:"
+[1] -29.70115
+[1] "Best solution:"
+ [1] 0 1 0 1 0 0 1 1 1 0
+[1] 5
+[1] "iteration number: "
+[1] 5
+[1] "Best fitness updated to:"
+[1] -30.0079
+[1] "Best solution:"
+ [1] 0 1 0 1 0 0 1 0 1 1
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "Minimum fitness threshold not reached after 6 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 7
+[1] "Minimum fitness threshold not reached after 7 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 8
+[1] "Minimum fitness threshold not reached after 8 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 9
+[1] "Minimum fitness threshold not reached after 9 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 10
+[1] "Minimum fitness threshold not reached after 10 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 11
+[1] "Minimum fitness threshold not reached after 11 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 12
+[1] "Minimum fitness threshold not reached after 12 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 13
+[1] "Best fitness updated to:"
+[1] -30.2816
+[1] "Best solution:"
+ [1] 1 1 0 1 0 1 1 1 1 0
+[1] 7
+[1] "Minimum fitness threshold not reached after 13 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 14
+[1] "Minimum fitness threshold not reached after 14 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 15
+[1] "Minimum fitness threshold not reached after 15 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 16
+[1] "Minimum fitness threshold not reached after 16 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 17
+[1] "Minimum fitness threshold not reached after 17 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 18
+[1] "Minimum fitness threshold not reached after 18 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 19
+[1] "Minimum fitness threshold not reached after 19 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 20
+[1] "Minimum fitness threshold not reached after 20 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 21
+[1] "Minimum fitness threshold not reached after 21 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 22
+[1] "Minimum fitness threshold not reached after 22 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 23
+[1] "Minimum fitness threshold not reached after 23 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 24
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 8
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 24 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 25
+[1] "Minimum fitness threshold not reached after 25 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 26
+[1] "Best fitness updated to:"
+[1] -31.88006
+[1] "Best solution:"
+ [1] 1 1 0 1 0 1 0 0 1 1
+[1] 6
+[1] "Minimum fitness threshold not reached after 26 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 27
+[1] "Minimum fitness threshold not reached after 27 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 28
+[1] "Best fitness updated to:"
+[1] -34.27801
+[1] "Best solution:"
+ [1] 0 1 0 1 0 1 0 0 0 1
+[1] 4
+[1] "Minimum fitness threshold not reached after 28 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 29
+[1] "Minimum fitness threshold not reached after 29 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 30
+[1] "Minimum fitness threshold not reached after 30 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 31
+[1] "Minimum fitness threshold not reached after 31 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 32
+[1] "Minimum fitness threshold not reached after 32 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 33
+[1] "Minimum fitness threshold not reached after 33 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 34
+[1] "Minimum fitness threshold not reached after 34 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 35
+[1] "Minimum fitness threshold not reached after 35 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 36
+[1] "Minimum fitness threshold not reached after 36 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 37
+[1] "Minimum fitness threshold not reached after 37 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 38
+[1] "Minimum fitness threshold not reached after 38 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 39
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 8
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 39 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 40
+[1] "Minimum fitness threshold not reached after 40 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 41
+[1] "Minimum fitness threshold not reached after 41 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 42
+[1] "Minimum fitness threshold not reached after 42 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 43
+[1] "Minimum fitness threshold not reached after 43 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 44
+[1] "Minimum fitness threshold not reached after 44 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 45
+[1] "Minimum fitness threshold not reached after 45 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 46
+[1] "Minimum fitness threshold not reached after 46 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 47
+[1] "Minimum fitness threshold not reached after 47 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 48
+[1] "Minimum fitness threshold not reached after 48 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 49
+[1] "Minimum fitness threshold not reached after 49 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 50
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 8
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 50 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 51
+[1] "Minimum fitness threshold not reached after 51 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 52
+[1] "Minimum fitness threshold not reached after 52 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 53
+[1] "Minimum fitness threshold not reached after 53 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 54
+[1] "Minimum fitness threshold not reached after 54 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 55
+[1] "Minimum fitness threshold not reached after 55 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 56
+[1] "Minimum fitness threshold not reached after 56 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 57
+[1] "Minimum fitness threshold not reached after 57 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 58
+[1] "Minimum fitness threshold not reached after 58 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 59
+[1] "Minimum fitness threshold not reached after 59 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 60
+[1] "Minimum fitness threshold not reached after 60 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 61
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 8
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 61 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 62
+[1] "Minimum fitness threshold not reached after 62 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 63
+[1] "Minimum fitness threshold not reached after 63 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 64
+[1] "Minimum fitness threshold not reached after 64 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 65
+[1] "Minimum fitness threshold not reached after 65 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 66
+[1] "Minimum fitness threshold not reached after 66 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 67
+[1] "Minimum fitness threshold not reached after 67 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 68
+[1] "Minimum fitness threshold not reached after 68 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 69
+[1] "Minimum fitness threshold not reached after 69 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 70
+[1] "Minimum fitness threshold not reached after 70 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 71
+[1] "Minimum fitness threshold not reached after 71 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 72
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 8
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 72 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 73
+[1] "Minimum fitness threshold not reached after 73 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 74
+[1] "Minimum fitness threshold not reached after 74 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 75
+[1] "Minimum fitness threshold not reached after 75 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 76
+[1] "Minimum fitness threshold not reached after 76 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 77
+[1] "Minimum fitness threshold not reached after 77 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 78
+[1] "Minimum fitness threshold not reached after 78 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 79
+[1] "Minimum fitness threshold not reached after 79 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 80
+[1] "Minimum fitness threshold not reached after 80 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 81
+[1] "Minimum fitness threshold not reached after 81 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 82
+[1] "Minimum fitness threshold not reached after 82 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 83
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 8
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 83 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 84
+[1] "Minimum fitness threshold not reached after 84 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 85
+[1] "Minimum fitness threshold not reached after 85 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 86
+[1] "Minimum fitness threshold not reached after 86 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 87
+[1] "Minimum fitness threshold not reached after 87 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 88
+[1] "Minimum fitness threshold not reached after 88 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 89
+[1] "Minimum fitness threshold not reached after 89 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 90
+[1] "Minimum fitness threshold not reached after 90 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 91
+[1] "Minimum fitness threshold not reached after 91 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 92
+[1] "Minimum fitness threshold not reached after 92 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 93
+[1] "Minimum fitness threshold not reached after 93 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 94
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 8
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 94 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 95
+[1] "Minimum fitness threshold not reached after 95 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 96
+[1] "Minimum fitness threshold not reached after 96 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 97
+[1] "Minimum fitness threshold not reached after 97 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 98
+[1] "Minimum fitness threshold not reached after 98 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 99
+[1] "Minimum fitness threshold not reached after 99 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 100
+[1] "Minimum fitness threshold not reached after 100 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 101
+[1] "Minimum fitness threshold not reached after 101 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 102
+[1] "Minimum fitness threshold not reached after 102 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 103
+[1] "Minimum fitness threshold not reached after 103 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 104
+[1] "Minimum fitness threshold not reached after 104 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 105
+[1] "RE-INITIALIZING..."
+[1] 7
+[1] 5
+[1] 8
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 105 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 106
+[1] "Minimum fitness threshold not reached after 106 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 107
+[1] "Minimum fitness threshold not reached after 107 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 108
+[1] "Minimum fitness threshold not reached after 108 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 109
+[1] "Minimum fitness threshold not reached after 109 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 110
+[1] "Minimum fitness threshold not reached after 110 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 111
+[1] "Minimum fitness threshold not reached after 111 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 112
+[1] "Minimum fitness threshold not reached after 112 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 113
+[1] "Minimum fitness threshold not reached after 113 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 114
+[1] "Minimum fitness threshold not reached after 114 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 115
+[1] "Minimum fitness threshold not reached after 115 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 116
+[1] "RE-INITIALIZING..."
+[1] 8
+[1] 5
+[1] 8
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "No change for 8 iterations. Exiting PSO."
+[1]  2  6 10
+[1] 5
+[1] "##################################"
+[1] "Results summary for itr:5"
+[1] "number of features selected using population mean"
+[1] 5
+[1] "number of features selected using current global best"
+[1] 3
+[1] "feat ind length"
+[1] 3
+[1] "best accuracy"
+[1] 34.27801
+[1] "test acc:1"
+[1] "##################################"
+[1] "learning sets: 6"
+ [1] 61  1 40 57  4 59 50 34 56 52 27  8 30 55  3 42 45 35 51 37 33 19  9 38 26
+[26] 58  5 24 49 44 25 46 14  6 23 53 39 47 48  7 54 17 32 11 13 29 20 10
+[1] "Starting global iteration number : 6"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -26.88339
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -29.58358
+[1] "Best solution:"
+ [1] 0 1 1 1 0 1 0 0 1 1
+[1] 6
+[1] "iteration number: "
+[1] 3
+[1] "Best fitness updated to:"
+[1] -30.03801
+[1] "Best solution:"
+ [1] 1 1 0 1 0 1 0 0 1 1
+[1] 6
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "Best fitness updated to:"
+[1] -31.12134
+[1] "Best solution:"
+ [1] 1 1 0 1 1 1 0 0 1 1
+[1] 7
+[1] "iteration number: "
+[1] 6
+[1] "Minimum fitness threshold not reached after 6 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 7
+[1] "Minimum fitness threshold not reached after 7 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 8
+[1] "Minimum fitness threshold not reached after 8 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 9
+[1] "Minimum fitness threshold not reached after 9 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 10
+[1] "Minimum fitness threshold not reached after 10 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 11
+[1] "Minimum fitness threshold not reached after 11 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 12
+[1] "Minimum fitness threshold not reached after 12 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 13
+[1] "Best fitness updated to:"
+[1] -31.90202
+[1] "Best solution:"
+ [1] 1 1 1 1 0 1 0 0 1 1
+[1] 7
+[1] "Minimum fitness threshold not reached after 13 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 14
+[1] "Minimum fitness threshold not reached after 14 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 15
+[1] "Minimum fitness threshold not reached after 15 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 16
+[1] "Minimum fitness threshold not reached after 16 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 17
+[1] "Minimum fitness threshold not reached after 17 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 18
+[1] "Minimum fitness threshold not reached after 18 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 19
+[1] "Minimum fitness threshold not reached after 19 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 20
+[1] "Minimum fitness threshold not reached after 20 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 21
+[1] "Minimum fitness threshold not reached after 21 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 22
+[1] "Minimum fitness threshold not reached after 22 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 23
+[1] "Minimum fitness threshold not reached after 23 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 24
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 9
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 24 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 25
+[1] "Minimum fitness threshold not reached after 25 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 26
+[1] "Minimum fitness threshold not reached after 26 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 27
+[1] "Minimum fitness threshold not reached after 27 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 28
+[1] "Minimum fitness threshold not reached after 28 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 29
+[1] "Minimum fitness threshold not reached after 29 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 30
+[1] "Minimum fitness threshold not reached after 30 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 31
+[1] "Minimum fitness threshold not reached after 31 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 32
+[1] "Minimum fitness threshold not reached after 32 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 33
+[1] "Minimum fitness threshold not reached after 33 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 34
+[1] "Minimum fitness threshold not reached after 34 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 35
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 9
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 35 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 36
+[1] "Minimum fitness threshold not reached after 36 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 37
+[1] "Minimum fitness threshold not reached after 37 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 38
+[1] "Minimum fitness threshold not reached after 38 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 39
+[1] "Minimum fitness threshold not reached after 39 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 40
+[1] "Minimum fitness threshold not reached after 40 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 41
+[1] "Minimum fitness threshold not reached after 41 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 42
+[1] "Minimum fitness threshold not reached after 42 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 43
+[1] "Minimum fitness threshold not reached after 43 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 44
+[1] "Minimum fitness threshold not reached after 44 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 45
+[1] "Minimum fitness threshold not reached after 45 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 46
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 9
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 46 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 47
+[1] "Minimum fitness threshold not reached after 47 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 48
+[1] "Minimum fitness threshold not reached after 48 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 49
+[1] "Minimum fitness threshold not reached after 49 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 50
+[1] "Minimum fitness threshold not reached after 50 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 51
+[1] "Minimum fitness threshold not reached after 51 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 52
+[1] "Minimum fitness threshold not reached after 52 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 53
+[1] "Minimum fitness threshold not reached after 53 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 54
+[1] "Minimum fitness threshold not reached after 54 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 55
+[1] "Minimum fitness threshold not reached after 55 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 56
+[1] "Minimum fitness threshold not reached after 56 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 57
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 9
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 57 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 58
+[1] "Minimum fitness threshold not reached after 58 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 59
+[1] "Minimum fitness threshold not reached after 59 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 60
+[1] "Minimum fitness threshold not reached after 60 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 61
+[1] "Minimum fitness threshold not reached after 61 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 62
+[1] "Minimum fitness threshold not reached after 62 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 63
+[1] "Minimum fitness threshold not reached after 63 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 64
+[1] "Minimum fitness threshold not reached after 64 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 65
+[1] "Minimum fitness threshold not reached after 65 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 66
+[1] "Minimum fitness threshold not reached after 66 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 67
+[1] "Minimum fitness threshold not reached after 67 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 68
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 9
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 68 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 69
+[1] "Minimum fitness threshold not reached after 69 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 70
+[1] "Minimum fitness threshold not reached after 70 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 71
+[1] "Minimum fitness threshold not reached after 71 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 72
+[1] "Minimum fitness threshold not reached after 72 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 73
+[1] "Minimum fitness threshold not reached after 73 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 74
+[1] "Minimum fitness threshold not reached after 74 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 75
+[1] "Minimum fitness threshold not reached after 75 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 76
+[1] "Minimum fitness threshold not reached after 76 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 77
+[1] "Minimum fitness threshold not reached after 77 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 78
+[1] "Minimum fitness threshold not reached after 78 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 79
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 9
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 79 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 80
+[1] "Minimum fitness threshold not reached after 80 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 81
+[1] "Minimum fitness threshold not reached after 81 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 82
+[1] "Minimum fitness threshold not reached after 82 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 83
+[1] "Minimum fitness threshold not reached after 83 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 84
+[1] "Minimum fitness threshold not reached after 84 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 85
+[1] "Minimum fitness threshold not reached after 85 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 86
+[1] "Minimum fitness threshold not reached after 86 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 87
+[1] "Minimum fitness threshold not reached after 87 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 88
+[1] "Minimum fitness threshold not reached after 88 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 89
+[1] "Minimum fitness threshold not reached after 89 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 90
+[1] "RE-INITIALIZING..."
+[1] 7
+[1] 5
+[1] 9
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 90 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 91
+[1] "Minimum fitness threshold not reached after 91 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 92
+[1] "Minimum fitness threshold not reached after 92 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 93
+[1] "Minimum fitness threshold not reached after 93 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 94
+[1] "Minimum fitness threshold not reached after 94 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 95
+[1] "Minimum fitness threshold not reached after 95 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 96
+[1] "Minimum fitness threshold not reached after 96 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 97
+[1] "Minimum fitness threshold not reached after 97 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 98
+[1] "Minimum fitness threshold not reached after 98 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 99
+[1] "Minimum fitness threshold not reached after 99 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 100
+[1] "Minimum fitness threshold not reached after 100 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 101
+[1] "RE-INITIALIZING..."
+[1] 8
+[1] 5
+[1] 9
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "No change for 8 iterations. Exiting PSO."
+[1]  2  4  6  7  9 10
+[1] 6
+[1] "##################################"
+[1] "Results summary for itr:6"
+[1] "number of features selected using population mean"
+[1] 6
+[1] "number of features selected using current global best"
+[1] 6
+[1] "feat ind length"
+[1] 6
+[1] "best accuracy"
+[1] 31.90202
+[1] "test acc:0.769230769230769"
+[1] "##################################"
+[1] "learning sets: 7"
+ [1]  5 46 20 14 48 49 44 13 51 43 18 57 33 10  4 39 37  7 40 36 19 31 17 45 26
+[26] 28 21 42 47 54  6 38  8 15 55 60 53 22 58 35 24  9 16 27  3 34 25 50
+[1] "Starting global iteration number : 7"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -24.11287
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -28.40874
+[1] "Best solution:"
+ [1] 0 1 1 1 0 1 0 0 1 1
+[1] 6
+[1] "iteration number: "
+[1] 3
+[1] "Best fitness updated to:"
+[1] -29.13867
+[1] "Best solution:"
+ [1] 1 1 0 1 1 0 0 0 0 0
+[1] 4
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "Minimum fitness threshold not reached after 6 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 7
+[1] "Best fitness updated to:"
+[1] -29.23374
+[1] "Best solution:"
+ [1] 0 1 1 1 1 1 1 0 1 1
+[1] 8
+[1] "Minimum fitness threshold not reached after 7 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 8
+[1] "Minimum fitness threshold not reached after 8 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 9
+[1] "Minimum fitness threshold not reached after 9 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 10
+[1] "Minimum fitness threshold not reached after 10 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 11
+[1] "Minimum fitness threshold not reached after 11 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 12
+[1] "Minimum fitness threshold not reached after 12 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 13
+[1] "Best fitness updated to:"
+[1] -29.72358
+[1] "Best solution:"
+ [1] 0 0 1 1 0 1 1 0 1 1
+[1] 6
+[1] "Minimum fitness threshold not reached after 13 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 14
+[1] "Minimum fitness threshold not reached after 14 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 15
+[1] "Minimum fitness threshold not reached after 15 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 16
+[1] "Minimum fitness threshold not reached after 16 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 17
+[1] "Minimum fitness threshold not reached after 17 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 18
+[1] "Best fitness updated to:"
+[1] -29.82632
+[1] "Best solution:"
+ [1] 0 1 0 0 0 1 0 0 1 1
+[1] 4
+[1] "Minimum fitness threshold not reached after 18 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 19
+[1] "Minimum fitness threshold not reached after 19 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 20
+[1] "Minimum fitness threshold not reached after 20 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 21
+[1] "Minimum fitness threshold not reached after 21 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 22
+[1] "Minimum fitness threshold not reached after 22 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 23
+[1] "Minimum fitness threshold not reached after 23 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 24
+[1] "Minimum fitness threshold not reached after 24 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 25
+[1] "Minimum fitness threshold not reached after 25 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 26
+[1] "Minimum fitness threshold not reached after 26 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 27
+[1] "Minimum fitness threshold not reached after 27 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 28
+[1] "Minimum fitness threshold not reached after 28 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 29
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 9
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 29 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 30
+[1] "Minimum fitness threshold not reached after 30 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 31
+[1] "Minimum fitness threshold not reached after 31 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 32
+[1] "Minimum fitness threshold not reached after 32 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 33
+[1] "Minimum fitness threshold not reached after 33 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 34
+[1] "Minimum fitness threshold not reached after 34 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 35
+[1] "Minimum fitness threshold not reached after 35 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 36
+[1] "Minimum fitness threshold not reached after 36 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 37
+[1] "Minimum fitness threshold not reached after 37 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 38
+[1] "Minimum fitness threshold not reached after 38 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 39
+[1] "Minimum fitness threshold not reached after 39 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 40
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 9
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 40 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 41
+[1] "Minimum fitness threshold not reached after 41 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 42
+[1] "Minimum fitness threshold not reached after 42 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 43
+[1] "Minimum fitness threshold not reached after 43 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 44
+[1] "Minimum fitness threshold not reached after 44 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 45
+[1] "Minimum fitness threshold not reached after 45 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 46
+[1] "Minimum fitness threshold not reached after 46 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 47
+[1] "Minimum fitness threshold not reached after 47 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 48
+[1] "Minimum fitness threshold not reached after 48 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 49
+[1] "Minimum fitness threshold not reached after 49 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 50
+[1] "Minimum fitness threshold not reached after 50 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 51
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 9
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 51 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 52
+[1] "Minimum fitness threshold not reached after 52 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 53
+[1] "Minimum fitness threshold not reached after 53 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 54
+[1] "Minimum fitness threshold not reached after 54 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 55
+[1] "Minimum fitness threshold not reached after 55 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 56
+[1] "Minimum fitness threshold not reached after 56 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 57
+[1] "Minimum fitness threshold not reached after 57 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 58
+[1] "Minimum fitness threshold not reached after 58 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 59
+[1] "Minimum fitness threshold not reached after 59 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 60
+[1] "Minimum fitness threshold not reached after 60 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 61
+[1] "Minimum fitness threshold not reached after 61 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 62
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 9
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 62 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 63
+[1] "Minimum fitness threshold not reached after 63 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 64
+[1] "Minimum fitness threshold not reached after 64 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 65
+[1] "Minimum fitness threshold not reached after 65 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 66
+[1] "Minimum fitness threshold not reached after 66 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 67
+[1] "Minimum fitness threshold not reached after 67 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 68
+[1] "Minimum fitness threshold not reached after 68 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 69
+[1] "Minimum fitness threshold not reached after 69 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 70
+[1] "Minimum fitness threshold not reached after 70 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 71
+[1] "Minimum fitness threshold not reached after 71 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 72
+[1] "Minimum fitness threshold not reached after 72 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 73
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 9
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 73 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 74
+[1] "Minimum fitness threshold not reached after 74 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 75
+[1] "Minimum fitness threshold not reached after 75 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 76
+[1] "Minimum fitness threshold not reached after 76 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 77
+[1] "Minimum fitness threshold not reached after 77 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 78
+[1] "Minimum fitness threshold not reached after 78 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 79
+[1] "Minimum fitness threshold not reached after 79 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 80
+[1] "Minimum fitness threshold not reached after 80 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 81
+[1] "Minimum fitness threshold not reached after 81 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 82
+[1] "Minimum fitness threshold not reached after 82 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 83
+[1] "Minimum fitness threshold not reached after 83 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 84
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 9
+[1] "No change for 6 iterations. Exiting PSO."
+[1] 2 6 9
+[1] 7
+[1] "##################################"
+[1] "Results summary for itr:7"
+[1] "number of features selected using population mean"
+[1] 3
+[1] "number of features selected using current global best"
+[1] 3
+[1] "feat ind length"
+[1] 3
+[1] "best accuracy"
+[1] 29.82632
+[1] "test acc:0.923076923076923"
+[1] "##################################"
+[1] "learning sets: 8"
+ [1] 57 21 61 49 23 36 51 48 38 27 20 47  6 25 34 37 15 59 46 56 53 31 40 13 58
+[26] 39 35 24 22 54 29 12 14 32 50 45 42 18 60 43  7 19  2 33  9 44 55  4
+[1] "Starting global iteration number : 8"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -25.41474
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -31.93364
+[1] "Best solution:"
+ [1] 0 1 1 1 0 1 0 0 1 1
+[1] 6
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "Minimum fitness threshold not reached after 6 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 7
+[1] "Minimum fitness threshold not reached after 7 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 8
+[1] "Minimum fitness threshold not reached after 8 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 9
+[1] "Best fitness updated to:"
+[1] -32.35379
+[1] "Best solution:"
+ [1] 1 1 0 1 0 1 1 0 1 0
+[1] 6
+[1] "Minimum fitness threshold not reached after 9 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 10
+[1] "Minimum fitness threshold not reached after 10 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 11
+[1] "Minimum fitness threshold not reached after 11 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 12
+[1] "Minimum fitness threshold not reached after 12 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 13
+[1] "Minimum fitness threshold not reached after 13 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 14
+[1] "Minimum fitness threshold not reached after 14 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 15
+[1] "Minimum fitness threshold not reached after 15 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 16
+[1] "Minimum fitness threshold not reached after 16 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 17
+[1] "Minimum fitness threshold not reached after 17 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 18
+[1] "Minimum fitness threshold not reached after 18 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 19
+[1] "Minimum fitness threshold not reached after 19 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 20
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 10
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 20 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 21
+[1] "Minimum fitness threshold not reached after 21 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 22
+[1] "Minimum fitness threshold not reached after 22 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 23
+[1] "Minimum fitness threshold not reached after 23 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 24
+[1] "Minimum fitness threshold not reached after 24 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 25
+[1] "Minimum fitness threshold not reached after 25 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 26
+[1] "Minimum fitness threshold not reached after 26 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 27
+[1] "Minimum fitness threshold not reached after 27 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 28
+[1] "Minimum fitness threshold not reached after 28 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 29
+[1] "Minimum fitness threshold not reached after 29 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 30
+[1] "Minimum fitness threshold not reached after 30 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 31
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 10
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 31 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 32
+[1] "Minimum fitness threshold not reached after 32 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 33
+[1] "Minimum fitness threshold not reached after 33 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 34
+[1] "Minimum fitness threshold not reached after 34 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 35
+[1] "Minimum fitness threshold not reached after 35 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 36
+[1] "Minimum fitness threshold not reached after 36 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 37
+[1] "Minimum fitness threshold not reached after 37 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 38
+[1] "Minimum fitness threshold not reached after 38 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 39
+[1] "Best fitness updated to:"
+[1] -32.76124
+[1] "Best solution:"
+ [1] 0 1 0 1 0 1 1 0 1 0
+[1] 5
+[1] "Minimum fitness threshold not reached after 39 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 40
+[1] "Minimum fitness threshold not reached after 40 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 41
+[1] "Minimum fitness threshold not reached after 41 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 42
+[1] "Minimum fitness threshold not reached after 42 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 43
+[1] "Minimum fitness threshold not reached after 43 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 44
+[1] "Minimum fitness threshold not reached after 44 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 45
+[1] "Minimum fitness threshold not reached after 45 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 46
+[1] "Minimum fitness threshold not reached after 46 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 47
+[1] "Minimum fitness threshold not reached after 47 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 48
+[1] "Minimum fitness threshold not reached after 48 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 49
+[1] "Minimum fitness threshold not reached after 49 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 50
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 9
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 50 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 51
+[1] "Minimum fitness threshold not reached after 51 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 52
+[1] "Minimum fitness threshold not reached after 52 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 53
+[1] "Minimum fitness threshold not reached after 53 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 54
+[1] "Minimum fitness threshold not reached after 54 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 55
+[1] "Minimum fitness threshold not reached after 55 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 56
+[1] "Minimum fitness threshold not reached after 56 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 57
+[1] "Minimum fitness threshold not reached after 57 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 58
+[1] "Minimum fitness threshold not reached after 58 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 59
+[1] "Minimum fitness threshold not reached after 59 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 60
+[1] "Minimum fitness threshold not reached after 60 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 61
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 8
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 61 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 62
+[1] "Minimum fitness threshold not reached after 62 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 63
+[1] "Minimum fitness threshold not reached after 63 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 64
+[1] "Minimum fitness threshold not reached after 64 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 65
+[1] "Minimum fitness threshold not reached after 65 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 66
+[1] "Minimum fitness threshold not reached after 66 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 67
+[1] "Minimum fitness threshold not reached after 67 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 68
+[1] "Minimum fitness threshold not reached after 68 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 69
+[1] "Minimum fitness threshold not reached after 69 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 70
+[1] "Minimum fitness threshold not reached after 70 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 71
+[1] "Minimum fitness threshold not reached after 71 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 72
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 8
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 72 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 73
+[1] "Minimum fitness threshold not reached after 73 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 74
+[1] "Minimum fitness threshold not reached after 74 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 75
+[1] "Minimum fitness threshold not reached after 75 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 76
+[1] "Minimum fitness threshold not reached after 76 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 77
+[1] "Minimum fitness threshold not reached after 77 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 78
+[1] "Minimum fitness threshold not reached after 78 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 79
+[1] "Minimum fitness threshold not reached after 79 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 80
+[1] "Minimum fitness threshold not reached after 80 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 81
+[1] "Minimum fitness threshold not reached after 81 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 82
+[1] "Minimum fitness threshold not reached after 82 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 83
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 8
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 83 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 84
+[1] "Minimum fitness threshold not reached after 84 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 85
+[1] "Minimum fitness threshold not reached after 85 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 86
+[1] "Minimum fitness threshold not reached after 86 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 87
+[1] "Minimum fitness threshold not reached after 87 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 88
+[1] "Minimum fitness threshold not reached after 88 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 89
+[1] "Minimum fitness threshold not reached after 89 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 90
+[1] "Minimum fitness threshold not reached after 90 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 91
+[1] "Minimum fitness threshold not reached after 91 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 92
+[1] "Minimum fitness threshold not reached after 92 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 93
+[1] "Minimum fitness threshold not reached after 93 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 94
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 8
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 94 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 95
+[1] "Minimum fitness threshold not reached after 95 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 96
+[1] "Minimum fitness threshold not reached after 96 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 97
+[1] "Minimum fitness threshold not reached after 97 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 98
+[1] "Minimum fitness threshold not reached after 98 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 99
+[1] "Minimum fitness threshold not reached after 99 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 100
+[1] "Minimum fitness threshold not reached after 100 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 101
+[1] "Minimum fitness threshold not reached after 101 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 102
+[1] "Minimum fitness threshold not reached after 102 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 103
+[1] "Minimum fitness threshold not reached after 103 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 104
+[1] "Minimum fitness threshold not reached after 104 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 105
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 8
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 105 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 106
+[1] "Minimum fitness threshold not reached after 106 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 107
+[1] "Minimum fitness threshold not reached after 107 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 108
+[1] "Minimum fitness threshold not reached after 108 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 109
+[1] "Minimum fitness threshold not reached after 109 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 110
+[1] "Minimum fitness threshold not reached after 110 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 111
+[1] "Minimum fitness threshold not reached after 111 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 112
+[1] "Minimum fitness threshold not reached after 112 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 113
+[1] "Minimum fitness threshold not reached after 113 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 114
+[1] "Minimum fitness threshold not reached after 114 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 115
+[1] "Minimum fitness threshold not reached after 115 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 116
+[1] "RE-INITIALIZING..."
+[1] 7
+[1] 5
+[1] 8
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 116 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 117
+[1] "Minimum fitness threshold not reached after 117 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 118
+[1] "Minimum fitness threshold not reached after 118 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 119
+[1] "Minimum fitness threshold not reached after 119 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 120
+[1] "Minimum fitness threshold not reached after 120 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 121
+[1] "Minimum fitness threshold not reached after 121 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 122
+[1] "Minimum fitness threshold not reached after 122 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 123
+[1] "Minimum fitness threshold not reached after 123 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 124
+[1] "Minimum fitness threshold not reached after 124 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 125
+[1] "Minimum fitness threshold not reached after 125 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 126
+[1] "Minimum fitness threshold not reached after 126 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 127
+[1] "RE-INITIALIZING..."
+[1] 8
+[1] 5
+[1] 8
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "No change for 8 iterations. Exiting PSO."
+[1] 2 3 4 6 7 9
+[1] 8
+[1] "##################################"
+[1] "Results summary for itr:8"
+[1] "number of features selected using population mean"
+[1] 4
+[1] "number of features selected using current global best"
+[1] 6
+[1] "feat ind length"
+[1] 6
+[1] "best accuracy"
+[1] 32.76124
+[1] "test acc:0.769230769230769"
+[1] "##################################"
+[1] "learning sets: 9"
+ [1] 17 43 36 29  4  7 26 44 34  9 10 14 48 21 33  1 38 42 52 16 60 61 45 53 40
+[26] 24 27 32 11 15 20 56 19 18 57 39 41 54 35 37 25 12  5  6 31 22 51  2
+[1] "Starting global iteration number : 9"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -26.762
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -28.07592
+[1] "Best solution:"
+ [1] 0 1 1 1 0 1 0 0 1 1
+[1] 6
+[1] "iteration number: "
+[1] 3
+[1] "Best fitness updated to:"
+[1] -32.05347
+[1] "Best solution:"
+ [1] 1 1 0 0 0 0 0 0 0 1
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "Minimum fitness threshold not reached after 6 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 7
+[1] "Minimum fitness threshold not reached after 7 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 8
+[1] "Minimum fitness threshold not reached after 8 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 9
+[1] "Minimum fitness threshold not reached after 9 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 10
+[1] "Minimum fitness threshold not reached after 10 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 11
+[1] "Minimum fitness threshold not reached after 11 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 12
+[1] "Minimum fitness threshold not reached after 12 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 13
+[1] "Minimum fitness threshold not reached after 13 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 14
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 10
+ [1] 2 2 4 4 2 2 2 1 2 1 2 1 2 2 2 1 2 2 2 2
+[1] "Minimum fitness threshold not reached after 14 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 15
+[1] "Minimum fitness threshold not reached after 15 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 16
+[1] "Minimum fitness threshold not reached after 16 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 17
+[1] "Best fitness updated to:"
+[1] -32.14034
+[1] "Best solution:"
+ [1] 1 1 1 1 1 1 0 0 0 1
+[1] 7
+[1] "Minimum fitness threshold not reached after 17 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 18
+[1] "Minimum fitness threshold not reached after 18 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 19
+[1] "Minimum fitness threshold not reached after 19 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 20
+[1] "Minimum fitness threshold not reached after 20 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 21
+[1] "Minimum fitness threshold not reached after 21 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 22
+[1] "Minimum fitness threshold not reached after 22 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 23
+[1] "Minimum fitness threshold not reached after 23 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 24
+[1] "Minimum fitness threshold not reached after 24 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 25
+[1] "Minimum fitness threshold not reached after 25 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 26
+[1] "Best fitness updated to:"
+[1] -32.16285
+[1] "Best solution:"
+ [1] 0 1 1 1 1 1 0 0 0 1
+[1] 6
+[1] "Minimum fitness threshold not reached after 26 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 27
+[1] "Minimum fitness threshold not reached after 27 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 28
+[1] "Minimum fitness threshold not reached after 28 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 29
+[1] "Minimum fitness threshold not reached after 29 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 30
+[1] "Minimum fitness threshold not reached after 30 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 31
+[1] "Minimum fitness threshold not reached after 31 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 32
+[1] "Minimum fitness threshold not reached after 32 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 33
+[1] "Minimum fitness threshold not reached after 33 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 34
+[1] "Minimum fitness threshold not reached after 34 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 35
+[1] "Minimum fitness threshold not reached after 35 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 36
+[1] "Minimum fitness threshold not reached after 36 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 37
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 10
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 37 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 38
+[1] "Best fitness updated to:"
+[1] -32.59084
+[1] "Best solution:"
+ [1] 0 1 1 1 0 1 0 0 0 1
+[1] 5
+[1] "Minimum fitness threshold not reached after 38 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 39
+[1] "Minimum fitness threshold not reached after 39 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 40
+[1] "Minimum fitness threshold not reached after 40 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 41
+[1] "Minimum fitness threshold not reached after 41 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 42
+[1] "Minimum fitness threshold not reached after 42 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 43
+[1] "Minimum fitness threshold not reached after 43 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 44
+[1] "Minimum fitness threshold not reached after 44 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 45
+[1] "Minimum fitness threshold not reached after 45 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 46
+[1] "Minimum fitness threshold not reached after 46 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 47
+[1] "Minimum fitness threshold not reached after 47 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 48
+[1] "Minimum fitness threshold not reached after 48 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 49
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 10
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 49 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 50
+[1] "Minimum fitness threshold not reached after 50 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 51
+[1] "Minimum fitness threshold not reached after 51 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 52
+[1] "Minimum fitness threshold not reached after 52 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 53
+[1] "Minimum fitness threshold not reached after 53 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 54
+[1] "Minimum fitness threshold not reached after 54 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 55
+[1] "Minimum fitness threshold not reached after 55 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 56
+[1] "Minimum fitness threshold not reached after 56 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 57
+[1] "Minimum fitness threshold not reached after 57 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 58
+[1] "Minimum fitness threshold not reached after 58 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 59
+[1] "Minimum fitness threshold not reached after 59 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 60
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 10
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 60 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 61
+[1] "Minimum fitness threshold not reached after 61 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 62
+[1] "Minimum fitness threshold not reached after 62 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 63
+[1] "Minimum fitness threshold not reached after 63 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 64
+[1] "Minimum fitness threshold not reached after 64 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 65
+[1] "Minimum fitness threshold not reached after 65 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 66
+[1] "Minimum fitness threshold not reached after 66 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 67
+[1] "Minimum fitness threshold not reached after 67 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 68
+[1] "Minimum fitness threshold not reached after 68 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 69
+[1] "Minimum fitness threshold not reached after 69 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 70
+[1] "Minimum fitness threshold not reached after 70 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 71
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 10
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 71 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 72
+[1] "Minimum fitness threshold not reached after 72 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 73
+[1] "Minimum fitness threshold not reached after 73 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 74
+[1] "Minimum fitness threshold not reached after 74 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 75
+[1] "Minimum fitness threshold not reached after 75 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 76
+[1] "Minimum fitness threshold not reached after 76 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 77
+[1] "Minimum fitness threshold not reached after 77 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 78
+[1] "Minimum fitness threshold not reached after 78 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 79
+[1] "Minimum fitness threshold not reached after 79 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 80
+[1] "Minimum fitness threshold not reached after 80 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 81
+[1] "Minimum fitness threshold not reached after 81 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 82
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 10
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 82 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 83
+[1] "Minimum fitness threshold not reached after 83 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 84
+[1] "Minimum fitness threshold not reached after 84 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 85
+[1] "Minimum fitness threshold not reached after 85 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 86
+[1] "Minimum fitness threshold not reached after 86 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 87
+[1] "Minimum fitness threshold not reached after 87 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 88
+[1] "Minimum fitness threshold not reached after 88 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 89
+[1] "Minimum fitness threshold not reached after 89 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 90
+[1] "Minimum fitness threshold not reached after 90 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 91
+[1] "Minimum fitness threshold not reached after 91 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 92
+[1] "Minimum fitness threshold not reached after 92 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 93
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 10
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 93 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 94
+[1] "Minimum fitness threshold not reached after 94 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 95
+[1] "Minimum fitness threshold not reached after 95 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 96
+[1] "Minimum fitness threshold not reached after 96 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 97
+[1] "Minimum fitness threshold not reached after 97 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 98
+[1] "Minimum fitness threshold not reached after 98 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 99
+[1] "Minimum fitness threshold not reached after 99 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 100
+[1] "Minimum fitness threshold not reached after 100 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 101
+[1] "Minimum fitness threshold not reached after 101 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 102
+[1] "Minimum fitness threshold not reached after 102 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 103
+[1] "Minimum fitness threshold not reached after 103 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 104
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 9
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 104 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 105
+[1] "Minimum fitness threshold not reached after 105 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 106
+[1] "Minimum fitness threshold not reached after 106 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 107
+[1] "Minimum fitness threshold not reached after 107 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 108
+[1] "Minimum fitness threshold not reached after 108 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 109
+[1] "Minimum fitness threshold not reached after 109 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 110
+[1] "Minimum fitness threshold not reached after 110 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 111
+[1] "Minimum fitness threshold not reached after 111 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 112
+[1] "Minimum fitness threshold not reached after 112 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 113
+[1] "Minimum fitness threshold not reached after 113 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 114
+[1] "Minimum fitness threshold not reached after 114 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 115
+[1] "RE-INITIALIZING..."
+[1] 7
+[1] 5
+[1] 9
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 115 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 116
+[1] "Minimum fitness threshold not reached after 116 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 117
+[1] "Minimum fitness threshold not reached after 117 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 118
+[1] "Minimum fitness threshold not reached after 118 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 119
+[1] "Minimum fitness threshold not reached after 119 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 120
+[1] "Minimum fitness threshold not reached after 120 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 121
+[1] "Minimum fitness threshold not reached after 121 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 122
+[1] "Minimum fitness threshold not reached after 122 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 123
+[1] "Minimum fitness threshold not reached after 123 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 124
+[1] "Minimum fitness threshold not reached after 124 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 125
+[1] "Minimum fitness threshold not reached after 125 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 126
+[1] "RE-INITIALIZING..."
+[1] 8
+[1] 5
+[1] 9
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "No change for 8 iterations. Exiting PSO."
+[1] 2 4 5 6
+[1] 9
+[1] "##################################"
+[1] "Results summary for itr:9"
+[1] "number of features selected using population mean"
+[1] 5
+[1] "number of features selected using current global best"
+[1] 4
+[1] "feat ind length"
+[1] 4
+[1] "best accuracy"
+[1] 32.59084
+[1] "test acc:0.923076923076923"
+[1] "##################################"
+[1] "learning sets: 10"
+ [1] 33 34  7 25 41 40 52 45 39 58 26 31 32  5 35 29 44 43 16 23 56  6 28 24 55
+[26] 47 18 30  8 10 37 15 57 59  9 22 42 53 17  4 19  2 61 13 48  3 50 36
+[1] "Starting global iteration number : 10"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -30.01344
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -32.93405
+[1] "Best solution:"
+ [1] 0 1 1 1 0 1 0 0 1 1
+[1] 6
+[1] "iteration number: "
+[1] 3
+[1] "Best fitness updated to:"
+[1] -35.26504
+[1] "Best solution:"
+ [1] 0 0 1 1 1 0 1 0 0 1
+[1] 5
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "Minimum fitness threshold not reached after 6 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 7
+[1] "Minimum fitness threshold not reached after 7 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 8
+[1] "Minimum fitness threshold not reached after 8 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 9
+[1] "Best fitness updated to:"
+[1] -35.45722
+[1] "Best solution:"
+ [1] 0 1 0 1 0 1 0 1 1 0
+[1] 5
+[1] "Minimum fitness threshold not reached after 9 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 10
+[1] "Minimum fitness threshold not reached after 10 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 11
+[1] "Minimum fitness threshold not reached after 11 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 12
+[1] "Minimum fitness threshold not reached after 12 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 13
+[1] "Minimum fitness threshold not reached after 13 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 14
+[1] "Minimum fitness threshold not reached after 14 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 15
+[1] "Minimum fitness threshold not reached after 15 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 16
+[1] "Minimum fitness threshold not reached after 16 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 17
+[1] "Minimum fitness threshold not reached after 17 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 18
+[1] "Minimum fitness threshold not reached after 18 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 19
+[1] "Minimum fitness threshold not reached after 19 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 20
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 10
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 20 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 21
+[1] "Minimum fitness threshold not reached after 21 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 22
+[1] "Minimum fitness threshold not reached after 22 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 23
+[1] "Minimum fitness threshold not reached after 23 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 24
+[1] "Minimum fitness threshold not reached after 24 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 25
+[1] "Minimum fitness threshold not reached after 25 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 26
+[1] "Minimum fitness threshold not reached after 26 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 27
+[1] "Minimum fitness threshold not reached after 27 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 28
+[1] "Minimum fitness threshold not reached after 28 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 29
+[1] "Minimum fitness threshold not reached after 29 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 30
+[1] "Minimum fitness threshold not reached after 30 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 31
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 9
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 31 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 32
+[1] "Minimum fitness threshold not reached after 32 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 33
+[1] "Minimum fitness threshold not reached after 33 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 34
+[1] "Minimum fitness threshold not reached after 34 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 35
+[1] "Minimum fitness threshold not reached after 35 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 36
+[1] "Minimum fitness threshold not reached after 36 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 37
+[1] "Minimum fitness threshold not reached after 37 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 38
+[1] "Minimum fitness threshold not reached after 38 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 39
+[1] "Minimum fitness threshold not reached after 39 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 40
+[1] "Minimum fitness threshold not reached after 40 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 41
+[1] "Minimum fitness threshold not reached after 41 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 42
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 8
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 42 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 43
+[1] "Minimum fitness threshold not reached after 43 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 44
+[1] "Minimum fitness threshold not reached after 44 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 45
+[1] "Minimum fitness threshold not reached after 45 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 46
+[1] "Minimum fitness threshold not reached after 46 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 47
+[1] "Minimum fitness threshold not reached after 47 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 48
+[1] "Minimum fitness threshold not reached after 48 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 49
+[1] "Minimum fitness threshold not reached after 49 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 50
+[1] "Minimum fitness threshold not reached after 50 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 51
+[1] "Minimum fitness threshold not reached after 51 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 52
+[1] "Minimum fitness threshold not reached after 52 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 53
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 8
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 53 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 54
+[1] "Minimum fitness threshold not reached after 54 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 55
+[1] "Minimum fitness threshold not reached after 55 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 56
+[1] "Minimum fitness threshold not reached after 56 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 57
+[1] "Minimum fitness threshold not reached after 57 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 58
+[1] "Minimum fitness threshold not reached after 58 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 59
+[1] "Minimum fitness threshold not reached after 59 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 60
+[1] "Minimum fitness threshold not reached after 60 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 61
+[1] "Minimum fitness threshold not reached after 61 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 62
+[1] "Minimum fitness threshold not reached after 62 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 63
+[1] "Minimum fitness threshold not reached after 63 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 64
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 8
+ [1] 2 2 2 1 2 1 4 4 3 3 4 2 1 3 4 1 1 4 2 3
+[1] "Minimum fitness threshold not reached after 64 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 65
+[1] "Minimum fitness threshold not reached after 65 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 66
+[1] "Minimum fitness threshold not reached after 66 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 67
+[1] "Minimum fitness threshold not reached after 67 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 68
+[1] "Minimum fitness threshold not reached after 68 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 69
+[1] "Minimum fitness threshold not reached after 69 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 70
+[1] "Minimum fitness threshold not reached after 70 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 71
+[1] "Minimum fitness threshold not reached after 71 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 72
+[1] "Minimum fitness threshold not reached after 72 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 73
+[1] "Minimum fitness threshold not reached after 73 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 74
+[1] "Minimum fitness threshold not reached after 74 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 75
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 7
+ [1] 2 4 1 3 2 2 1 2 2 3 4 1 2 3 1 2 2 2 2 1
+[1] "Minimum fitness threshold not reached after 75 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 76
+[1] "Minimum fitness threshold not reached after 76 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 77
+[1] "Minimum fitness threshold not reached after 77 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 78
+[1] "Minimum fitness threshold not reached after 78 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 79
+[1] "Minimum fitness threshold not reached after 79 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 80
+[1] "Minimum fitness threshold not reached after 80 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 81
+[1] "Minimum fitness threshold not reached after 81 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 82
+[1] "Minimum fitness threshold not reached after 82 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 83
+[1] "Minimum fitness threshold not reached after 83 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 84
+[1] "Minimum fitness threshold not reached after 84 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 85
+[1] "Minimum fitness threshold not reached after 85 iterations! Continuing PSO."
+[1] "iteration number: "
+[1] 86
+[1] "RE-INITIALIZING..."
+[1] 7
+[1] 5
+[1] 7
+[1] "No change for 7 iterations. Exiting PSO."
+[1] 1 2 3 4 5 6 9
+[1] 10
+[1] "##################################"
+[1] "Results summary for itr:10"
+[1] "number of features selected using population mean"
+[1] 7
+[1] "number of features selected using current global best"
+[1] 7
+[1] "feat ind length"
+[1] 7
+[1] "best accuracy"
+[1] 35.45722
+[1] "test acc:0.769230769230769"
+[1] "##################################"
+[1] "testacc"
+ [1] 1.0000000 1.0000000 0.9230769 0.8461538 1.0000000 0.7692308 0.9230769
+ [8] 0.7692308 0.9230769 0.7692308
+[1] 0.8923077
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.7692  0.7885  0.9231  0.8923  0.9808  1.0000 
+[1] 0.09730085
+      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
+ [1,]    0    0    0    0    0    0    0    0    0     1
+ [2,]    1    1    1    1    1    1    1    1    1     1
+ [3,]    1    0    0    0    0    0    0    1    0     1
+ [4,]    1    0    0    1    0    1    0    1    1     1
+ [5,]    0    1    0    0    0    0    0    0    1     1
+ [6,]    1    1    1    1    1    1    1    1    1     1
+ [7,]    0    0    0    1    0    1    0    1    0     0
+ [8,]    0    0    0    1    0    0    0    0    0     0
+ [9,]    0    1    0    1    0    1    1    1    0     1
+[10,]    0    1    1    0    1    1    0    0    0     0
+[1] "dim of scoring matrix is "
+[1] 10 10
+[1] "DS index stage 2"
+[1] 0.6360782
+[1] "KI index stage 2"
+[1] -Inf
+[1] 1
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    1.0     3.0     3.5     4.7     6.0    10.0 
+[1] "Number of features selected in 1 iterations:"
+[1] 10
+[1] 0.9722222 0.9200000
+[1] 0.9722222 0.9200000
+[1] "accuracy: 79.8498832916361 num_feat:10 fitness:28.1983422680627"
+$fitfunc
+[1] -28.19834
+
+$cverror
+[1] 79.84988
+
+$cvpermerror
+[1] 66.36083
+
+$testacc
+[1] 96
+
+$reverseacc
+[1] 94.61111
+
+[1] -28.19834
+[1] "Number of features selected in 2 iterations:"
+[1] 8
+[1] 0.9722222 0.9200000
+[1] 0.9722222 0.9200000
+[1] "accuracy: 85.4497906327927 num_feat:8 fitness:31.6507749063647"
+$fitfunc
+[1] -31.65077
+
+$cverror
+[1] 85.44979
+
+$cvpermerror
+[1] 59.95126
+
+$testacc
+[1] 94.61111
+
+$reverseacc
+[1] 94.61111
+
+[1] -31.65077
+[1] "Number of features selected in 3 iterations:"
+[1] 8
+[1] 0.9722222 0.9200000
+[1] 0.9722222 0.9200000
+[1] "accuracy: 85.4497906327927 num_feat:8 fitness:31.6507749063647"
+$fitfunc
+[1] -31.65077
+
+$cverror
+[1] 85.44979
+
+$cvpermerror
+[1] 59.95126
+
+$testacc
+[1] 94.61111
+
+$reverseacc
+[1] 94.61111
+
+[1] -31.65077
+[1] "Number of features selected in 4 iterations:"
+[1] 5
+[1] 0.9722222 0.8800000
+[1] 0.9722222 0.8800000
+[1] "accuracy: 81.003462320633 num_feat:5 fitness:28.701170801097"
+$fitfunc
+[1] -28.70117
+
+$cverror
+[1] 81.00346
+
+$cvpermerror
+[1] 64.4594
+
+$testacc
+[1] 91.22222
+
+$reverseacc
+[1] 92.61111
+
+[1] -28.70117
+[1] "Number of features selected in 5 iterations:"
+[1] 4
+[1] 0.9444444 0.8800000
+[1] 0.9444444 0.8800000
+[1] "accuracy: 82.1422381544723 num_feat:4 fitness:29.6263008509994"
+$fitfunc
+[1] -29.6263
+
+$cverror
+[1] 82.14224
+
+$cvpermerror
+[1] 62.11131
+
+$testacc
+[1] 92.61111
+
+$reverseacc
+[1] 91.22222
+
+[1] -29.6263
+[1] "Number of features selected in 6 iterations:"
+[1] 4
+[1] 0.9444444 0.8800000
+[1] 0.9444444 0.8800000
+[1] "accuracy: 82.1422381544723 num_feat:4 fitness:29.6263008509994"
+$fitfunc
+[1] -29.6263
+
+$cverror
+[1] 82.14224
+
+$cvpermerror
+[1] 62.11131
+
+$testacc
+[1] 92.61111
+
+$reverseacc
+[1] 91.22222
+
+[1] -29.6263
+[1] "Number of features selected in 7 iterations:"
+[1] 2
+[1] "accuracy: 1 num_feat:2 fitness:-100"
+$fitfunc
+[1] 100
+
+$cverror
+[1] 1
+
+$cvpermerror
+[1] 100
+
+$testacc
+[1] 1
+
+$reverseacc
+[1] 1
+
+[1] 100
+[1] "Number of features selected in 8 iterations:"
+[1] 2
+[1] "accuracy: 1 num_feat:2 fitness:-100"
+$fitfunc
+[1] 100
+
+$cverror
+[1] 1
+
+$cvpermerror
+[1] 100
+
+$testacc
+[1] 1
+
+$reverseacc
+[1] 1
+
+[1] 100
+[1] "Number of features selected in 9 iterations:"
+[1] 2
+[1] "accuracy: 1 num_feat:2 fitness:-100"
+$fitfunc
+[1] 100
+
+$cverror
+[1] 1
+
+$cvpermerror
+[1] 100
+
+$testacc
+[1] 1
+
+$reverseacc
+[1] 1
+
+[1] 100
+[1] "Number of features selected in 10 iterations:"
+[1] 2
+[1] "accuracy: 1 num_feat:2 fitness:-100"
+$fitfunc
+[1] 100
+
+$cverror
+[1] 1
+
+$cvpermerror
+[1] 100
+
+$testacc
+[1] 1
+
+$reverseacc
+[1] 1
+
+[1] 100
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.7692  0.7885  0.9231  0.8923  0.9808  1.0000 
+[1] "Number of features selected in 1 iterations:"
+[1] 10
+[1] "Modified train 10 fold accuracy using train data is "
+[1] 83.60656
+[1] "Modified train accuracy is "
+[1] 0.9672131
+[1] "train confusion matrix is "
+          trainclass
+pred_train  1  2
+         1 36  2
+         2  0 23
+[1] "Train dimension is "
+[1] 61 10
+[1] "Test dimension is "
+[1] 41 10
+[1] "Test confusion matrix is "
+    
+pred  1  2
+   1 12 14
+   2  4 11
+[1] "Test acc is "
+[1] 0.5609756
+[1] "train 10 fold"
+[1] 88.52459
+[1] "Test confusion matrix is "
+    
+pred  1  2
+   1 12 14
+   2  4 11
+[1] "Test acc is "
+[1] 0.5609756
+[1] "Test AUC:"
+[1] 0.595
+[1] "Train acc is "
+[1] 0.9672131
+[1] "# of features after CMA:"
+NULL
+[1] "# of features after PSO:"
+[1] 61 11
+    user   system  elapsed 
+  96.504    5.390 3872.307 
+There were 50 or more warnings (use warnings() to see the first 50)
+> 
+> 
+> 
+> feat_ind<-psores$bestfeatlist
+> feat_names<-psores$bestfeatnames
+> 
+> scoringmatrix<-as.data.frame(psores$scoringmatrix)
+> print(scoringmatrix)
+   V1 V2 V3 V4 V5 V6 V7 V8 V9 V10
+1   0  0  0  0  0  0  0  0  0   1
+2   1  1  1  1  1  1  1  1  1   1
+3   1  0  0  0  0  0  0  1  0   1
+4   1  0  0  1  0  1  0  1  1   1
+5   0  1  0  0  0  0  0  0  1   1
+6   1  1  1  1  1  1  1  1  1   1
+7   0  0  0  1  0  1  0  1  0   0
+8   0  0  0  1  0  0  0  0  0   0
+9   0  1  0  1  0  1  1  1  0   1
+10  0  1  1  0  1  1  0  0  0   0
+> print(feat_names[feat_ind])
+ [1] "V1"  "V2"  "V3"  "V4"  "V5"  "V6"  "V7"  "V8"  "V9"  "V10"
+> 
+> save(psores,file="psores.Rda")
+> print("Complete")
+[1] "Complete"
+> 

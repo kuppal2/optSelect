@@ -1,0 +1,4 @@
+nohup R --no-save --args 0.3 0.6 0.05 0.05 global 0.45 0.2 0.25 vfeb817_v5C 3 < run_ocfs_maqcIIbreastPCR_vjuly142017_sensitivity.R > nmaqcIIbreastPCR3globalnochange5itrreset5nod1pctv5C_0.30.60.050.05.out &
+nohup R --no-save --args 0.3 0.6 0.05 0.05 global 0.45 0.2 0.25 vfeb817_v5C 10 < run_ocfs_maqcIIbreastPCR_vjuly142017_sensitivity.R > nmaqcIIbreastPCR10globalnochange5itrreset5nod1pctv5C_0.30.60.050.05.out &
+nohup R --no-save --args 0.3 0.6 0.05 0.05 global 0.45 0.2 0.25 vfeb817_v5C 5 < run_ocfs_maqcIIbreastPCR_vjuly142017_sensitivity.R > nmaqcIIbreastPCR5globalnochange5itrreset5nod1pctv5C_0.30.60.050.05.out &
+nohup R --no-save --args 0.3 0.6 0.05 0.05 global 0.45 0.2 0.25 vfeb817_v5C 15 < run_ocfs_maqcIIbreastPCR_vjuly142017_sensitivity.R > nmaqcIIbreastPCR15globalnochange5itrreset5nod1pctv5C_0.30.60.050.05.out &

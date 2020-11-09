@@ -1,0 +1,1339 @@
+
+R version 3.2.2 (2015-08-14) -- "Fire Safety"
+Copyright (C) 2015 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> #.libPaths("/home/kuppal3/karan_libs/Rlibs")
+> library(snow)
+> library(e1071)
+> library(yaImpute)
+
+Attaching package: ‘yaImpute’
+
+The following object is masked from ‘package:e1071’:
+
+    impute
+
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+> library(bioDist)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘parallel’
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, clusterSplit, makeCluster, parApply,
+    parCapply, parLapply, parRapply, parSapply, splitIndices,
+    stopCluster
+
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parRapply, parSapply
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, as.vector, cbind, colnames,
+    do.call, duplicated, eval, evalq, Filter, Find, get, grep, grepl,
+    intersect, is.unsorted, lapply, lengths, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unlist, unsplit
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: KernSmooth
+KernSmooth 2.23 loaded
+Copyright M. P. Wand 1997-2009
+> #library(CMA, lib="/home/kuppal3/karan_libs/Rlibs/")
+> library(RankAggreg)
+> library(CMA)
+
+Attaching package: ‘CMA’
+
+The following object is masked from ‘package:pROC’:
+
+    roc
+
+The following object is masked from ‘package:e1071’:
+
+    tune
+
+> library(expm)
+Loading required package: Matrix
+
+Attaching package: ‘expm’
+
+The following object is masked from ‘package:Matrix’:
+
+    expm
+
+> 
+> cl<-makeCluster(1)
+> 
+> #source("/home/kuppal3/Research/Feature_selection/Rcode/versionjuly12013/svm_cv_v1.1.R")
+> #source("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/version2015/OCFS_vnov282014.R")
+> 
+> #same results
+> #source("/home/kuppal3/Research/Feature_selection/Rcode/version2015/OCFS_vnov28.22014_v11.R")
+> 
+> #source("/home/kuppal3/Research/Feature_selection/Rcode/version2015/OCFS_vapr282015.R")
+> 
+> #source("/home/kuppal3/Research/Feature_selection/Rcode/version2015/OCFS_vapr282015_v5_2.R")
+> 
+> #source("/home/kuppal3/Research/Feature_selection/Rcode/version2015/OCFS_vapr282015_v11.R")
+> 
+> args<-commandArgs(trailingOnly=TRUE)
+> sname<-paste("/home/kuppal2/Documents/Projects/xmsPANDA/Other/scripts/OCFS_",args[9],".R",sep="")
+> source(sname)
+> print(sname)
+[1] "/home/kuppal2/Documents/Projects/xmsPANDA/Other/scripts/OCFS_vfeb817_v5H.R"
+> data_loc<-"/home/kuppal2/Documents/Projects/xmsPANDA/Other/Datasets/MAQCII_BreastCancer/"
+> setwd(data_loc)
+> load("MaqcIIbr.Rda")
+> outloc<-paste(data_loc,"OCFS_PCR",args[9],"_",args[10],"_",args[11],"/",sep="")
+> dir.create(outloc)
+> setwd(outloc)
+> 
+> 
+> trainm<-MaqcIIbr$trainx
+> testm<-MaqcIIbr$testx
+> trainclass<-MaqcIIbr$trainER #PCRvsRD
+> testclass<-MaqcIIbr$testER #PCRvsRD
+> 
+> trainclass<-MaqcIIbr$trainPCRvsRD
+> testclass<-MaqcIIbr$testPCRvsRD
+> 
+> trainm<-trainm[,-c(22284)]
+> testm<-testm[,-c(22284)]
+> trainm<-apply(trainm,2,as.numeric)
+> testm<-apply(testm,2,as.numeric)
+> 
+> 
+> 
+> #outloc<-"/home/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/OCFSv21itr1_LIMMApres1novarsel_l0.45f0.45c0.05minsel0.3randbehavfeatw0.01_local/"
+> 
+> trainm<-cbind(trainclass,trainm)
+> testm<-cbind(testclass,testm)
+> 
+> trainm<-na.omit(trainm)
+> testm<-na.omit(testm)
+> 
+> #outloc<-"/home/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/OCFSv21itr1_LIMMApres1novarsel_l0.45f0.45c0.05minsel0.3randbehavfeatw0.01_local/"
+> #outloc<-"/home/kuppal3/Research/Feature_selection/Datasets/MAQCII_BreastCancer/OCFSvmay2415v25_itr3PCRvsRD_LassoRFELIMMAELpres1nonesel_l0.25f0.45c0.25_top5maxitrs100minselmedianrankbehavfeatw0.01_CV2accA100B1wrand6methodsmax100reptop5/"
+> 
+> 
+> 
+> 
+> 
+> 
+> #OCFSvmay2415v2reg_itr1_LassoRFELIMMAELpres1backwsel_l0.25f0.45c0.25_top10pctmaxitrs100minselmedianrandbehavfeatw0.01_CV2accA100B1wrand6methodsmax100wrand/"
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/home/kuppal2/Documents/Projects/xmsPANDA/Other/Datasets/MAQCII_BreastCancer/OCFS_PCRvfeb817_v5H_10_NA' already exists
+> setwd(outloc)
+> 
+> trainm<-as.matrix(trainm)
+> testm<-as.matrix(testm)
+> trainclass<-trainm[,1] #CMAres$modtrainclass
+> testclass<-testm[,1] #CMAres$modtestclass
+> trainm<-trainm[,-c(1)] #CMAres$modtrainmata
+> testm<-testm[,-c(1)] #CMAres$modtestmata
+> 
+> #a: Confusions
+> #b: Neighbors
+> #c: Global
+> #d: Death
+> 
+> a<-c(0.25,0.25,0.25,0.25)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0.25,0.25,0.5,0)
+> d<-c(0.9,0.1,0,0.1)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0,0.5,0.5,0)
+> d<-c(0.9,0.1,0,0)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.2,0.3,0.4,0.1)
+> c<-c(0,0.4,0.4,0.2)
+> d<-c(0.9,0.1,0,0)
+> 
+> transition_matrix<-rbind(a,b,c,d)
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/home/kuppal2/Documents/Projects/xmsPANDA/Other/Datasets/MAQCII_BreastCancer/OCFS_PCRvfeb817_v5H_10_NA' already exists
+> setwd(outloc)
+> temp2=t(trainm)
+> temp2=apply(temp2, 2, function(x){which(x=="MD")})
+> temp2=unlist(temp2)
+> temp2=unique(temp2)
+> if(length(temp2)>1)
++ {
++ 	trainm=trainm[,-c(temp2)]
++ 
++ 	rm(temp2)
++ }
+> 
+> boostweight=rep(0,dim(trainm)[2])
+> 
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("limma"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="none",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   130 22283
+[1]   130 22283
+[1] "length of factcols"
+[1] 0
+[1]   130 22283
+[1]   100 22283
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 2 1 2 2
+Levels: 1 2
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] 6.7866 8.0963 7.4812
+[1] "norm train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "mean of feat 2"
+[1] 8.273493
+[1] "sd of feat 2"
+[1] 0.7010279
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   130 22283
+GeneSelection: iteration 1 
+
+Attaching package: ‘limma’
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    plotMA
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+[1] "limma:10:92.1136363636364"
+  gsmethods          acc_vec
+1     limma 92.1136363636364
+[1] "dim of scoring matrix is "
+[1] 22283     1
+[1] 22283
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]  3155  3455  3490  4352  4752  5927  8667 13543 15240 18415
+     203628_at 203928_x_at 203963_at 204825_at 205225_at 206401_s_at 209173_at
+[1,]   10.7755      9.6578   12.0638    8.9393   13.0759      9.9796   12.9392
+[2,]    9.8410      9.9980   11.3553    7.7652   13.7616      9.9498   14.1501
+[3,]    9.4169      6.2526   12.3832    9.9136   12.7360      6.0807   14.5585
+     214164_x_at 215867_x_at 219051_x_at
+[1,]     12.6474     12.6194      8.5236
+[2,]     11.7852     11.5534      8.9626
+[3,]     12.7464     12.7285     10.7458
+     203628_at 203928_x_at 203963_at 204825_at 205225_at 206401_s_at 209173_at
+[1,]    9.4326     10.9860   12.4052    7.9851   13.8754     10.6463   13.2041
+[2,]    9.8046      8.1054   10.4033    5.2744   11.7217      8.2532   11.3631
+[3,]    7.9079      8.3152    9.8307    5.9481   10.9960      7.4477   11.1800
+     214164_x_at 215867_x_at 219051_x_at
+[1,]     12.7392     12.5744      9.5138
+[2,]     10.9092     11.0575      5.3641
+[3,]     10.6696     11.0769      7.1097
+[1] "numgenes selected:10"
+[1] "test acc:0.75"
+[1] "test AUC acc:0.743137254901961"
+[1] "10 fold train81.5384615384615"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 22  8
+         2 11 89
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 11 21
+        2  4 64
+[1] "train acc:0.853846153846154"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 22  8
+         2 11 89
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+Warning messages:
+1: In if (is.na(boostweight) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+2: In if (is.na(testm) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+3: In if (is.na(testclass) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+4: In qnorm(probval) : NaNs produced
+5: In qnorm(probval) : NaNs produced
+6: In qnorm(probval) : NaNs produced
+7: In mean.default(DS_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+8: In mean.default(DS_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+9: In mean.default(KI_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+> 
+> 
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("lasso"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="none",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   130 22283
+[1]   130 22283
+[1] "length of factcols"
+[1] 0
+[1]   130 22283
+[1]   100 22283
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 2 1 2 2
+Levels: 1 2
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] 6.7866 8.0963 7.4812
+[1] "norm train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "mean of feat 2"
+[1] 8.273493
+[1] "sd of feat 2"
+[1] 0.7010279
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   130 22283
+GeneSelection: iteration 1 
+Loaded glmnet 2.0-5
+
+
+Attaching package: ‘glmnet’
+
+The following object is masked from ‘package:pROC’:
+
+    auc
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+genelist
+ 1083 15464  2667  4208  8166 11253 11968  2211  4756  8207 18226  1326  1732 
+   18    16    14    14    14    12    12     8     6     6     6     4     4 
+ 3155  4352  4874  5278 18415 20137  2841  3223  4349  7691  8292  8550 10271 
+    4     4     4     4     4     4     2     2     2     2     2     2     2 
+10980 12226 12517 16398 16738 18220 18313 18456 18802 19380 20350 20616 21064 
+    2     2     2     2     2     2     2     2     2     2     2     2     2 
+21615 
+    2 
+[1] "varselmethod"
+[1] "none"
+[1] "lasso:10:99.9318181818182"
+  gsmethods          acc_vec
+1     lasso 99.9318181818182
+[1] "dim of scoring matrix is "
+[1] 22283     1
+[1] 22283
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]  1083  2211  2667  4208  4756  8166  8207 11253 11968 15464
+     201555_at 202683_s_at 203139_at 204681_s_at 205229_s_at 208670_s_at
+[1,]    9.9323      8.8393    9.7965      7.5046      6.8695      8.6539
+[2,]    9.5628      8.4030    8.3696      8.7229      5.4533      9.5953
+[3,]   10.3905      8.3998    9.0933      6.9584      6.2767      9.8134
+     208712_at 211864_s_at 212583_at 216092_s_at
+[1,]   10.9476     10.7931    6.8476     10.4159
+[2,]   11.4622      9.0349    6.8369      9.7648
+[3,]   10.4996     10.4934    7.3452      8.3641
+     201555_at 202683_s_at 203139_at 204681_s_at 205229_s_at 208670_s_at
+[1,]    9.9499      8.8732    8.8140      8.7098      5.2668      8.8319
+[2,]    9.6616      8.5511    8.7652      8.1223      7.1769      9.8519
+[3,]    9.4638      8.5826    9.4426      7.5006      6.9284      9.3521
+     208712_at 211864_s_at 212583_at 216092_s_at
+[1,]   10.8225      9.2348    7.5912     10.6963
+[2,]    9.8721     10.1938    7.5112      9.3780
+[3,]   10.2362      8.4931    4.6920      9.3840
+[1] "numgenes selected:10"
+[1] "test acc:0.76"
+[1] "test AUC acc:0.666666666666667"
+[1] "10 fold train90.7692307692308"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 28  2
+         2  5 95
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1  8 17
+        2  7 68
+[1] "train acc:0.946153846153846"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 28  2
+         2  5 95
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+Warning messages:
+1: In if (is.na(boostweight) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+2: In if (is.na(testm) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+3: In if (is.na(testclass) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+4: In qnorm(probval) : NaNs produced
+5: In qnorm(probval) : NaNs produced
+6: In qnorm(probval) : NaNs produced
+7: In mean.default(DS_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+8: In mean.default(DS_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+9: In mean.default(KI_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+> 
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("rfe"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="none",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   130 22283
+[1]   130 22283
+[1] "length of factcols"
+[1] 0
+[1]   130 22283
+[1]   100 22283
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 2 1 2 2
+Levels: 1 2
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] 6.7866 8.0963 7.4812
+[1] "norm train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "mean of feat 2"
+[1] 8.273493
+[1] "sd of feat 2"
+[1] 0.7010279
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   130 22283
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+[1] "rfe:10:99.3560606060606"
+  gsmethods          acc_vec
+1       rfe 99.3560606060606
+[1] "dim of scoring matrix is "
+[1] 22283     1
+[1] 22283
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]  4756  5005  5223  5240  5278  5357  5927  8388  8667 13990
+     205229_s_at 205478_at 205696_s_at 205713_s_at 205751_at 205830_at
+[1,]      6.8695    7.9799     11.6168     10.0607    5.3569    9.0445
+[2,]      5.4533    6.0596      9.5737      5.6228    3.7733    9.6145
+[3,]      6.2767    5.5057      7.2600      6.8404    2.5009    7.0195
+     206401_s_at 208893_s_at 209173_at 214612_x_at
+[1,]      9.9796      4.0949   12.9392      6.0516
+[2,]      9.9498      9.2703   14.1501      5.7915
+[3,]      6.0807      3.9487   14.5585      3.4135
+     205229_s_at 205478_at 205696_s_at 205713_s_at 205751_at 205830_at
+[1,]      5.2668    4.8386      9.0616      5.2933    5.4450    8.7696
+[2,]      7.1769   11.9784      7.7288      4.3142    6.3482    7.0550
+[3,]      6.9284   12.5884      7.1560      4.5240    6.0619    6.8984
+     206401_s_at 208893_s_at 209173_at 214612_x_at
+[1,]     10.6463      7.6049   13.2041      6.2012
+[2,]      8.2532      8.9154   11.3631      7.0485
+[3,]      7.4477      9.1121   11.1800      5.5564
+[1] "numgenes selected:10"
+[1] "test acc:0.8"
+[1] "test AUC acc:0.635294117647059"
+[1] "10 fold train85.3846153846154"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 26  3
+         2  7 94
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1  6 11
+        2  9 74
+[1] "train acc:0.923076923076923"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 26  3
+         2  7 94
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+Warning messages:
+1: In if (is.na(boostweight) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+2: In if (is.na(testm) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+3: In if (is.na(testclass) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+4: In qnorm(probval) : NaNs produced
+5: In qnorm(probval) : NaNs produced
+6: In qnorm(probval) : NaNs produced
+7: In mean.default(DS_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+8: In mean.default(DS_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+9: In mean.default(KI_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+> 
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("elasticnet"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="none",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   130 22283
+[1]   130 22283
+[1] "length of factcols"
+[1] 0
+[1]   130 22283
+[1]   100 22283
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 2 1 2 2
+Levels: 1 2
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] 6.7866 8.0963 7.4812
+[1] "norm train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "mean of feat 2"
+[1] 8.273493
+[1] "sd of feat 2"
+[1] 0.7010279
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   130 22283
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+[1] "elasticnet:10:107.840909090909"
+   gsmethods          acc_vec
+1 elasticnet 107.840909090909
+[1] "dim of scoring matrix is "
+[1] 22283     1
+[1] 22283
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]  1083  2667  3155  4352  4874  8166  8207 11253 11968 15464
+     201555_at 203139_at 203628_at 204825_at 205347_s_at 208670_s_at 208712_at
+[1,]    9.9323    9.7965   10.7755    8.9393      7.7184      8.6539   10.9476
+[2,]    9.5628    8.3696    9.8410    7.7652      7.0526      9.5953   11.4622
+[3,]   10.3905    9.0933    9.4169    9.9136      7.7606      9.8134   10.4996
+     211864_s_at 212583_at 216092_s_at
+[1,]     10.7931    6.8476     10.4159
+[2,]      9.0349    6.8369      9.7648
+[3,]     10.4934    7.3452      8.3641
+     201555_at 203139_at 203628_at 204825_at 205347_s_at 208670_s_at 208712_at
+[1,]    9.9499    8.8140    9.4326    7.9851      8.3232      8.8319   10.8225
+[2,]    9.6616    8.7652    9.8046    5.2744      7.4873      9.8519    9.8721
+[3,]    9.4638    9.4426    7.9079    5.9481      8.2573      9.3521   10.2362
+     211864_s_at 212583_at 216092_s_at
+[1,]      9.2348    7.5912     10.6963
+[2,]     10.1938    7.5112      9.3780
+[3,]      8.4931    4.6920      9.3840
+[1] "numgenes selected:10"
+[1] "test acc:0.76"
+[1] "test AUC acc:0.72156862745098"
+[1] "10 fold train86.9230769230769"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 26  3
+         2  7 94
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 10 19
+        2  5 66
+[1] "train acc:0.923076923076923"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 26  3
+         2  7 94
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+Warning messages:
+1: In if (is.na(boostweight) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+2: In if (is.na(testm) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+3: In if (is.na(testclass) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+4: In qnorm(probval) : NaNs produced
+5: In qnorm(probval) : NaNs produced
+6: In qnorm(probval) : NaNs produced
+7: In mean.default(DS_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+8: In mean.default(DS_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+9: In mean.default(KI_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+> 
+> if(FALSE){
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("rf"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="none",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ }
+> 
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("f.test"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="none",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   130 22283
+[1]   130 22283
+[1] "length of factcols"
+[1] 0
+[1]   130 22283
+[1]   100 22283
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 2 1 2 2
+Levels: 1 2
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] 6.7866 8.0963 7.4812
+[1] "norm train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "mean of feat 2"
+[1] 8.273493
+[1] "sd of feat 2"
+[1] 0.7010279
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   130 22283
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+[1] "f.test:10:103.44696969697"
+  gsmethods         acc_vec
+1    f.test 103.44696969697
+[1] "dim of scoring matrix is "
+[1] 22283     1
+[1] 22283
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]  3155  3490  4352  4752  5927  8667 13543 15240 15464 18415
+     203628_at 203963_at 204825_at 205225_at 206401_s_at 209173_at 214164_x_at
+[1,]   10.7755   12.0638    8.9393   13.0759      9.9796   12.9392     12.6474
+[2,]    9.8410   11.3553    7.7652   13.7616      9.9498   14.1501     11.7852
+[3,]    9.4169   12.3832    9.9136   12.7360      6.0807   14.5585     12.7464
+     215867_x_at 216092_s_at 219051_x_at
+[1,]     12.6194     10.4159      8.5236
+[2,]     11.5534      9.7648      8.9626
+[3,]     12.7285      8.3641     10.7458
+     203628_at 203963_at 204825_at 205225_at 206401_s_at 209173_at 214164_x_at
+[1,]    9.4326   12.4052    7.9851   13.8754     10.6463   13.2041     12.7392
+[2,]    9.8046   10.4033    5.2744   11.7217      8.2532   11.3631     10.9092
+[3,]    7.9079    9.8307    5.9481   10.9960      7.4477   11.1800     10.6696
+     215867_x_at 216092_s_at 219051_x_at
+[1,]     12.5744     10.6963      9.5138
+[2,]     11.0575      9.3780      5.3641
+[3,]     11.0769      9.3840      7.1097
+[1] "numgenes selected:10"
+[1] "test acc:0.73"
+[1] "test AUC acc:0.731372549019608"
+[1] "10 fold train80.7692307692308"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 26  6
+         2  7 91
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 11 23
+        2  4 62
+[1] "train acc:0.9"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 26  6
+         2  7 91
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+Warning messages:
+1: In if (is.na(boostweight) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+2: In if (is.na(testm) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+3: In if (is.na(testclass) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+4: In qnorm(probval) : NaNs produced
+5: In qnorm(probval) : NaNs produced
+6: In qnorm(probval) : NaNs produced
+7: In mean.default(DS_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+8: In mean.default(DS_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+9: In mean.default(KI_res, na.rm = TRUE) :
+  argument is not numeric or logical: returning NA
+> 
+> #1
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("limma","lasso","rfe","elasticnet", "f.test"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="none",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   130 22283
+[1]   130 22283
+[1] "length of factcols"
+[1] 0
+[1]   130 22283
+[1]   100 22283
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 2 1 2 2
+Levels: 1 2
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "orig train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] 6.7866 8.0963 7.4812
+[1] "norm train matrix"
+     1007_s_at 1053_at 117_at  121_at 1255_g_at 1294_at 1316_at 1320_at
+[1,]   12.4440  8.3774 6.7866 10.2851    5.9064  8.3767  8.0356  6.6745
+[2,]   12.2005  7.8592 8.0963 10.4624    4.9582  9.2973  7.0581  6.4607
+[3,]   12.6709  8.6762 7.4812 10.1887    5.2332  9.1721  8.6061  7.0932
+[4,]   11.6619  8.2557 7.9923 10.7705    6.3296  9.3777  8.4776  6.5878
+[5,]   11.8397  8.7971 7.8321 10.2869    5.8389  7.0841  7.3419  7.3167
+     1405_i_at 1431_at
+[1,]    6.2325  6.8450
+[2,]    6.9047  5.8878
+[3,]    6.5940  5.6843
+[4,]    6.0877  6.5169
+[5,]    6.3456  6.1708
+[1] "mean of feat 2"
+[1] 8.273493
+[1] "sd of feat 2"
+[1] 0.7010279
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   130 22283
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+[1] "limma:10:92.1136363636364"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+genelist
+ 1083 15464  2667  4208  8166 11253 11968  2211  4756  8207 18226  1326  1732 
+   18    16    14    14    14    12    12     8     6     6     6     4     4 
+ 3155  4352  4874  5278 18415 20137  2841  3223  4349  7691  8292  8550 10271 
+    4     4     4     4     4     4     2     2     2     2     2     2     2 
+10980 12226 12517 16398 16738 18220 18313 18456 18802 19380 20350 20616 21064 
+    2     2     2     2     2     2     2     2     2     2     2     2     2 
+21615 
+    2 
+[1] "varselmethod"
+[1] "none"
+[1] "lasso:10:99.9318181818182"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+[1] "rfe:10:99.3560606060606"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+[1] "elasticnet:10:107.840909090909"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+[1] "f.test:10:103.44696969697"
+   gsmethods          acc_vec
+1      limma 92.1136363636364
+2      lasso 99.9318181818182
+3        rfe 99.3560606060606
+4 elasticnet 107.840909090909
+5     f.test  103.44696969697
+[1] "dim of scoring matrix is "
+[1] 22283     5
+[1] 22283
+[1] "DS index stage 1"
+[1] 0.1222222
+[1] "bestgenelist"
+ [1]  1083  2211  2667  3155  3490  4208  4352  4752  4756  4874  5927  8166
+[13]  8207  8667 11253 11968 13543 15240 15464 18415
+     201555_at 202683_s_at 203139_at 203628_at 203963_at 204681_s_at 204825_at
+[1,]    9.9323      8.8393    9.7965   10.7755   12.0638      7.5046    8.9393
+[2,]    9.5628      8.4030    8.3696    9.8410   11.3553      8.7229    7.7652
+[3,]   10.3905      8.3998    9.0933    9.4169   12.3832      6.9584    9.9136
+     205225_at 205229_s_at 205347_s_at 206401_s_at 208670_s_at 208712_at
+[1,]   13.0759      6.8695      7.7184      9.9796      8.6539   10.9476
+[2,]   13.7616      5.4533      7.0526      9.9498      9.5953   11.4622
+[3,]   12.7360      6.2767      7.7606      6.0807      9.8134   10.4996
+     209173_at 211864_s_at 212583_at 214164_x_at 215867_x_at 216092_s_at
+[1,]   12.9392     10.7931    6.8476     12.6474     12.6194     10.4159
+[2,]   14.1501      9.0349    6.8369     11.7852     11.5534      9.7648
+[3,]   14.5585     10.4934    7.3452     12.7464     12.7285      8.3641
+     219051_x_at
+[1,]      8.5236
+[2,]      8.9626
+[3,]     10.7458
+     201555_at 202683_s_at 203139_at 203628_at 203963_at 204681_s_at 204825_at
+[1,]    9.9499      8.8732    8.8140    9.4326   12.4052      8.7098    7.9851
+[2,]    9.6616      8.5511    8.7652    9.8046   10.4033      8.1223    5.2744
+[3,]    9.4638      8.5826    9.4426    7.9079    9.8307      7.5006    5.9481
+     205225_at 205229_s_at 205347_s_at 206401_s_at 208670_s_at 208712_at
+[1,]   13.8754      5.2668      8.3232     10.6463      8.8319   10.8225
+[2,]   11.7217      7.1769      7.4873      8.2532      9.8519    9.8721
+[3,]   10.9960      6.9284      8.2573      7.4477      9.3521   10.2362
+     209173_at 211864_s_at 212583_at 214164_x_at 215867_x_at 216092_s_at
+[1,]   13.2041      9.2348    7.5912     12.7392     12.5744     10.6963
+[2,]   11.3631     10.1938    7.5112     10.9092     11.0575      9.3780
+[3,]   11.1800      8.4931    4.6920     10.6696     11.0769      9.3840
+     219051_x_at
+[1,]      9.5138
+[2,]      5.3641
+[3,]      7.1097
+[1] "numgenes selected:20"
+[1] "test acc:0.73"
+[1] "test AUC acc:0.676470588235294"
+[1] "10 fold train89.2307692307692"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 29  2
+         2  4 95
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1  9 21
+        2  6 64
+[1] "train acc:0.953846153846154"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 29  2
+         2  4 95
+[1] "DS index stage 1"
+[1] 0.1222222
+[1] "KI index stage 1"
+[1] 0.1096004
+[[1]]
+[1] "var"
+
+[[2]]
+ [1] "var1083"  "var2211"  "var2667"  "var4208"  "var4756"  "var8166" 
+ [7] "var8207"  "var11253" "var11968" "var15464"
+
+[[3]]
+[1] "var"
+
+[[4]]
+ [1] "var1083"  "var2667"  "var3155"  "var4352"  "var4874"  "var8166" 
+ [7] "var8207"  "var11253" "var11968" "var15464"
+
+[[5]]
+ [1] "var3155"  "var3490"  "var4352"  "var4752"  "var5927"  "var8667" 
+ [7] "var13543" "var15240" "var15464" "var18415"
+
+Error in RankAggreg(m4, k = maxnum) : Elements of Each Row Must Be Unique
+Calls: performCMA -> RankAggreg
+In addition: There were 18 warnings (use warnings() to see them)
+Execution halted

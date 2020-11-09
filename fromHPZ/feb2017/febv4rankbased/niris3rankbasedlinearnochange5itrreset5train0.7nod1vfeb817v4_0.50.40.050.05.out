@@ -1,0 +1,410 @@
+
+R version 3.2.2 (2015-08-14) -- "Fire Safety"
+Copyright (C) 2015 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> #.libPaths("/home/kuppal3/karan_libs/Rlibs")
+> library(snow)
+> library(e1071)
+> library(yaImpute)
+
+Attaching package: ‘yaImpute’
+
+The following object is masked from ‘package:e1071’:
+
+    impute
+
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+> library(bioDist)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘parallel’
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, clusterSplit, makeCluster, parApply,
+    parCapply, parLapply, parRapply, parSapply, splitIndices,
+    stopCluster
+
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parRapply, parSapply
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, as.vector, cbind, colnames,
+    do.call, duplicated, eval, evalq, Filter, Find, get, grep, grepl,
+    intersect, is.unsorted, lapply, lengths, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unlist, unsplit
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: KernSmooth
+KernSmooth 2.23 loaded
+Copyright M. P. Wand 1997-2009
+> #library(CMA, lib="/home/kuppal3/karan_libs/Rlibs/")
+> library(RankAggreg)
+> library(CMA)
+
+Attaching package: ‘CMA’
+
+The following object is masked from ‘package:pROC’:
+
+    roc
+
+The following object is masked from ‘package:e1071’:
+
+    tune
+
+> library(expm)
+Loading required package: Matrix
+
+Attaching package: ‘expm’
+
+The following object is masked from ‘package:Matrix’:
+
+    expm
+
+> 
+> cl<-makeCluster(1)
+> 
+> 
+> args<-commandArgs(trailingOnly=TRUE)
+> #source("/home/kuppal3/Research/Feature_selection/Rcode/versionnov2014/OCFS_vmay2415_v31.R")
+> 
+> #sname<-paste("/home/kuppal3/Research/Feature_selection/Rcode/versionnov2014/OCFS_",args[9],".R",sep="")
+> sname<-paste("/home/kuppal2/Documents/Projects/xmsPANDA/Other/scripts/OCFS_",args[9],".R",sep="")
+> source(sname)
+> print(sname)
+[1] "/home/kuppal2/Documents/Projects/xmsPANDA/Other/scripts/OCFS_vfeb817_v4.R"
+> 
+> #data_loc<-"/home/stu/kuppal3/Research/Feature_selection/Datasets/Golub/" 
+> #data_loc<-"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/Golub/"
+> data_loc<-"/home/kuppal2/Documents/Projects/xmsPANDA/Other/Datasets/IRIS/"
+> setwd(data_loc)
+> 
+> load("IRIS.Rda")
+> 
+> trainm<-Iris$X
+> testm<-Iris$Xt
+> trainclass<-Iris$Y
+> testclass<-Iris$Yt
+> 
+> cnames<-paste("var",seq(1,dim(trainm)[2]),sep="")
+> colnames(trainm)<-cnames
+> colnames(testm)<-cnames
+> 
+> args<-commandArgs(trailingOnly=TRUE)
+> trainm<-na.omit(trainm)
+> testm<-na.omit(testm)
+> 
+> #outloc<-paste("/home/kuppal3/Research/Feature_selection/Datasets/IRIS_Probe/OCFSv062016_v32_sensitivity_itr",args[9],"/",sep="")
+> 
+> weightA<-as.numeric(args[1])
+> weightB<-as.numeric(args[2])
+> weightC<-as.numeric(args[3])
+> weightD<-as.numeric(args[4])
+> 
+> #outloc<-paste(data_loc,"OCFSv062016_v32_sensitivity_itr",args[9],"/",sep="")
+> outloc<-paste(data_loc,"OCFS_iris",args[9],"_",args[10],"_",weightA,"_",args[11],"_",args[5],"/",sep="")
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/home/kuppal2/Documents/Projects/xmsPANDA/Other/Datasets/IRIS/OCFS_irisvfeb817_v4_3_0.5_0.7_rankbased' already exists
+> setwd(outloc)
+> 
+> trainm<-as.matrix(trainm)
+> testm<-as.matrix(testm)
+> 
+> #a: Confusions
+> #b: Neighbors
+> #c: Global
+> #d: Death
+> 
+> a<-c(0.25,0.25,0.25,0.25)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0.25,0.25,0.5,0)
+> d<-c(0.9,0.1,0,0.1)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0,0.5,0.5,0)
+> d<-c(0.9,0.1,0,0)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.2,0.3,0.4,0.1)
+> c<-c(0,0.4,0.4,0.2)
+> d<-c(0.9,0.1,0,0)
+> 
+> transition_matrix<-rbind(a,b,c,d)
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/home/kuppal2/Documents/Projects/xmsPANDA/Other/Datasets/IRIS/OCFS_irisvfeb817_v4_3_0.5_0.7_rankbased' already exists
+> setwd(outloc)
+> temp2=t(trainm)
+> temp2=apply(temp2, 2, function(x){which(x=="MD")})
+> temp2=unlist(temp2)
+> temp2=unique(temp2)
+> if(length(temp2)>1)
++ {
++ 	trainm=trainm[,-c(temp2)]
++ 
++ 	rm(temp2)
++ }
+> 
+> boostweight=rep(0,dim(trainm)[2])
+> 
+> 
+> # modtraindata=modtrain, modtestdata=modtest, blindtest=testacc, modtrainclass=nci_y, modtestclass=test_y
+> if(FALSE)
++ {
++ trainm<-CMAres$modtraindata
++ testm<-CMAres$modtestdata
++ trainclass<-CMAres$modtrainclass
++ testclass<-CMAres$modtestclass
++ learningsets<-CMAres$learningsets
++ }
+> 
+> 
+> print(apply(trainm,2,mean))
+        var1         var2         var3         var4         var5         var6 
+ 0.049647135  0.013765690  0.037009799  0.013993886 -0.063711067 -0.140437497 
+        var7         var8         var9        var10        var11        var12 
+-0.244389569 -0.066747451  0.173283469  0.045440242 -0.002567537  0.056065205 
+       var13        var14        var15        var16        var17        var18 
+-0.121771199  0.014619353  0.195398720  0.012867617  0.163750039  0.179120885 
+       var19        var20        var21        var22        var23        var24 
+ 0.151963336 -0.096026333  0.108363826 -0.094775201 -0.050262826  0.156814882 
+       var25        var26        var27        var28        var29        var30 
+-0.092870162  0.146433511  0.064873861 -0.108098662  0.047715372 -0.073731911 
+       var31        var32        var33        var34        var35        var36 
+ 0.095984337 -0.018065316  0.020892432  0.168486709  0.112409779  0.022591805 
+       var37        var38        var39        var40 
+-0.092044191 -0.065853997 -0.049079894  0.063013440 
+> d_dim<-dim(trainm)
+> 
+> print("Original dimension")
+[1] "Original dimension"
+> print(d_dim)
+[1] 90 40
+> 
+> #2 call run_pso function()
+> system.time(psores<-run_pso(outloc=outloc,trainm,trainclass,testm,testclass,transition_matrix,c1=2.05,
++ c2=2.05,
++ itr=10,
++ globalpso_maxitr=10,
++ global_max_itr=3,
++ num_part=20,
++ kname="linear",
++ errortype="BER",
++ weightA<-as.numeric(args[1]),
++ weightB<-as.numeric(args[2]),
++ weightC<-as.numeric(args[3]),
++ weightD<-as.numeric(args[4]),
++ featweight.max=0.01,
++ featweight.min=0.01,
++ numfolds=10,
++ followerprob=as.numeric(args[6]),
++ confusionprob=as.numeric(args[7]),
++ leaderprob=as.numeric(args[8]),
++ wmax=1,
++ wmin=1,
++ behavior_reset_itr=5,
++ maxitrreset=3,
++ num_neighbors=3,
++ minselect.pct=0.5,
++ evalMode="CV2",
++ minfitnessthresh=50,
++ maxnum=as.numeric(args[10]),minnum=3,inertia_method=args[5],particlebehav_method="randbased",constriction_factor=1,
++ select.global.best=TRUE,numnodes=30,evalFunc=eval_fit_kfold_diff,itr.terminate=FALSE,train.pct=as.numeric(args[11])))
+[1] "c1: 2.05"
+[1] "c2: 2.05"
+[1] "itr: 10"
+[1] "globalpso_maxitr: 10"
+[1] "global_max_itr: 3"
+[1] "num_part: 20"
+[1] "kname: linear"
+[1] "errortype: BER"
+[1] "weightA: 0.5"
+[1] "weightB: 0.4"
+[1] "weightC: 0.05"
+[1] "weightD: 0.05"
+[1] "featweight.max: 0.01"
+[1] "featweight.min: 0.01"
+[1] "numfolds: 10"
+[1] "followerprob: 0.45"
+[1] "confusionprob: 0.2"
+[1] "leaderprob: 0.25"
+[1] "wmax: 1"
+[1] "wmin: 1"
+[1] "behavior_reset_itr: 5"
+[1] "maxitrreset: 3"
+[1] "num_neighbors: 3"
+[1] "minselect.pct: 0.5"
+[1] "minfitnessthresh: 50"
+[1] "maxnum: 3"
+[1] "minnum: 3"
+[1] "inertia_method: rankbased"
+[1] "particlebehav_method: randbased"
+[1] "constriction_factor: 1"
+[1] "select.global.best: TRUE"
+[1] "DS index stage 2"
+[1] 0.4970804
+[1] "KI index stage 2"
+[1] -Inf
+[1] 1
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    1.0     3.0     4.5     4.8     6.0    10.0 
+[1] "Number of features selected in 1 iterations:"
+[1] 40
+[1] 1.0000000 0.8666667 0.9333333
+[1] 1.0000000 0.8666667 0.9333333
+[1] "accuracy: 80.6976738833795 num_feat:40 fitness:52.2579547786507"
+[1] -52.25795
+[1] "Number of features selected in 2 iterations:"
+[1] 39
+[1] 1.0 0.9 0.9
+[1] 1.0 0.9 0.9
+[1] "accuracy: 79.1047245484365 num_feat:39 fitness:49.9614474643314"
+[1] -49.96145
+[1] "Number of features selected in 3 iterations:"
+[1] 36
+[1] 1.0000000 0.8666667 0.9666667
+[1] 1.0000000 0.8666667 0.9666667
+[1] "accuracy: 78.9378823876378 num_feat:36 fitness:49.1808022686524"
+[1] -49.1808
+[1] "Number of features selected in 4 iterations:"
+[1] 29
+[1] 1.0000000 0.9000000 0.9333333
+[1] 1.0000000 0.9000000 0.9333333
+[1] "accuracy: 71.5490860599847 num_feat:29 fitness:42.5225062680227"
+[1] -42.52251
+[1] "Number of features selected in 5 iterations:"
+[1] 20
+[1] 1.0000000 0.9666667 1.0000000
+[1] 1.0000000 0.9666667 1.0000000
+[1] "accuracy: 83.9720488262822 num_feat:20 fitness:58.2365703021657"
+[1] -58.23657
+[1] "Number of features selected in 6 iterations:"
+[1] 14
+[1] 1.0000000 0.9333333 0.9666667
+[1] 1.0000000 0.9333333 0.9666667
+[1] "accuracy: 85.4246329451231 num_feat:14 fitness:57.4699860484426"
+[1] -57.46999
+[1] "Number of features selected in 7 iterations:"
+[1] 7
+[1] 1.0000000 1.0000000 0.9666667
+[1] 1.0000000 1.0000000 0.9666667
+[1] "accuracy: 90.457440226386 num_feat:7 fitness:60.1602532000837"
+[1] -60.16025
+[1] "Number of features selected in 8 iterations:"
+[1] 3
+[1] 1.0000000 0.9666667 0.9333333
+[1] 1.0000000 0.9666667 0.9333333
+[1] "accuracy: 91.6552482330482 num_feat:3 fitness:65.9316183335137"
+[1] -65.93162
+[1] "Number of features selected in 9 iterations:"
+[1] 2
+[1] "accuracy: 1 num_feat:2 fitness:-100"
+[1] 100
+[1] "Number of features selected in 10 iterations:"
+[1] 2
+[1] "accuracy: 1 num_feat:2 fitness:-100"
+[1] 100
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.8214  0.8304  0.8929  0.8893  0.9286  0.9643 
+[1] "Number of features selected in 8 iterations:"
+[1] 3
+[1] "Modified train 10 fold accuracy using train data is "
+[1] 97.77778
+[1] "Modified train accuracy is "
+[1] 0.9777778
+[1] "train confusion matrix is "
+            trainclass
+pred_train   setosa versicolor virginica
+  setosa         30          0         0
+  versicolor      0         30         2
+  virginica       0          0        28
+[1] "Train dimension is "
+[1] 90  3
+[1] "Test dimension is "
+[1] 60  3
+[1] "Test confusion matrix is "
+            
+pred         setosa versicolor virginica
+  setosa         19          0         0
+  versicolor      1         20         2
+  virginica       0          0        18
+[1] "Test acc is "
+[1] 0.95
+[1] "train 10 fold"
+[1] 95.55556
+[1] "Test confusion matrix is "
+            
+pred         setosa versicolor virginica
+  setosa         19          0         0
+  versicolor      1         20         2
+  virginica       0          0        18
+[1] "Test acc is "
+[1] 0.95
+[1] "Test AUC:"
+[1] 0.9741667
+[1] "Train acc is "
+[1] 0.9777778
+[1] "# of features after CMA:"
+Error in print(dim(CMAres$modtrainmata)) : 
+  error in evaluating the argument 'x' in selecting a method for function 'print': Error: object 'CMAres' not found
+Calls: system.time -> run_pso -> print
+Timing stopped at: 7.89 0.112 8.514 
+Execution halted

@@ -1,0 +1,211 @@
+* using log directory ‘/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/optSelect_v0.0.1.Rcheck’
+* using R version 3.6.3 (2020-02-29)
+* using platform: x86_64-apple-darwin15.6.0 (64-bit)
+* using session charset: UTF-8
+* checking for file ‘optSelect_v0.0.1/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘optSelect’ version ‘0.0.1’
+* checking package namespace information ... OK
+* checking package dependencies ... NOTE
+Depends: includes the non-default packages:
+  'snow', 'e1071', 'yaImpute', 'pROC', 'bioDist', 'RankAggreg', 'CMA',
+  'expm'
+Adding so many packages to the search path is excessive and importing
+selectively is preferable.
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... NOTE
+Found the following hidden files and directories:
+  .DS_Store
+  R/.DS_Store
+These were most likely included in error. See section ‘Package
+structure’ in the ‘Writing R Extensions’ manual.
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘optSelect’ can be installed ... WARNING
+Found the following significant warnings:
+  Warning: /Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/optSelect_v0.0.1/man/run_pso.Rd:49: All text must be in a section
+  Warning: replacing previous import ‘e1071::impute’ by ‘yaImpute::impute’ when loading ‘optSelect’
+  Warning: replacing previous import ‘pROC::roc’ by ‘CMA::roc’ when loading ‘optSelect’
+  Warning: replacing previous import ‘e1071::tune’ by ‘CMA::tune’ when loading ‘optSelect’
+See ‘/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/optSelect_v0.0.1.Rcheck/00install.out’ for details.
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... NOTE
+Non-standard license specification:
+  GPL2.0
+Standardizable: TRUE
+Standardized license specification:
+  GPL-2
+Checking should be performed on sources prepared by ‘R CMD build’.
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking R files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+performCMA: warning in sort(table(genelist), dec = TRUE): partial
+  argument match of 'dec' to 'decreasing'
+b3pso: no visible global function definition for ‘runif’
+b3pso : <anonymous>: no visible global function definition for ‘sd’
+b3pso: no visible binding for global variable ‘accuracyweightA’
+b3pso: no visible binding for global variable ‘accuracyweightB’
+b3pso: no visible global function definition for ‘median’
+b3pso: no visible global function definition for ‘dist’
+b3pso: no visible global function definition for ‘dev.off’
+b3pso : <anonymous>: no visible global function definition for
+  ‘quantile’
+b3pso: no visible global function definition for ‘predict’
+evalFunc_multiobj: no visible binding for global variable ‘X’
+evalFunc_multiobj: no visible binding for global variable ‘Y’
+evalFunc_multiobj: no visible global function definition for ‘runif’
+evalFunc_multiobj: no visible binding for global variable ‘evalMode’
+evalFunc_multiobj: no visible binding for global variable ‘numfolds’
+evalFunc_multiobj: no visible global function definition for ‘predict’
+evalFunc_multiobjPSO: no visible global function definition for ‘runif’
+evalFunc_multiobjPSO: no visible global function definition for
+  ‘predict’
+eval_fit_kfold_diff: no visible global function definition for ‘sd’
+eval_fit_test_diff: no visible global function definition for ‘runif’
+eval_fit_test_diff: no visible global function definition for ‘sd’
+eval_fit_test_diff: no visible global function definition for ‘predict’
+mdist: no visible global function definition for ‘mahalanobis’
+nn_search: no visible global function definition for ‘dist’
+performCMA: no visible global function definition for ‘write.csv’
+performCMA: no visible global function definition for ‘write.table’
+performCMA: no visible binding for global variable ‘head’
+performCMA : <anonymous>: no visible global function definition for
+  ‘sd’
+performCMA: no visible global function definition for ‘sd’
+performCMA: no visible global function definition for ‘predict’
+performCMA: no visible global function definition for ‘fitted’
+run_pso: no visible global function definition for ‘sessionInfo’
+run_pso: no visible global function definition for ‘write.table’
+run_pso: no visible global function definition for ‘predict’
+run_pso: no visible global function definition for ‘read.csv’
+svm_cv: no visible global function definition for ‘diffinv’
+svm_cv: no visible global function definition for ‘predict’
+svm_cv: no visible global function definition for ‘sd’
+svm_cv: no visible global function definition for ‘qnorm’
+Undefined global functions or variables:
+  X Y accuracyweightA accuracyweightB dev.off diffinv dist evalMode
+  fitted head mahalanobis median numfolds predict qnorm quantile
+  read.csv runif sd sessionInfo write.csv write.table
+Consider adding
+  importFrom("grDevices", "dev.off")
+  importFrom("stats", "diffinv", "dist", "fitted", "mahalanobis",
+             "median", "predict", "qnorm", "quantile", "runif", "sd")
+  importFrom("utils", "head", "read.csv", "sessionInfo", "write.csv",
+             "write.table")
+to your NAMESPACE file.
+* checking Rd files ... WARNING
+prepare_Rd: run_pso.Rd:49: All text must be in a section
+prepare_Rd: run_pso.Rd:31-32: Dropping empty section \details
+prepare_Rd: run_pso.Rd:44-45: Dropping empty section \references
+* checking Rd metadata ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... WARNING
+Undocumented code objects:
+  ‘b3pso’ ‘evalFunc_multiobj’ ‘eval_fit_test_diff’
+  ‘find_similar_samples’ ‘get_DSindex’ ‘get_KIindex’ ‘mdist’
+  ‘nn_search’ ‘performCMA’ ‘svm_cv’
+Undocumented data sets:
+  ‘Golub’
+All user-level objects in a package should have documentation entries.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking for code/documentation mismatches ... WARNING
+Codoc mismatches from documentation object 'run_pso':
+run_pso
+  Code: function(trainm, trainclass, testm, testclass, outloc, maxnum =
+                 5, transition_matrix = rbind(c(0, 0.4, 0.1, 0.5),
+                 c(0.2, 0.3, 0.4, 0.1), c(0, 0.4, 0.4, 0.2), c(0.9,
+                 0.1, 0, 0)), c1 = 2.05, c2 = 2.05, itr = 10,
+                 globalpso_maxitr = 10, global_max_itr = 3, num_part =
+                 20, kname = "radial", errortype = "BER", weightA =
+                 0.7, weightB = 0, weightC = 0.05, weightD = 0.25,
+                 featweight.max = 0.01, featweight.min = 0.01, numfolds
+                 = 10, followerprob = 0.45, confusionprob = 0.25,
+                 leaderprob = 0.25, wmax = 1, wmin = 1,
+                 behavior_reset_itr = 5, maxitrreset = 10,
+                 num_neighbors = 3, minselect.pct = 0.5, evalMode =
+                 "CV2", minfitnessthresh = 50, minnum = 3,
+                 inertia_method = "global", particlebehav_method =
+                 "randbased", constriction_factor = 1,
+                 select.global.best = TRUE, numnodes = 4, itr.terminate
+                 = FALSE, train.pct = 0.8, min.iter.select = 1,
+                 bootstrap.itr = 10, evalFunc = NA, boostweight = NA,
+                 stage1.featsel.methods = c("limma", "lasso", "rfe",
+                 "elasticnet", "f.test"), RankAggreg.run = FALSE, ...)
+  Docs: function(trainm, trainclass, testm, testclass, outloc,
+                 transition_matrix, c1 = 2.05, c2 = 2.05, itr = 10,
+                 globalpso_maxitr = 1, global_max_itr = 3, num_part =
+                 30, kname = "radial", errortype = "BER", weightA =
+                 0.8, weightB = 0, weightC = 0, weightD = 0.2,
+                 featweight.max = 0.01, featweight.min = 0.01, numfolds
+                 = 10, followerprob = 0.45, confusionprob = 0.25,
+                 leaderprob = 0.25, wmax = 1.2, wmin = 0.4,
+                 behavior_reset_itr = 5, maxitrreset = 30,
+                 num_neighbors = 5, minselect.pct = 0.5, evalMode =
+                 "CV2", minfitnessthresh = 50, maxnum = 0.5, minnum =
+                 3, inertia_method = "global", particlebehav_method =
+                 "randbased", constriction_factor = 1,
+                 select.global.best = TRUE, numnodes = 20,
+                 bootstrap.itr = 10, evalFunc, boostweight = NA,
+                 train.pct = 0.8, ...)
+  Argument names in code not in docs:
+    itr.terminate min.iter.select stage1.featsel.methods RankAggreg.run
+  Mismatches in argument names (first 3):
+    Position: 6 Code: maxnum Docs: transition_matrix
+    Position: 7 Code: transition_matrix Docs: c1
+    Position: 8 Code: c1 Docs: c2
+  Mismatches in argument default values (first 3):
+    Name: 'maxnum' Code: 5 Docs: 0.5
+    Name: 'transition_matrix'
+    Code: rbind(c(0, 0.4, 0.1, 0.5), c(0.2, 0.3, 0.4, 0.1), c(0, 0.4, 0.4, 
+          0.2), c(0.9, 0.1, 0, 0))
+    Docs: 
+    Name: 'globalpso_maxitr' Code: 10 Docs: 1
+
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in documentation object 'run_pso'
+  ‘transition_matrix’ ‘c1’ ‘c2’ ‘itr’ ‘globalpso_maxitr’
+  ‘global_max_itr’ ‘num_part’ ‘kname’ ‘errortype’ ‘weightA’ ‘weightB’
+  ‘weightC’ ‘weightD’ ‘featweight.max’ ‘featweight.min’ ‘numfolds’
+  ‘followerprob’ ‘confusionprob’ ‘leaderprob’ ‘wmax’ ‘wmin’
+  ‘behavior_reset_itr’ ‘maxitrreset’ ‘num_neighbors’ ‘minselect.pct’
+  ‘evalMode’ ‘minfitnessthresh’ ‘minnum’ ‘inertia_method’
+  ‘particlebehav_method’ ‘constriction_factor’ ‘select.global.best’
+  ‘numnodes’ ‘bootstrap.itr’ ‘evalFunc’ ‘boostweight’ ‘train.pct’ ‘...’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking contents of ‘data’ directory ... OK
+* checking data for non-ASCII characters ... OK
+* checking data for ASCII and uncompressed saves ... WARNING
+  
+  Note: significantly better compression could be obtained
+        by using R CMD build --resave-data
+            old_size new_size compress
+  Golub.rda    660Kb    354Kb       xz
+* checking examples ... NONE
+* checking PDF version of manual ... OK
+* DONE
+Status: 6 WARNINGs, 4 NOTEs

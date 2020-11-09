@@ -1,0 +1,48 @@
+Warning message:
+package ‘snow’ was built under R version 2.15.1 
+Loading required package: class
+Loading required package: Biobase
+
+Welcome to Bioconductor
+
+  Vignettes contain introductory material. To view, type
+  'openVignette()'. To cite Bioconductor, see
+  'citation("Biobase")' and for packages 'citation(pkgname)'.
+
+
+Attaching package: ‘CMA’
+
+The following object(s) are masked from ‘package:e1071’:
+
+    tune
+
+Warning messages:
+1: replacing previous import ‘coerce’ when loading ‘Biobase’ 
+2: replacing previous import ‘Compare’ when loading ‘Biobase’ 
+3: replacing previous import ‘initialize’ when loading ‘Biobase’ 
+4: replacing previous import ‘show’ when loading ‘Biobase’ 
+Loading required package: KernSmooth
+KernSmooth 2.23 loaded
+Copyright M. P. Wand 1997-2009
+Warning messages:
+1: replacing previous import ‘coerce’ when loading ‘Biobase’ 
+2: replacing previous import ‘Compare’ when loading ‘Biobase’ 
+3: replacing previous import ‘initialize’ when loading ‘Biobase’ 
+4: replacing previous import ‘show’ when loading ‘Biobase’ 
+Warning message:
+In dir.create(outloc) :
+  '/home/stu/kuppal3/Research/Feature_selection/Datasets/Golub' already exists
+randomForest 4.5-36
+Type rfNews() to see new features/changes/bug fixes.
+
+Attaching package: ‘randomForest’
+
+The following object(s) are masked from ‘package:Biobase’:
+
+    combine
+
+Loading required package: lattice
+There were 20 warnings (use warnings() to see them)
+Error in dist_mat[particle_ind, ] : incorrect number of dimensions
+Calls: nn_search -> order
+Execution halted

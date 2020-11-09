@@ -1,0 +1,1454 @@
+
+R version 3.1.2 (2014-10-31) -- "Pumpkin Helmet"
+Copyright (C) 2014 The R Foundation for Statistical Computing
+Platform: x86_64-redhat-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> #.libPaths("/home/stu/kuppal3/karan_libs/Rlibs")
+> library(snow)
+> library(e1071)
+Loading required package: class
+> library(yaImpute)
+
+Attaching package: ‘yaImpute’
+
+The following object is masked from ‘package:e1071’:
+
+    impute
+
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+> library(bioDist)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘parallel’
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, clusterSplit, makeCluster, parApply,
+    parCapply, parLapply, parRapply, parSapply, splitIndices,
+    stopCluster
+
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parRapply, parSapply
+
+The following object is masked from ‘package:stats’:
+
+    xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, as.data.frame, cbind, colnames, duplicated, eval,
+    Filter, Find, get, intersect, lapply, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rep.int, rownames, sapply, setdiff, sort, table,
+    tapply, union, unique, unlist
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: KernSmooth
+KernSmooth 2.23 loaded
+Copyright M. P. Wand 1997-2009
+> #library(CMA, lib="/home/stu/kuppal3/karan_libs/Rlibs/")
+> 
+> library(CMA)
+
+Attaching package: ‘CMA’
+
+The following object is masked from ‘package:pROC’:
+
+    roc
+
+The following object is masked from ‘package:e1071’:
+
+    tune
+
+> library(expm)
+Loading required package: Matrix
+
+Attaching package: ‘expm’
+
+The following object is masked from ‘package:Matrix’:
+
+    expm
+
+> 
+> cl<-makeCluster(1)
+> 
+> #source("/home/stu/kuppal3/Research/Feature_selection/Rcode/versionjuly12013/svm_cv_v1.1.R")
+> #source("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014/OCFS_vnov252014.R")
+> 
+> #same results
+> #source("/home/stu/kuppal3/Research/Feature_selection/Rcode/versionnov2014/OCFS_vnov26.22014_v11.R")
+> 
+> #source("/home/stu/kuppal3/Research/Feature_selection/Rcode/versionnov2014/OCFS_vapr282015.R")
+> 
+> #source("/home/stu/kuppal3/Research/Feature_selection/Rcode/versionnov2014/OCFS_vapr282015_v2.R")
+> 
+> #source("/home/stu/kuppal3/Research/Feature_selection/Rcode/versionnov2014/OCFS_vapr282015_v11.R")
+> 
+> 
+> source("/home/stu/kuppal3/Research/Feature_selection/Rcode/versionnov2014/OCFS_vmay2615_v3.R")
+> 
+> #source("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014/svm_cv_v1.1.R")
+> 
+> #source("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014/performCMA_consensus_tenfold_ber_nominal_lungheart_train_test_nov172014_backward.R")
+> 
+> load("/home/stu/kuppal3/Research/Feature_selection/Datasets/Prostate/Prostate.Rda")
+> 
+> trainm<-Prostate$X
+> testm<-Prostate$Xt
+> trainclass<-Prostate$Y
+> testclass<-Prostate$Yt
+> 
+> cnames<-paste("var",seq(1,dim(trainm)[2]),sep="")
+> colnames(trainm)<-cnames
+> colnames(testm)<-cnames
+> 
+> trainm<-t(trainm)
+> testm<-t(testm)
+> 
+> 
+> if(FALSE){
++ trainm[trainm < 100] <- 100
++ trainm[trainm > 16000] <- 16000
++ 
++ testm[testm < 100] <- 100
++ testm[testm > 16000] <- 16000
++ 
++ mmfilt <- function(x,r = 5, d = 500, na.rm = TRUE) {
++  minval <- min(x, na.rm = na.rm)
++  maxval <- max(x, na.rm = na.rm)
++  (maxval/minval > r) && (maxval - minval > d)
++ }
++ 
++ #mmfun <- mmfilt()
++ #ffun <- filterfun(mmfun)
++ #good <- genefilter(X, ffun)
++ 
++ good<-apply(trainm,1,mmfilt)
++ 
++ 
++ trainm<-trainm[good,]
++ 
++ print(dim(trainm))
++ testm<-testm[good,]
++ 
++ }
+> 
+> trainm<-t(trainm)
+> testm<-t(testm)
+> 
+> trainm<-cbind(trainclass,trainm)
+> testm<-cbind(testclass,testm)
+Warning message:
+In .Method(..., deparse.level = deparse.level) :
+  number of rows of result is not a multiple of vector length (arg 1)
+> 
+> trainm<-na.omit(trainm)
+> testm<-na.omit(testm)
+> 
+> #outloc<-"/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/OCFSv21itr1_LIMMApres1novarsel_l0.45f0.45c0.05minsel0.3randbehavfeatw0.01_local/"
+> outloc<-"/home/stu/kuppal3/Research/Feature_selection/Datasets/Prostate/OCFSvmay2615v1reg_itr2_LassoRFELIMMAELpres1backwsel_l0.25f0.45c0.25_top10pctmaxitrs100minselmedianrandbehavfeatw0.01_CV2accA100B1wrand6methodsmax100wrand/"
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/home/stu/kuppal3/Research/Feature_selection/Datasets/Prostate/OCFSvmay2615v1reg_itr2_LassoRFELIMMAELpres1backwsel_l0.25f0.45c0.25_top10pctmaxitrs100minselmedianrandbehavfeatw0.01_CV2accA100B1wrand6methodsmax100wrand' already exists
+> setwd(outloc)
+> 
+> trainm<-as.matrix(trainm)
+> testm<-as.matrix(testm)
+> trainclass<-trainm[,1] #CMAres$modtrainclass
+> testclass<-testm[,1] #CMAres$modtestclass
+> trainm<-trainm[,-c(1)] #CMAres$modtrainmata
+> testm<-testm[,-c(1)] #CMAres$modtestmata
+> 
+> #a: Confusions
+> #b: Neighbors
+> #c: Global
+> #d: Death
+> 
+> a<-c(0.25,0.25,0.25,0.25)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0.25,0.25,0.5,0)
+> d<-c(0.9,0.1,0,0.1)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0,0.5,0.5,0)
+> d<-c(0.9,0.1,0,0)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.2,0.3,0.4,0.1)
+> c<-c(0,0.4,0.4,0.2)
+> d<-c(0.9,0.1,0,0)
+> 
+> transition_matrix<-rbind(a,b,c,d)
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/home/stu/kuppal3/Research/Feature_selection/Datasets/Prostate/OCFSvmay2615v1reg_itr2_LassoRFELIMMAELpres1backwsel_l0.25f0.45c0.25_top10pctmaxitrs100minselmedianrandbehavfeatw0.01_CV2accA100B1wrand6methodsmax100wrand' already exists
+> setwd(outloc)
+> temp2=t(trainm)
+> temp2=apply(temp2, 2, function(x){which(x=="MD")})
+> temp2=unlist(temp2)
+> temp2=unique(temp2)
+> if(length(temp2)>1)
++ {
++ 	trainm=trainm[,-c(temp2)]
++ 
++ 	rm(temp2)
++ }
+> 
+> boostweight=rep(0,dim(trainm)[2])
+> 
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=10,
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("limma"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ percentTest=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="backward",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   61 6033
+[1]   61 6033
+[1] "length of factcols"
+[1] 0
+[1]   61 6033
+[1]   41 6033
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 1 1 1 1
+Levels: 1 2
+[1] "orig train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] "orig train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] -0.5320164 -0.5856470 -1.1543512
+[1] "norm train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] "mean of feat 2"
+[1] -0.6215651
+[1] "sd of feat 2"
+[1] 0.4198486
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   61 6033
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "backward"
+[1] "limma:10:147.843278634179"
+[1] "limma:10:147.843278634179 : 9"
+[1] "limma:9:146.592284104094"
+[1] "limma:10:147.843278634179 : 8"
+[1] "limma:8:150.34128957401"
+[1] "limma:8:150.34128957401 : 7"
+[1] "limma:7:146.173628377258"
+[1] "limma:8:150.34128957401 : 6"
+[1] "limma:6:145.755967180507"
+[1] "limma:8:150.34128957401 : 5"
+[1] "limma:5:145.338305983756"
+[1] "limma:8:150.34128957401 : 4"
+[1] "limma:4:137.253978120338"
+[1] "limma:8:150.34128957401 : 3"
+[1] "dim of scoring matrix is "
+[1] 6033    1
+[1] 6033
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+[1] 1640 1839 2425 2456 2619 3006 4155 5016
+        var1640     var1839     var2425    var2456   var2619    var3006
+[1,] -0.4324850 -0.06663936 -0.09095791 -0.3330800 0.6272297  2.0003159
+[2,] -0.4491525 -0.12821383 -0.17475155  0.1796585 1.2275524  1.4425846
+[3,]  0.4164084 -1.15435124 -0.33889981  0.1843351 0.8523566 -0.3388998
+        var4155   var5016
+[1,]  0.3605717 0.5010076
+[2,]  0.6992379 1.6606626
+[3,] -1.1543512 0.3005128
+        var1640    var1839    var2425     var2456    var2619  var3006   var4155
+[1,]  0.6405628 -0.6617976 -0.9193153  0.80607065 -0.1454227 1.535913 0.5349203
+[2,] -0.9011489  2.3738926  0.1097262 -0.72214654  1.4795100 2.558122 2.4922452
+[3,] -0.8734031  1.4243602  0.5904799  0.01840101 -0.6180501 2.544301 1.0613480
+        var5016
+[1,]  1.1926986
+[2,] -0.9011489
+[3,]  1.1862983
+[1] "numgenes selected:8"
+[1] "test acc:0.707317073170732"
+[1] "test AUC acc:0.771212121212121"
+[1] "10 fold train95.0819672131148"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 30  3
+         2  0 28
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 19  1
+        2 11 10
+[1] "train acc:0.950819672131147"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 30  3
+         2  0 28
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+There were 26 warnings (use warnings() to see them)
+> 
+> 
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=10,
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("lasso"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ percentTest=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="backward",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   61 6033
+[1]   61 6033
+[1] "length of factcols"
+[1] 0
+[1]   61 6033
+[1]   41 6033
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 1 1 1 1
+Levels: 1 2
+[1] "orig train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] "orig train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] -0.5320164 -0.5856470 -1.1543512
+[1] "norm train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] "mean of feat 2"
+[1] -0.6215651
+[1] "sd of feat 2"
+[1] 0.4198486
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   61 6033
+GeneSelection: iteration 1 
+Loaded glmnet 1.9-8
+
+
+Attaching package: ‘glmnet’
+
+The following object is masked from ‘package:pROC’:
+
+    auc
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "backward"
+[1] "lasso:10:146.093278634179"
+[1] "lasso:10:146.093278634179 : 9"
+[1] "lasso:9:138.675617437427"
+[1] "lasso:10:146.093278634179 : 8"
+[1] "lasso:8:143.174622907343"
+[1] "lasso:10:146.093278634179 : 7"
+[1] "lasso:7:135.923628377258"
+[1] "lasso:10:146.093278634179 : 6"
+[1] "lasso:6:119.089300513841"
+[1] "lasso:10:146.093278634179 : 5"
+[1] "lasso:5:54.338305983756"
+[1] "lasso:10:146.093278634179 : 4"
+[1] "lasso:4:65.3373114536715"
+[1] "dim of scoring matrix is "
+[1] 6033    1
+[1] 6033
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]    1    2    3    4    5    6    7 1839 2619 5016
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+           var7     var1839   var2619   var5016
+[1,] -0.8633258 -0.06663936 0.6272297 0.5010076
+[2,] -0.8358990 -0.12821383 1.2275524 1.6606626
+[3,]  0.5063251 -1.15435124 0.8523566 0.3005128
+           var1       var2       var3       var4       var5       var6
+[1,] -0.9193153 -0.9193153 -0.1910834 -0.9193153 -0.6617976 -0.9193153
+[2,] -0.9011489 -0.9011489 -0.3240630 -0.9011489 -0.5030653 -0.9011489
+[3,] -0.8734031 -0.8734031 -0.4159597 -0.8734031 -0.8734031 -0.8734031
+           var7    var1839    var2619    var5016
+[1,] -0.9193153 -0.6617976 -0.1454227  1.1926986
+[2,] -0.9011489  2.3738926  1.4795100 -0.9011489
+[3,] -0.8734031  1.4243602 -0.6180501  1.1862983
+[1] "numgenes selected:10"
+[1] "test acc:0.707317073170732"
+[1] "test AUC acc:0.771212121212121"
+[1] "10 fold train96.7213114754098"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 30  1
+         2  0 30
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 19  1
+        2 11 10
+[1] "train acc:0.983606557377049"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 30  1
+         2  0 30
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+There were 26 warnings (use warnings() to see them)
+> 
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=10,
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("rfe"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ percentTest=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="backward",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   61 6033
+[1]   61 6033
+[1] "length of factcols"
+[1] 0
+[1]   61 6033
+[1]   41 6033
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 1 1 1 1
+Levels: 1 2
+[1] "orig train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] "orig train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] -0.5320164 -0.5856470 -1.1543512
+[1] "norm train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] "mean of feat 2"
+[1] -0.6215651
+[1] "sd of feat 2"
+[1] 0.4198486
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   61 6033
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "backward"
+[1] "rfe:10:156.843278634179"
+[1] "rfe:10:156.843278634179 : 9"
+[1] "rfe:9:155.175617437427"
+[1] "rfe:10:156.843278634179 : 8"
+[1] "rfe:8:153.674622907343"
+[1] "rfe:10:156.843278634179 : 7"
+[1] "rfe:7:150.590295043925"
+[1] "rfe:10:156.843278634179 : 6"
+[1] "rfe:6:145.839300513841"
+[1] "rfe:10:156.843278634179 : 5"
+[1] "rfe:5:148.504972650423"
+[1] "rfe:10:156.843278634179 : 4"
+[1] "rfe:4:146.420644787005"
+[1] "dim of scoring matrix is "
+[1] 6033    1
+[1] 6033
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1] 1839 2619 3423 3693 4155 4288 4353 4701 5016 5982
+         var1839   var2619    var3423     var3693    var4155    var4288
+[1,] -0.06663936 0.6272297  0.3605717  0.05578908  0.3605717 -0.2144939
+[2,] -0.12821383 1.2275524  1.5958489  2.24197505  0.6992379  1.6323987
+[3,] -1.15435124 0.8523566 -1.1543512 -1.15435124 -1.1543512 -0.1616965
+        var4353   var4701   var5016   var5982
+[1,]  1.3886201 1.2878145 0.5010076 2.7535657
+[2,]  0.9347014 2.8076595 1.6606626 3.4572324
+[3,] -1.1543512 0.5765086 0.3005128 0.8763982
+        var1839    var2619  var3423    var3693   var4155    var4288    var4353
+[1,] -0.6617976 -0.1454227 2.962707  1.4606953 0.5349203  1.8499458 -0.5213401
+[2,]  2.3738926  1.4795100 1.764125 -0.5030653 2.4922452 -0.2206206  1.7444223
+[3,]  1.4243602 -0.6180501 1.174501  2.1525723 1.0613480  0.5462324  1.5121022
+        var4701    var5016  var5982
+[1,]  2.5952770  1.1926986 3.553535
+[2,] -0.9011489 -0.9011489 2.363354
+[3,]  2.3050832  1.1862983 3.813342
+[1] "numgenes selected:10"
+[1] "test acc:0.707317073170732"
+[1] "test AUC acc:0.771212121212121"
+[1] "10 fold train96.7213114754098"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 30  0
+         2  0 31
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 19  1
+        2 11 10
+[1] "train acc:1"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 30  0
+         2  0 31
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+There were 26 warnings (use warnings() to see them)
+> 
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=10,
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("elasticnet"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ percentTest=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="backward",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   61 6033
+[1]   61 6033
+[1] "length of factcols"
+[1] 0
+[1]   61 6033
+[1]   41 6033
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 1 1 1 1
+Levels: 1 2
+[1] "orig train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] "orig train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] -0.5320164 -0.5856470 -1.1543512
+[1] "norm train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] "mean of feat 2"
+[1] -0.6215651
+[1] "sd of feat 2"
+[1] 0.4198486
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   61 6033
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "backward"
+[1] "elasticnet:10:142.593278634179"
+[1] "elasticnet:10:142.593278634179 : 9"
+[1] "elasticnet:9:145.092284104094"
+[1] "elasticnet:9:145.092284104094 : 8"
+[1] "elasticnet:8:113.59128957401"
+[1] "elasticnet:9:145.092284104094 : 7"
+[1] "elasticnet:7:67.5069617105917"
+[1] "elasticnet:9:145.092284104094 : 6"
+[1] "elasticnet:6:57.5059671805072"
+[1] "elasticnet:9:145.092284104094 : 5"
+[1] "elasticnet:5:54.338305983756"
+[1] "elasticnet:9:145.092284104094 : 4"
+[1] "elasticnet:4:65.3373114536715"
+[1] "elasticnet:9:145.092284104094 : 3"
+[1] "dim of scoring matrix is "
+[1] 6033    1
+[1] 6033
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+[1]    1    2    3    4    5    6    7 1839 2619
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+           var7     var1839   var2619
+[1,] -0.8633258 -0.06663936 0.6272297
+[2,] -0.8358990 -0.12821383 1.2275524
+[3,]  0.5063251 -1.15435124 0.8523566
+           var1       var2       var3       var4       var5       var6
+[1,] -0.9193153 -0.9193153 -0.1910834 -0.9193153 -0.6617976 -0.9193153
+[2,] -0.9011489 -0.9011489 -0.3240630 -0.9011489 -0.5030653 -0.9011489
+[3,] -0.8734031 -0.8734031 -0.4159597 -0.8734031 -0.8734031 -0.8734031
+           var7    var1839    var2619
+[1,] -0.9193153 -0.6617976 -0.1454227
+[2,] -0.9011489  2.3738926  1.4795100
+[3,] -0.8734031  1.4243602 -0.6180501
+[1] "numgenes selected:9"
+[1] "test acc:0.731707317073171"
+[1] "test AUC acc:0.787878787878788"
+[1] "10 fold train96.7213114754098"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 30  1
+         2  0 30
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 20  1
+        2 10 10
+[1] "train acc:0.983606557377049"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 30  1
+         2  0 30
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+There were 26 warnings (use warnings() to see them)
+> 
+> if(FALSE){
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=10,
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("rf"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ percentTest=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="backward",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ }
+> 
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=10,
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("f.test"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ percentTest=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="backward",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   61 6033
+[1]   61 6033
+[1] "length of factcols"
+[1] 0
+[1]   61 6033
+[1]   41 6033
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 1 1 1 1
+Levels: 1 2
+[1] "orig train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] "orig train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] -0.5320164 -0.5856470 -1.1543512
+[1] "norm train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] "mean of feat 2"
+[1] -0.6215651
+[1] "sd of feat 2"
+[1] 0.4198486
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   61 6033
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "backward"
+[1] "f.test:10:147.843278634179"
+[1] "f.test:10:147.843278634179 : 9"
+[1] "f.test:9:149.092284104094"
+[1] "f.test:9:149.092284104094 : 8"
+[1] "f.test:8:150.34128957401"
+[1] "f.test:8:150.34128957401 : 7"
+[1] "f.test:7:151.840295043925"
+[1] "f.test:7:151.840295043925 : 6"
+[1] "f.test:6:146.422633847174"
+[1] "f.test:7:151.840295043925 : 5"
+[1] "f.test:5:139.754972650423"
+[1] "f.test:7:151.840295043925 : 4"
+[1] "f.test:4:137.253978120338"
+[1] "f.test:7:151.840295043925 : 3"
+[1] "dim of scoring matrix is "
+[1] 6033    1
+[1] 6033
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+[1] 1640 1839 2425 2456 2619 4155 5016
+        var1640     var1839     var2425    var2456   var2619    var4155
+[1,] -0.4324850 -0.06663936 -0.09095791 -0.3330800 0.6272297  0.3605717
+[2,] -0.4491525 -0.12821383 -0.17475155  0.1796585 1.2275524  0.6992379
+[3,]  0.4164084 -1.15435124 -0.33889981  0.1843351 0.8523566 -1.1543512
+       var5016
+[1,] 0.5010076
+[2,] 1.6606626
+[3,] 0.3005128
+        var1640    var1839    var2425     var2456    var2619   var4155
+[1,]  0.6405628 -0.6617976 -0.9193153  0.80607065 -0.1454227 0.5349203
+[2,] -0.9011489  2.3738926  0.1097262 -0.72214654  1.4795100 2.4922452
+[3,] -0.8734031  1.4243602  0.5904799  0.01840101 -0.6180501 1.0613480
+        var5016
+[1,]  1.1926986
+[2,] -0.9011489
+[3,]  1.1862983
+[1] "numgenes selected:7"
+[1] "test acc:0.707317073170732"
+[1] "test AUC acc:0.771212121212121"
+[1] "10 fold train95.0819672131148"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 30  3
+         2  0 28
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 19  1
+        2 11 10
+[1] "train acc:0.950819672131147"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 30  3
+         2  0 28
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+There were 26 warnings (use warnings() to see them)
+> 
+> #1
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=10,
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("limma","lasso","rfe","elasticnet", "f.test"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ percentTest=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.1,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod="backward",
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   61 6033
+[1]   61 6033
+[1] "length of factcols"
+[1] 0
+[1]   61 6033
+[1]   41 6033
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 1 1 1 1
+Levels: 1 2
+[1] "orig train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] "orig train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] -0.5320164 -0.5856470 -1.1543512
+[1] "norm train matrix"
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+[4,] -0.7486226 -0.4391652  0.7909530 -1.0338757  0.2411153  1.21600730
+[5,]  0.1012387 -0.2982854 -1.1215187 -0.9577135  0.3422581  1.18293740
+           var7     var8        var9     var10
+[1,] -0.8633258 3.959997 -0.39821897 -1.097891
+[2,] -0.8358990 4.037788 -0.83589902 -0.835899
+[3,]  0.5063251 3.868961  0.20193196 -1.154351
+[4,]  0.1062824 3.976272  0.08175534 -1.121534
+[5,]  0.0293250 4.575871 -0.19646622 -1.121519
+[1] "mean of feat 2"
+[1] -0.6215651
+[1] "sd of feat 2"
+[1] 0.4198486
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   61 6033
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "backward"
+[1] "limma:10:147.843278634179"
+[1] "limma:10:147.843278634179 : 9"
+[1] "limma:9:146.592284104094"
+[1] "limma:10:147.843278634179 : 8"
+[1] "limma:8:150.34128957401"
+[1] "limma:8:150.34128957401 : 7"
+[1] "limma:7:146.173628377258"
+[1] "limma:8:150.34128957401 : 6"
+[1] "limma:6:145.755967180507"
+[1] "limma:8:150.34128957401 : 5"
+[1] "limma:5:145.338305983756"
+[1] "limma:8:150.34128957401 : 4"
+[1] "limma:4:137.253978120338"
+[1] "limma:8:150.34128957401 : 3"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "backward"
+[1] "lasso:10:146.093278634179"
+[1] "lasso:10:146.093278634179 : 9"
+[1] "lasso:9:138.675617437427"
+[1] "lasso:10:146.093278634179 : 8"
+[1] "lasso:8:143.174622907343"
+[1] "lasso:10:146.093278634179 : 7"
+[1] "lasso:7:135.923628377258"
+[1] "lasso:10:146.093278634179 : 6"
+[1] "lasso:6:119.089300513841"
+[1] "lasso:10:146.093278634179 : 5"
+[1] "lasso:5:54.338305983756"
+[1] "lasso:10:146.093278634179 : 4"
+[1] "lasso:4:65.3373114536715"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "backward"
+[1] "rfe:10:156.843278634179"
+[1] "rfe:10:156.843278634179 : 9"
+[1] "rfe:9:155.175617437427"
+[1] "rfe:10:156.843278634179 : 8"
+[1] "rfe:8:153.674622907343"
+[1] "rfe:10:156.843278634179 : 7"
+[1] "rfe:7:150.590295043925"
+[1] "rfe:10:156.843278634179 : 6"
+[1] "rfe:6:145.839300513841"
+[1] "rfe:10:156.843278634179 : 5"
+[1] "rfe:5:148.504972650423"
+[1] "rfe:10:156.843278634179 : 4"
+[1] "rfe:4:146.420644787005"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "backward"
+[1] "elasticnet:10:142.593278634179"
+[1] "elasticnet:10:142.593278634179 : 9"
+[1] "elasticnet:9:145.092284104094"
+[1] "elasticnet:9:145.092284104094 : 8"
+[1] "elasticnet:8:113.59128957401"
+[1] "elasticnet:9:145.092284104094 : 7"
+[1] "elasticnet:7:67.5069617105917"
+[1] "elasticnet:9:145.092284104094 : 6"
+[1] "elasticnet:6:57.5059671805072"
+[1] "elasticnet:9:145.092284104094 : 5"
+[1] "elasticnet:5:54.338305983756"
+[1] "elasticnet:9:145.092284104094 : 4"
+[1] "elasticnet:4:65.3373114536715"
+[1] "elasticnet:9:145.092284104094 : 3"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "backward"
+[1] "f.test:10:147.843278634179"
+[1] "f.test:10:147.843278634179 : 9"
+[1] "f.test:9:149.092284104094"
+[1] "f.test:9:149.092284104094 : 8"
+[1] "f.test:8:150.34128957401"
+[1] "f.test:8:150.34128957401 : 7"
+[1] "f.test:7:151.840295043925"
+[1] "f.test:7:151.840295043925 : 6"
+[1] "f.test:6:146.422633847174"
+[1] "f.test:7:151.840295043925 : 5"
+[1] "f.test:5:139.754972650423"
+[1] "f.test:7:151.840295043925 : 4"
+[1] "f.test:4:137.253978120338"
+[1] "f.test:7:151.840295043925 : 3"
+[1] "dim of scoring matrix is "
+[1] 6033    5
+[1] 6033
+[1] "DS index stage 1"
+[1] 0.4477829
+[1] "bestgenelist"
+ [1]    1    2    3    4    5    6    7 1640 1839 2425 2456 2619 3006 3423 3693
+[16] 4155 4288 4353 4701 5016 5982
+           var1       var2       var3       var4       var5        var6
+[1,] -0.9271777 -0.7400391 -0.5320164 -1.0978915 -0.9866733  0.01875159
+[2,] -0.8358990 -0.8358990 -0.5856470 -0.8358990 -0.3297677 -0.83589902
+[3,]  0.2360733  0.2526450 -1.1543512 -0.3723715 -0.3388998  1.25346654
+           var7    var1640     var1839     var2425    var2456   var2619
+[1,] -0.8633258 -0.4324850 -0.06663936 -0.09095791 -0.3330800 0.6272297
+[2,] -0.8358990 -0.4491525 -0.12821383 -0.17475155  0.1796585 1.2275524
+[3,]  0.5063251  0.4164084 -1.15435124 -0.33889981  0.1843351 0.8523566
+        var3006    var3423     var3693    var4155    var4288    var4353
+[1,]  2.0003159  0.3605717  0.05578908  0.3605717 -0.2144939  1.3886201
+[2,]  1.4425846  1.5958489  2.24197505  0.6992379  1.6323987  0.9347014
+[3,] -0.3388998 -1.1543512 -1.15435124 -1.1543512 -0.1616965 -1.1543512
+       var4701   var5016   var5982
+[1,] 1.2878145 0.5010076 2.7535657
+[2,] 2.8076595 1.6606626 3.4572324
+[3,] 0.5765086 0.3005128 0.8763982
+           var1       var2       var3       var4       var5       var6
+[1,] -0.9193153 -0.9193153 -0.1910834 -0.9193153 -0.6617976 -0.9193153
+[2,] -0.9011489 -0.9011489 -0.3240630 -0.9011489 -0.5030653 -0.9011489
+[3,] -0.8734031 -0.8734031 -0.4159597 -0.8734031 -0.8734031 -0.8734031
+           var7    var1640    var1839    var2425     var2456    var2619
+[1,] -0.9193153  0.6405628 -0.6617976 -0.9193153  0.80607065 -0.1454227
+[2,] -0.9011489 -0.9011489  2.3738926  0.1097262 -0.72214654  1.4795100
+[3,] -0.8734031 -0.8734031  1.4243602  0.5904799  0.01840101 -0.6180501
+      var3006  var3423    var3693   var4155    var4288    var4353    var4701
+[1,] 1.535913 2.962707  1.4606953 0.5349203  1.8499458 -0.5213401  2.5952770
+[2,] 2.558122 1.764125 -0.5030653 2.4922452 -0.2206206  1.7444223 -0.9011489
+[3,] 2.544301 1.174501  2.1525723 1.0613480  0.5462324  1.5121022  2.3050832
+        var5016  var5982
+[1,]  1.1926986 3.553535
+[2,] -0.9011489 2.363354
+[3,]  1.1862983 3.813342
+[1] "numgenes selected:21"
+[1] "test acc:0.707317073170732"
+[1] "test AUC acc:0.771212121212121"
+[1] "10 fold train96.7213114754098"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 30  0
+         2  0 31
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 19  1
+        2 11 10
+[1] "train acc:1"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 30  0
+         2  0 31
+[1] "DS index stage 1"
+[1] 0.4477829
+[1] "KI index stage 1"
+[1] 0.3889872
+There were 50 or more warnings (use warnings() to see the first 50)
+> 
+> cma_feat_list<-colnames(trainm)
+> 
+> save(CMAres,file="CMAres.Rda")
+> write.table(cma_feat_list,file="selected_cma_feat_list.txt",sep="t",row.names=FALSE)
+> 
+> # modtraindata=modtrain, modtestdata=modtest, blindtest=testacc, modtrainclass=nci_y, modtestclass=test_y
+> #if(FALSE)
+> {
++ trainm<-CMAres$modtraindata
++ testm<-CMAres$modtestdata
++ trainclass<-CMAres$modtrainclass
++ testclass<-CMAres$modtestclass
++ learningsets<-CMAres$learningsets
++ }
+> 
+> if(FALSE)
++ {
++ trainclass<-trainm[,1] #CMAres$modtrainclass
++ testclass<-testm[,1] #CMAres$modtestclass
++ trainm<-trainm[,-c(1)] #CMAres$modtrainmata
++ testm<-testm[,-c(1)] #CMAres$modtestmata
++ 
++ }
+> 
+> d_dim<-dim(trainm)
+> 
+> print("Original dimension")
+[1] "Original dimension"
+> print(d_dim)
+[1] 61 21
+> 
+> #2 call run_pso function()
+> system.time(psores<-run_pso(outloc=outloc,trainm,trainclass,testm,testclass,transition_matrix,c1=2.05,
++ c2=2.05,
++ itr=10,
++ globalpso_maxitr=10,
++ global_max_itr=30,
++ num_part=20,
++ kname="radial",
++ errortype="BER",
++ accuracyweightA=100,
++ accuracyweightB=1,
++ featweight.max=0.01,
++ featweight.min=0.01,
++ numfolds=10,
++ followerprob=0.45,
++ confusionprob=0.25,
++ leaderprob=0.25,
++ wmax=1,
++ wmin=1,
++ behavior_reset_itr=5,
++ maxitrreset=3,
++ num_neighbors=3,
++ minselect.pct=0.7,
++ evalMode="CV2",
++ minfitnessthresh=50,
++ maxnum=3,minnum=3,inertia_method="global",particlebehav_method="randbased",constriction_factor=1,
++ select.global.best=TRUE,numnodes=30,evalFunc=eval_fit_kfold_diff,itr.terminate=FALSE))
+[1] "c1: 2.05"
+[1] "c2: 2.05"
+[1] "itr: 10"
+[1] "globalpso_maxitr: 10"
+[1] "global_max_itr: 30"
+[1] "num_part: 20"
+[1] "kname: radial"
+[1] "errortype: BER"
+[1] "accuracyweightA: 100"
+[1] "accuracyweightB: 1"
+[1] "featweight.max: 0.01"
+[1] "featweight.min: 0.01"
+[1] "numfolds: 10"
+[1] "followerprob: 0.45"
+[1] "confusionprob: 0.25"
+[1] "leaderprob: 0.25"
+[1] "wmax: 1"
+[1] "wmin: 1"
+[1] "behavior_reset_itr: 5"
+[1] "maxitrreset: 3"
+[1] "num_neighbors: 3"
+[1] "minselect.pct: 0.7"
+[1] "minfitnessthresh: 50"
+[1] "maxnum: 3"
+[1] "minnum: 3"
+[1] "inertia_method: global"
+[1] "particlebehav_method: randbased"
+[1] "constriction_factor: 1"
+[1] "select.global.best: TRUE"
+[1] "train 10 fold"
+[1] 96.72131
+[1] "here"
+[1] "s"
+[1] 48.8
+[1] 61 21
+[1] 10
+[1] "here"
+[1] "learning sets: 1"
+ [1] 59 57 15 61 23 20 25 16 24 42 31 19 38  3 28 10 29 18 13 27 52 40 37 50 22
+[26] 47 35 58  5 56  7 39 32 36 44 12 41  1 54 26 55  6  9 60 34 45 48 43
+[1] "Starting global iteration number : 1"
+[1] "iteration number: "
+[1] 1
+There were 22 warnings (use warnings() to see them)
+Error in which(x[bestind[1], ] == 1) : 
+  error in evaluating the argument 'x' in selecting a method for function 'which': Error in x[bestind[1], ] : subscript out of bounds
+Calls: system.time -> run_pso -> b3pso -> which
+Timing stopped at: 0.161 0.547 20.574 
+Execution halted

@@ -1,0 +1,4796 @@
+
+R version 3.2.2 (2015-08-14) -- "Fire Safety"
+Copyright (C) 2015 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> #.libPaths("/home/kuppal3/karan_libs/Rlibs")
+> library(snow)
+Warning message:
+package ‘snow’ was built under R version 3.2.5 
+> library(e1071)
+Warning message:
+package ‘e1071’ was built under R version 3.2.5 
+> library(yaImpute)
+
+Attaching package: ‘yaImpute’
+
+The following object is masked from ‘package:e1071’:
+
+    impute
+
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+Warning message:
+package ‘pROC’ was built under R version 3.2.5 
+> library(bioDist)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘parallel’
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, clusterSplit, makeCluster, parApply,
+    parCapply, parLapply, parRapply, parSapply, splitIndices,
+    stopCluster
+
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parRapply, parSapply
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, as.vector, cbind, colnames,
+    do.call, duplicated, eval, evalq, Filter, Find, get, grep, grepl,
+    intersect, is.unsorted, lapply, lengths, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unlist, unsplit
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: KernSmooth
+KernSmooth 2.23 loaded
+Copyright M. P. Wand 1997-2009
+> #library(CMA, lib="/home/kuppal3/karan_libs/Rlibs/")
+> library(RankAggreg)
+Warning message:
+package ‘RankAggreg’ was built under R version 3.2.5 
+> library(CMA)
+
+Attaching package: ‘CMA’
+
+The following object is masked from ‘package:pROC’:
+
+    roc
+
+The following object is masked from ‘package:e1071’:
+
+    tune
+
+Warning message:
+package ‘CMA’ was built under R version 3.2.4 
+> library(expm)
+Loading required package: Matrix
+
+Attaching package: ‘expm’
+
+The following object is masked from ‘package:Matrix’:
+
+    expm
+
+Warning messages:
+1: package ‘expm’ was built under R version 3.2.5 
+2: package ‘Matrix’ was built under R version 3.2.5 
+> 
+> cl<-makeCluster(1)
+> 
+> 
+> args<-commandArgs(trailingOnly=TRUE)
+> 
+> dirloc<-"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/"
+> #sname<-paste("/home/stu/kuppal3/Research/Feature_selection/Rcode/versionnov2014/OCFS_",args[9],".R",sep="")
+> 
+> sname<-paste(dirloc,"version2017/OCFS_",args[9],".R",sep="")
+> source(sname)
+> 
+> outloc<-paste(dirloc,"/Datasets/Prostate/OCFSvmay2415_Prostate",args[9],"/",sep="")
+> 
+> 
+> sname<-paste(dirloc,"Datasets/Prostate/Prostate.Rda",sep="")
+> load(sname)
+> 
+> trainm<-Prostate$X
+> testm<-Prostate$Xt
+> trainclass<-Prostate$Y
+> testclass<-Prostate$Yt
+> 
+> 
+> 
+> 
+> 
+> trainm<-cbind(trainclass,trainm)
+> testm<-cbind(testclass,testm)
+> 
+> trainm<-na.omit(trainm)
+> testm<-na.omit(testm)
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO//Datasets/Prostate/OCFSvmay2415_Prostatevjune102018_v1' already exists
+> setwd(outloc)
+> 
+> trainm<-as.matrix(trainm)
+> testm<-as.matrix(testm)
+> trainclass<-trainm[,1] #CMAres$modtrainclass
+> testclass<-testm[,1] #CMAres$modtestclass
+> trainm<-trainm[,-c(1)] #CMAres$modtrainmata
+> testm<-testm[,-c(1)] #CMAres$modtestmata
+> 
+> #a: Confusions
+> #b: Neighbors
+> #c: Global
+> #d: Death
+> 
+> a<-c(0.25,0.25,0.25,0.25)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0.25,0.25,0.5,0)
+> d<-c(0.9,0.1,0,0.1)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0,0.5,0.5,0)
+> d<-c(0.9,0.1,0,0)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.2,0.3,0.4,0.1)
+> c<-c(0,0.4,0.4,0.2)
+> d<-c(0.9,0.1,0,0)
+> 
+> transition_matrix<-rbind(a,b,c,d)
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO//Datasets/Prostate/OCFSvmay2415_Prostatevjune102018_v1' already exists
+> setwd(outloc)
+> temp2=t(trainm)
+> temp2=apply(temp2, 2, function(x){which(x=="MD")})
+> temp2=unlist(temp2)
+> temp2=unique(temp2)
+> if(length(temp2)>1)
++ {
++ 	trainm=trainm[,-c(temp2)]
++ 
++ 	rm(temp2)
++ }
+> 
+> boostweight=rep(0,dim(trainm)[2])
+> 
+> #if(FALSE)
+> {
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("limma"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("lasso"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("rfe"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("elasticnet"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ if(FALSE){
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("rf"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ }
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("f.test"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ }
+[1] "dim of trainm is "
+[1]   61 6033
+[1]   61 6033
+[1] "length of factcols"
+[1] 0
+[1]   61 6033
+[1]   41 6033
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   61 6033
+GeneSelection: iteration 1 
+
+Attaching package: ‘limma’
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    plotMA
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+[1] "dim of scoring matrix is "
+[1] 6033    1
+[1] 6033
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]  478  610  694  735  914 2941 3002 3200 3600 3647
+                                                                     
+[1,]  0.3523077 -0.9436425  3.418485  3.6118660 -0.6832863 -0.2274168
+[2,] -0.8300460  1.1785517 -0.874537 -0.8149619  1.7123557  0.4726325
+[3,] -0.2684535 -1.3201326 -0.495250 -0.8291011  1.0313727 -1.1636745
+                                                 
+[1,]  0.48996778 -0.2664731  2.9995593 -0.6064776
+[2,] -0.89862866  1.3091427 -1.1621560  2.1909283
+[3,] -0.08058525  0.7004428  0.4958446  1.4493698
+                                                                      
+[1,]  2.8785633  0.4530718 -0.9573321 -0.8645951 -0.7478173  0.9749025
+[2,] -0.8229654  0.4364162 -0.4752287 -0.5544799  1.0224178 -1.1416733
+[3,] -0.4537037 -1.3101486 -0.8832488 -0.8250375 -1.1491934  0.1145004
+                                               
+[1,]  1.5184903 -1.1090958 -0.9600797 0.4494994
+[2,] -0.4619267  1.1962921 -1.1504606 0.2482434
+[3,] -0.9067891 -0.8592837  0.7498193 0.6337699
+[1] "numgenes selected:10"
+[1] "test acc:0.609756097560976"
+[1] "test AUC acc:0.64625"
+[1] "10 fold train88.5245901639344"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 35  2
+         2  1 23
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 13 13
+        2  3 12
+[1] "train acc:0.950819672131147"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 35  2
+         2  1 23
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   61 6033
+[1]   61 6033
+[1] "length of factcols"
+[1] 0
+[1]   61 6033
+[1]   41 6033
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   61 6033
+GeneSelection: iteration 1 
+Loaded glmnet 2.0-10
+
+
+Attaching package: ‘glmnet’
+
+The following object is masked from ‘package:pROC’:
+
+    auc
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+genelist
+3600 3647 1003 4073 2941 3208  610  914 1113  721  966 4316 4331 4396 5159  478 
+   8    8    6    6    5    5    4    4    4    3    3    3    3    3    3    2 
+ 735 1068 1491 1720 3002 5158   78   98  341  694  702  958 1050 1077 1149 1444 
+   2    2    2    2    2    2    1    1    1    1    1    1    1    1    1    1 
+1596 1979 2283 2394 2945 4523 4538 4546 
+   1    1    1    1    1    1    1    1 
+[1] "varselmethod"
+[1] "none"
+[1] "dim of scoring matrix is "
+[1] 6033    1
+[1] 6033
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]  610  721  914 1003 1113 2941 3208 3600 3647 4073
+                                                                     
+[1,] -0.9436425 -0.8544772 -0.6832863 -1.173464 -0.4662905 -0.2274168
+[2,]  1.1785517 -0.7576007  1.7123557 -1.048016  0.1226591  0.4726325
+[3,] -1.3201326 -0.8662605  1.0313727 -1.059599  0.6249444 -1.1636745
+                                               
+[1,] -1.1692468  2.9995593 -0.6064776 0.9889137
+[2,]  1.7327420 -1.1621560  2.1909283 0.7141918
+[3,]  0.7810463  0.4958446  1.4493698 1.3150764
+                                                                       
+[1,]  0.4530718 -0.8405985 -0.7478173 -0.1275642 -0.02550902  0.9749025
+[2,]  0.4364162 -0.8313892  1.0224178 -1.0379066 -0.76002898 -1.1416733
+[3,] -1.3101486 -0.8617489 -1.1491934 -0.3221940 -0.99042853  0.1145004
+                                               
+[1,] -1.1558641 -0.9600797 0.4494994  0.4460645
+[2,] -0.9296488 -1.1504606 0.2482434 -0.3771886
+[3,]  2.1318217  0.7498193 0.6337699 -0.4538769
+[1] "numgenes selected:10"
+[1] "test acc:0.585365853658537"
+[1] "test AUC acc:0.6375"
+[1] "10 fold train96.7213114754098"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 36  0
+         2  0 25
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 14 15
+        2  2 10
+[1] "train acc:1"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 36  0
+         2  0 25
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   61 6033
+[1]   61 6033
+[1] "length of factcols"
+[1] 0
+[1]   61 6033
+[1]   41 6033
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   61 6033
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+[1] "dim of scoring matrix is "
+[1] 6033    1
+[1] 6033
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]  478  694  721  735  914 3260 3269 3414 3600 3647
+                                                                     
+[1,]  0.3523077  3.418485 -0.8544772  3.6118660 -0.6832863 -0.8516873
+[2,] -0.8300460 -0.874537 -0.7576007 -0.8149619  1.7123557 -1.1609344
+[3,] -0.2684535 -0.495250 -0.8662605 -0.8291011  1.0313727  0.3287958
+                                               
+[1,]  1.5840453 1.3389177  2.9995593 -0.6064776
+[2,] -0.4444882 0.9190061 -1.1621560  2.1909283
+[3,] -1.1572130 0.2921515  0.4958446  1.4493698
+                                                                       
+[1,]  2.8785633 -0.9573321 -0.8405985 -0.8645951 -0.7478173  0.21872976
+[2,] -0.8229654 -0.4752287 -0.8313892 -0.5544799  1.0224178  0.08911209
+[3,] -0.4537037 -0.8832488 -0.8617489 -0.8250375 -1.1491934 -0.87658780
+                                               
+[1,] -0.9270340 -0.9275835 -0.9600797 0.4494994
+[2,] -0.9177115  0.9359531 -1.1504606 0.2482434
+[3,]  0.2246608 -0.3545986  0.7498193 0.6337699
+[1] "numgenes selected:10"
+[1] "test acc:0.634146341463415"
+[1] "test AUC acc:0.655"
+[1] "10 fold train88.5245901639344"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 35  0
+         2  1 25
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 12 11
+        2  4 14
+[1] "train acc:0.983606557377049"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 35  0
+         2  1 25
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   61 6033
+[1]   61 6033
+[1] "length of factcols"
+[1] 0
+[1]   61 6033
+[1]   41 6033
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   61 6033
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+[1] "dim of scoring matrix is "
+[1] 6033    1
+[1] 6033
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]  478  610  721  914 1003 2941 3208 3600 3647 4073
+                                                                     
+[1,]  0.3523077 -0.9436425 -0.8544772 -0.6832863 -1.173464 -0.2274168
+[2,] -0.8300460  1.1785517 -0.7576007  1.7123557 -1.048016  0.4726325
+[3,] -0.2684535 -1.3201326 -0.8662605  1.0313727 -1.059599 -1.1636745
+                                               
+[1,] -1.1692468  2.9995593 -0.6064776 0.9889137
+[2,]  1.7327420 -1.1621560  2.1909283 0.7141918
+[3,]  0.7810463  0.4958446  1.4493698 1.3150764
+                                                                      
+[1,]  2.8785633  0.4530718 -0.8405985 -0.7478173 -0.1275642  0.9749025
+[2,] -0.8229654  0.4364162 -0.8313892  1.0224178 -1.0379066 -1.1416733
+[3,] -0.4537037 -1.3101486 -0.8617489 -1.1491934 -0.3221940  0.1145004
+                                               
+[1,] -1.1558641 -0.9600797 0.4494994  0.4460645
+[2,] -0.9296488 -1.1504606 0.2482434 -0.3771886
+[3,]  2.1318217  0.7498193 0.6337699 -0.4538769
+[1] "numgenes selected:10"
+[1] "test acc:0.731707317073171"
+[1] "test AUC acc:0.7575"
+[1] "10 fold train91.8032786885246"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 36  0
+         2  0 25
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 14  9
+        2  2 16
+[1] "train acc:1"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 36  0
+         2  0 25
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   61 6033
+[1]   61 6033
+[1] "length of factcols"
+[1] 0
+[1]   61 6033
+[1]   41 6033
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   61 6033
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+[1] "dim of scoring matrix is "
+[1] 6033    1
+[1] 6033
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]  478  610  694  735  914 2941 3002 3208 3600 3647
+                                                                     
+[1,]  0.3523077 -0.9436425  3.418485  3.6118660 -0.6832863 -0.2274168
+[2,] -0.8300460  1.1785517 -0.874537 -0.8149619  1.7123557  0.4726325
+[3,] -0.2684535 -1.3201326 -0.495250 -0.8291011  1.0313727 -1.1636745
+                                                 
+[1,]  0.48996778 -1.1692468  2.9995593 -0.6064776
+[2,] -0.89862866  1.7327420 -1.1621560  2.1909283
+[3,] -0.08058525  0.7810463  0.4958446  1.4493698
+                                                                      
+[1,]  2.8785633  0.4530718 -0.9573321 -0.8645951 -0.7478173  0.9749025
+[2,] -0.8229654  0.4364162 -0.4752287 -0.5544799  1.0224178 -1.1416733
+[3,] -0.4537037 -1.3101486 -0.8832488 -0.8250375 -1.1491934  0.1145004
+                                               
+[1,]  1.5184903 -1.1558641 -0.9600797 0.4494994
+[2,] -0.4619267 -0.9296488 -1.1504606 0.2482434
+[3,] -0.9067891  2.1318217  0.7498193 0.6337699
+[1] "numgenes selected:10"
+[1] "test acc:0.609756097560976"
+[1] "test AUC acc:0.6575"
+[1] "10 fold train90.1639344262295"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 35  2
+         2  1 23
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 14 14
+        2  2 11
+[1] "train acc:0.950819672131147"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 35  2
+         2  1 23
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+There were 33 warnings (use warnings() to see them)
+> #1
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("limma","lasso","rfe","elasticnet", "f.test"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   61 6033
+[1]   61 6033
+[1] "length of factcols"
+[1] 0
+[1]   61 6033
+[1]   41 6033
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "maxnum is "
+[1] 10
+[1] "# of genes left after filtering:"
+[1]   61 6033
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+genelist
+3600 3647 1003 4073 2941 3208  610  914 1113  721  966 4316 4331 4396 5159  478 
+   8    8    6    6    5    5    4    4    4    3    3    3    3    3    3    2 
+ 735 1068 1491 1720 3002 5158   78   98  341  694  702  958 1050 1077 1149 1444 
+   2    2    2    2    2    2    1    1    1    1    1    1    1    1    1    1 
+1596 1979 2283 2394 2945 4523 4538 4546 
+   1    1    1    1    1    1    1    1 
+[1] "varselmethod"
+[1] "none"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] "varselmethod"
+[1] "none"
+[1] "dim of scoring matrix is "
+[1] 6033    5
+[1] 6033
+[1] "DS index stage 1"
+[1] 0.63
+[1] "bestgenelist"
+ [1]  478  610  694  721  735  914 1003 1113 2941 3002 3200 3208 3260 3269 3414
+[16] 3600 3647 4073
+                                                                               
+[1,]  0.3523077 -0.9436425  3.418485 -0.8544772  3.6118660 -0.6832863 -1.173464
+[2,] -0.8300460  1.1785517 -0.874537 -0.7576007 -0.8149619  1.7123557 -1.048016
+[3,] -0.2684535 -1.3201326 -0.495250 -0.8662605 -0.8291011  1.0313727 -1.059599
+                                                                       
+[1,] -0.4662905 -0.2274168  0.48996778 -0.2664731 -1.1692468 -0.8516873
+[2,]  0.1226591  0.4726325 -0.89862866  1.3091427  1.7327420 -1.1609344
+[3,]  0.6249444 -1.1636745 -0.08058525  0.7004428  0.7810463  0.3287958
+                                                         
+[1,]  1.5840453 1.3389177  2.9995593 -0.6064776 0.9889137
+[2,] -0.4444882 0.9190061 -1.1621560  2.1909283 0.7141918
+[3,] -1.1572130 0.2921515  0.4958446  1.4493698 1.3150764
+                                                                      
+[1,]  2.8785633  0.4530718 -0.9573321 -0.8405985 -0.8645951 -0.7478173
+[2,] -0.8229654  0.4364162 -0.4752287 -0.8313892 -0.5544799  1.0224178
+[3,] -0.4537037 -1.3101486 -0.8832488 -0.8617489 -0.8250375 -1.1491934
+                                                                       
+[1,] -0.1275642 -0.02550902  0.9749025  1.5184903 -1.1090958 -1.1558641
+[2,] -1.0379066 -0.76002898 -1.1416733 -0.4619267  1.1962921 -0.9296488
+[3,] -0.3221940 -0.99042853  0.1145004 -0.9067891 -0.8592837  2.1318217
+                                                                      
+[1,]  0.21872976 -0.9270340 -0.9275835 -0.9600797 0.4494994  0.4460645
+[2,]  0.08911209 -0.9177115  0.9359531 -1.1504606 0.2482434 -0.3771886
+[3,] -0.87658780  0.2246608 -0.3545986  0.7498193 0.6337699 -0.4538769
+[1] "numgenes selected:18"
+[1] "test acc:0.682926829268293"
+[1] "test AUC acc:0.7175"
+[1] "10 fold train98.3606557377049"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2
+         1 36  0
+         2  0 25
+[1] "confusion matrix test"
+         test_y
+pred_test  1  2
+        1 14 11
+        2  2 14
+[1] "train acc:1"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2
+         1 36  0
+         2  0 25
+[1] "DS index stage 1"
+[1] 0.63
+[1] "KI index stage 1"
+[1] 0.6293857
+[[1]]
+ [1] "var478"  "var610"  "var694"  "var735"  "var914"  "var2941" "var3002"
+ [8] "var3200" "var3600" "var3647"
+
+[[2]]
+ [1] "var610"  "var721"  "var914"  "var1003" "var1113" "var2941" "var3208"
+ [8] "var3600" "var3647" "var4073"
+
+[[3]]
+ [1] "var478"  "var694"  "var721"  "var735"  "var914"  "var3260" "var3269"
+ [8] "var3414" "var3600" "var3647"
+
+[[4]]
+ [1] "var478"  "var610"  "var721"  "var914"  "var1003" "var2941" "var3208"
+ [8] "var3600" "var3647" "var4073"
+
+[[5]]
+ [1] "var478"  "var610"  "var694"  "var735"  "var914"  "var2941" "var3002"
+ [8] "var3208" "var3600" "var3647"
+
+
+ Iteration 1 :  Optimal value:  37.2 
+ Optimal List:   var694,var478,var610,var735,var721,var914,var2941,var4073,var1113,var3647 
+
+ Iteration 2 :  Optimal value:  38.4 
+ Optimal List:   var610,var478,var3002,var694,var914,var2941,var721,var3600,var3260,var3200 
+
+ Iteration 3 :  Optimal value:  40.4 
+ Optimal List:   var610,var478,var914,var3208,var721,var694,var3200,var3600,var2941,var3260 
+
+ Iteration 4 :  Optimal value:  33.6 
+ Optimal List:   var610,var694,var735,var478,var914,var2941,var3002,var721,var3600,var3208 
+
+ Iteration 5 :  Optimal value:  36.4 
+ Optimal List:   var478,var721,var610,var694,var2941,var914,var1003,var735,var1113,var3002 
+
+ Iteration 6 :  Optimal value:  33.6 
+ Optimal List:   var478,var610,var914,var694,var735,var2941,var721,var3647,var3269,var4073 
+
+ Iteration 7 :  Optimal value:  33.2 
+ Optimal List:   var478,var610,var1003,var721,var914,var2941,var3002,var735,var3600,var3647 
+
+ Iteration 8 :  Optimal value:  32.4 
+ Optimal List:   var478,var610,var721,var694,var914,var735,var2941,var4073,var3647,var3208 
+
+ Iteration 9 :  Optimal value:  32 
+ Optimal List:   var478,var610,var694,var914,var2941,var735,var3600,var3208,var3260,var3647 
+
+ Iteration 10 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var721,var914,var694,var2941,var735,var3600,var3647,var3208 
+
+ Iteration 11 :  Optimal value:  28.8 
+ Optimal List:   var478,var610,var694,var721,var914,var2941,var3208,var3600,var3002,var3647 
+
+ Iteration 12 :  Optimal value:  30.4 
+ Optimal List:   var478,var610,var721,var914,var735,var2941,var3002,var3600,var3647,var1003 
+
+ Iteration 13 :  Optimal value:  29.6 
+ Optimal List:   var478,var610,var721,var914,var735,var2941,var3208,var3600,var3647,var3260 
+
+ Iteration 14 :  Optimal value:  30.4 
+ Optimal List:   var478,var610,var721,var694,var914,var2941,var3208,var3600,var1003,var3200 
+
+ Iteration 15 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var721,var735,var914,var2941,var3208,var3600,var3647,var3260 
+
+ Iteration 16 :  Optimal value:  28.8 
+ Optimal List:   var478,var610,var721,var694,var914,var2941,var3208,var3600,var3647,var1003 
+
+ Iteration 17 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var721,var914,var735,var2941,var3208,var3600,var3647,var1003 
+
+ Iteration 18 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var1003 
+
+ Iteration 19 :  Optimal value:  28.8 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var3208,var3600,var3647,var3002 
+
+ Iteration 20 :  Optimal value:  28.8 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var3208,var3600,var3647,var3002 
+
+ Iteration 21 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var914,var735,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 22 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var721,var694,var914,var2941,var735,var3600,var3647,var3002 
+
+ Iteration 23 :  Optimal value:  28.8 
+ Optimal List:   var478,var610,var721,var914,var735,var2941,var694,var3600,var3647,var3002 
+
+ Iteration 24 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var3208,var3600,var721,var3647 
+
+ Iteration 25 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var721,var914,var735,var2941,var3208,var3600,var694,var3647 
+
+ Iteration 26 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3002 
+
+ Iteration 27 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var721,var735,var914,var2941,var3208,var3600,var3647,var694 
+
+ Iteration 28 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var721,var735,var914,var2941,var694,var3600,var3647,var4073 
+
+ Iteration 29 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3002 
+
+ Iteration 30 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3002 
+
+ Iteration 31 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var721,var735,var914,var2941,var3208,var3600,var3647,var694 
+[1] "test acc rank aggreg CE:0.682926829268293"
+[1] "test AUC acc rank aggreg CE:0.7175"
+[1] "10 fold train rank aggreg res CE83.6065573770492"
+[1] "confusion matrix train 10 fold rank aggreg CE"
+            nci_y
+pred10foldRA  1  2
+           1 36  0
+           2  0 25
+[1] "Num itr RA CE"
+[1] 31
+[1] "Test BER aggreg CE is"
+[1] 0.7175
+
+ Iteration 1 :  Optimal value:  50 
+ Optimal List:   var610,var914,var694,var3414,var478,var3647,var1003,var3208,var3260,var721 
+
+ Iteration 2 :  Optimal value:  44.8 
+ Optimal List:   var610,var478,var3002,var1003,var914,var735,var1113,var3600,var721,var4073 
+
+ Iteration 3 :  Optimal value:  46.8 
+ Optimal List:   var478,var610,var914,var721,var3260,var3200,var4073,var735,var3647,var3002 
+
+ Iteration 4 :  Optimal value:  46.8 
+ Optimal List:   var478,var610,var914,var721,var3260,var3200,var4073,var735,var3647,var3002 
+
+ Iteration 5 :  Optimal value:  44.8 
+ Optimal List:   var478,var914,var694,var3414,var610,var3208,var2941,var3647,var3260,var721 
+
+ Iteration 6 :  Optimal value:  44.8 
+ Optimal List:   var610,var478,var3002,var1003,var914,var735,var3260,var3600,var721,var4073 
+
+ Iteration 7 :  Optimal value:  43.6 
+ Optimal List:   var478,var914,var694,var735,var610,var3208,var4073,var1003,var3260,var721 
+
+ Iteration 8 :  Optimal value:  44 
+ Optimal List:   var610,var914,var694,var735,var478,var3269,var1003,var3647,var3002,var721 
+
+ Iteration 9 :  Optimal value:  43.2 
+ Optimal List:   var610,var914,var694,var735,var478,var3269,var2941,var1113,var3002,var3200 
+
+ Iteration 10 :  Optimal value:  44.8 
+ Optimal List:   var478,var914,var694,var3414,var610,var3208,var2941,var3647,var3260,var721 
+
+ Iteration 11 :  Optimal value:  44.8 
+ Optimal List:   var478,var914,var694,var3414,var610,var3208,var2941,var3647,var3260,var721 
+
+ Iteration 12 :  Optimal value:  44.8 
+ Optimal List:   var478,var914,var694,var3414,var610,var3208,var2941,var3647,var1113,var721 
+
+ Iteration 13 :  Optimal value:  44 
+ Optimal List:   var478,var735,var694,var3414,var610,var914,var2941,var3647,var3260,var721 
+
+ Iteration 14 :  Optimal value:  43.2 
+ Optimal List:   var610,var478,var2941,var914,var3200,var735,var1003,var3600,var1113,var3002 
+
+ Iteration 15 :  Optimal value:  41.6 
+ Optimal List:   var721,var914,var694,var610,var478,var3208,var2941,var3647,var3260,var3414 
+
+ Iteration 16 :  Optimal value:  41.6 
+ Optimal List:   var721,var914,var694,var610,var478,var3208,var2941,var3647,var3260,var3414 
+
+ Iteration 17 :  Optimal value:  39.6 
+ Optimal List:   var610,var914,var694,var721,var478,var3208,var2941,var3647,var3260,var3414 
+
+ Iteration 18 :  Optimal value:  39.6 
+ Optimal List:   var610,var914,var694,var721,var478,var3208,var2941,var3647,var3260,var3414 
+
+ Iteration 19 :  Optimal value:  38 
+ Optimal List:   var610,var914,var694,var721,var478,var735,var2941,var3647,var3260,var3414 
+
+ Iteration 20 :  Optimal value:  38 
+ Optimal List:   var610,var914,var694,var721,var478,var735,var2941,var3647,var3260,var3414 
+
+ Iteration 21 :  Optimal value:  38 
+ Optimal List:   var610,var914,var694,var721,var478,var735,var2941,var3647,var3260,var3414 
+
+ Iteration 22 :  Optimal value:  38 
+ Optimal List:   var610,var914,var694,var721,var478,var735,var2941,var3647,var1113,var3414 
+
+ Iteration 23 :  Optimal value:  37.6 
+ Optimal List:   var610,var721,var694,var478,var914,var3208,var2941,var3647,var3260,var3414 
+
+ Iteration 24 :  Optimal value:  36.8 
+ Optimal List:   var478,var914,var694,var721,var610,var735,var2941,var3647,var1113,var3414 
+
+ Iteration 25 :  Optimal value:  34.8 
+ Optimal List:   var478,var914,var694,var610,var721,var2941,var3208,var3647,var735,var3414 
+
+ Iteration 26 :  Optimal value:  34.8 
+ Optimal List:   var478,var914,var694,var610,var721,var2941,var3208,var3647,var735,var3414 
+
+ Iteration 27 :  Optimal value:  36.4 
+ Optimal List:   var478,var914,var694,var721,var610,var735,var2941,var3647,var1113,var1003 
+
+ Iteration 28 :  Optimal value:  35.2 
+ Optimal List:   var478,var914,var694,var721,var610,var735,var2941,var3647,var1113,var3600 
+
+ Iteration 29 :  Optimal value:  34 
+ Optimal List:   var478,var721,var694,var914,var610,var735,var2941,var3647,var1113,var3600 
+
+ Iteration 30 :  Optimal value:  34 
+ Optimal List:   var478,var721,var694,var914,var610,var735,var2941,var3647,var1113,var3600 
+
+ Iteration 31 :  Optimal value:  34 
+ Optimal List:   var478,var721,var694,var914,var610,var735,var2941,var3647,var1113,var3600 
+
+ Iteration 32 :  Optimal value:  34.8 
+ Optimal List:   var478,var721,var694,var610,var914,var735,var2941,var3647,var1113,var3414 
+
+ Iteration 33 :  Optimal value:  34.8 
+ Optimal List:   var478,var721,var694,var610,var914,var735,var2941,var3647,var1113,var3414 
+
+ Iteration 34 :  Optimal value:  32.8 
+ Optimal List:   var478,var721,var694,var610,var914,var735,var2941,var3600,var1113,var3414 
+
+ Iteration 35 :  Optimal value:  32.8 
+ Optimal List:   var478,var721,var694,var610,var914,var735,var2941,var3600,var3260,var3414 
+
+ Iteration 36 :  Optimal value:  35.6 
+ Optimal List:   var478,var721,var694,var914,var610,var735,var2941,var3647,var1113,var3414 
+
+ Iteration 37 :  Optimal value:  33.6 
+ Optimal List:   var478,var610,var694,var914,var721,var735,var2941,var3647,var1113,var3414 
+
+ Iteration 38 :  Optimal value:  35.6 
+ Optimal List:   var478,var721,var694,var914,var610,var735,var2941,var3647,var1113,var3414 
+
+ Iteration 39 :  Optimal value:  34.8 
+ Optimal List:   var478,var914,var694,var610,var721,var735,var2941,var3647,var3208,var3414 
+
+ Iteration 40 :  Optimal value:  35.2 
+ Optimal List:   var478,var914,var694,var721,var610,var735,var2941,var3647,var3208,var3414 
+
+ Iteration 41 :  Optimal value:  35.6 
+ Optimal List:   var478,var721,var694,var914,var610,var735,var2941,var3647,var1113,var3414 
+
+ Iteration 42 :  Optimal value:  35.6 
+ Optimal List:   var478,var721,var694,var914,var610,var735,var2941,var3647,var1113,var3414 
+
+ Iteration 43 :  Optimal value:  35.6 
+ Optimal List:   var478,var721,var694,var914,var610,var735,var2941,var3647,var1113,var3414 
+
+ Iteration 44 :  Optimal value:  35.6 
+ Optimal List:   var478,var721,var694,var914,var610,var735,var2941,var3647,var1113,var3414 
+
+ Iteration 45 :  Optimal value:  35.6 
+ Optimal List:   var478,var721,var694,var914,var610,var735,var2941,var3647,var1113,var3414 
+
+ Iteration 46 :  Optimal value:  34.4 
+ Optimal List:   var610,var478,var694,var721,var914,var735,var2941,var3647,var1113,var3414 
+
+ Iteration 47 :  Optimal value:  34.4 
+ Optimal List:   var610,var478,var694,var721,var914,var735,var2941,var3647,var1113,var3414 
+
+ Iteration 48 :  Optimal value:  34.4 
+ Optimal List:   var478,var694,var721,var610,var914,var735,var2941,var1113,var3647,var3414 
+
+ Iteration 49 :  Optimal value:  34.4 
+ Optimal List:   var478,var694,var721,var610,var914,var735,var2941,var1113,var3647,var3414 
+
+ Iteration 50 :  Optimal value:  34.4 
+ Optimal List:   var478,var694,var721,var610,var914,var735,var2941,var1113,var3647,var3414 
+
+ Iteration 51 :  Optimal value:  34.4 
+ Optimal List:   var478,var694,var721,var610,var914,var735,var2941,var1113,var3647,var3414 
+
+ Iteration 52 :  Optimal value:  33.6 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var1003,var1113,var3200 
+
+ Iteration 53 :  Optimal value:  33.6 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var1003,var1113,var3200 
+
+ Iteration 54 :  Optimal value:  33.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3647,var1113,var3200 
+
+ Iteration 55 :  Optimal value:  33.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3647,var1113,var3200 
+
+ Iteration 56 :  Optimal value:  33.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3647,var1113,var3200 
+
+ Iteration 57 :  Optimal value:  33.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3647,var3414,var1113 
+
+ Iteration 58 :  Optimal value:  33.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3647,var3414,var1113 
+
+ Iteration 59 :  Optimal value:  33.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3647,var3414,var1113 
+
+ Iteration 60 :  Optimal value:  32.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var1113,var3002,var3647 
+
+ Iteration 61 :  Optimal value:  33.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var1113,var3414,var3647 
+
+ Iteration 62 :  Optimal value:  32.8 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var1113,var3647,var3414 
+
+ Iteration 63 :  Optimal value:  33.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var1113,var3414,var3647 
+
+ Iteration 64 :  Optimal value:  33.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3647,var3414,var1113 
+
+ Iteration 65 :  Optimal value:  32.8 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var1113,var3647,var3414 
+
+ Iteration 66 :  Optimal value:  33.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3647,var3414,var1113 
+
+ Iteration 67 :  Optimal value:  33.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var1113,var3414,var3647 
+
+ Iteration 68 :  Optimal value:  32 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var3002,var3600,var2941,var1113 
+
+ Iteration 69 :  Optimal value:  32 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var3002,var3600,var2941,var1113 
+
+ Iteration 70 :  Optimal value:  32 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var3002,var3600,var2941,var1113 
+
+ Iteration 71 :  Optimal value:  31.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3200,var1113 
+
+ Iteration 72 :  Optimal value:  31.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3200,var1113 
+
+ Iteration 73 :  Optimal value:  31.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3200,var1113 
+
+ Iteration 74 :  Optimal value:  31.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3200,var1113 
+
+ Iteration 75 :  Optimal value:  31.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3200,var1113 
+
+ Iteration 76 :  Optimal value:  31.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3200,var1113 
+
+ Iteration 77 :  Optimal value:  31.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3200,var1113 
+
+ Iteration 78 :  Optimal value:  31.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3200,var1113 
+
+ Iteration 79 :  Optimal value:  31.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3200,var1113 
+
+ Iteration 80 :  Optimal value:  30 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3647,var3600,var1113 
+
+ Iteration 81 :  Optimal value:  30 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3647,var3600,var1113 
+
+ Iteration 82 :  Optimal value:  30 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3647,var3600,var1113 
+
+ Iteration 83 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 84 :  Optimal value:  30 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3647,var3600,var1113 
+
+ Iteration 85 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 86 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 87 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 88 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 89 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 90 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 91 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3414 
+
+ Iteration 92 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 93 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 94 :  Optimal value:  28.8 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1003 
+
+ Iteration 95 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 96 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 97 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 98 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 99 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 100 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 101 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 102 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 103 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 104 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 105 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 106 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 107 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 108 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 109 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 110 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 111 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 112 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 113 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 114 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 115 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 116 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3414 
+
+ Iteration 117 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 118 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3414 
+
+ Iteration 119 :  Optimal value:  28.8 
+ Optimal List:   var478,var610,var694,var721,var914,var2941,var735,var3600,var3647,var1113 
+
+ Iteration 120 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3414 
+
+ Iteration 121 :  Optimal value:  28.8 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1003 
+
+ Iteration 122 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 123 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 124 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var1113 
+
+ Iteration 125 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var735,var914,var721,var2941,var3600,var3647,var1113 
+
+ Iteration 126 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var735,var914,var721,var2941,var3600,var3647,var1113 
+
+ Iteration 127 :  Optimal value:  29.2 
+ Optimal List:   var478,var610,var694,var735,var914,var721,var2941,var3600,var3647,var1113 
+
+ Iteration 128 :  Optimal value:  28.8 
+ Optimal List:   var478,var610,var694,var721,var914,var2941,var735,var3600,var3647,var1113 
+
+ Iteration 129 :  Optimal value:  28.8 
+ Optimal List:   var478,var610,var694,var721,var914,var2941,var735,var3600,var3647,var1113 
+
+ Iteration 130 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var735,var914,var721,var2941,var3600,var3647,var3208 
+
+ Iteration 131 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var735,var914,var721,var2941,var3600,var3647,var3208 
+
+ Iteration 132 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 133 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var735,var914,var721,var2941,var3600,var3647,var3208 
+
+ Iteration 134 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var735,var914,var721,var2941,var3600,var3647,var3208 
+
+ Iteration 135 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var735,var914,var721,var2941,var3600,var3647,var3208 
+
+ Iteration 136 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 137 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var735,var914,var721,var2941,var3600,var3647,var3208 
+
+ Iteration 138 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var735,var914,var721,var2941,var3600,var3647,var3208 
+
+ Iteration 139 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 140 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var735,var914,var721,var2941,var3600,var3647,var3208 
+
+ Iteration 141 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 142 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 143 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 144 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 145 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 146 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 147 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 148 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 149 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var735,var914,var721,var2941,var3600,var3647,var3208 
+
+ Iteration 150 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 151 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 152 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 153 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 154 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 155 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 156 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 157 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var721,var694,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 158 :  Optimal value:  28.4 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3647,var3208 
+
+ Iteration 159 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3208,var3647 
+
+ Iteration 160 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3208,var3647 
+
+ Iteration 161 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3208,var3647 
+
+ Iteration 162 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3208,var3647 
+
+ Iteration 163 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3208,var3647 
+
+ Iteration 164 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3208,var3647 
+
+ Iteration 165 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3208,var3647 
+
+ Iteration 166 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3208,var3647 
+
+ Iteration 167 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3208,var3647 
+
+ Iteration 168 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3208,var3647 
+
+ Iteration 169 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3208,var3647 
+
+ Iteration 170 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3208,var3647 
+
+ Iteration 171 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3208,var3647 
+
+ Iteration 172 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3208,var3647 
+
+ Iteration 173 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3208,var3647 
+
+ Iteration 174 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3208,var3647 
+
+ Iteration 175 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3208,var3647 
+
+ Iteration 176 :  Optimal value:  28 
+ Optimal List:   var478,var610,var721,var694,var914,var2941,var735,var3600,var3647,var3208 
+
+ Iteration 177 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 178 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 179 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 180 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 181 :  Optimal value:  27.6 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3208,var3647 
+
+ Iteration 182 :  Optimal value:  27.6 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3208,var3647 
+
+ Iteration 183 :  Optimal value:  27.6 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3208,var3647 
+
+ Iteration 184 :  Optimal value:  27.6 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3208,var3647 
+
+ Iteration 185 :  Optimal value:  27.6 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3208,var3647 
+
+ Iteration 186 :  Optimal value:  27.6 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3208,var3647 
+
+ Iteration 187 :  Optimal value:  27.6 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3208,var3647 
+
+ Iteration 188 :  Optimal value:  27.6 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3208,var3647 
+
+ Iteration 189 :  Optimal value:  27.6 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3208,var3647 
+
+ Iteration 190 :  Optimal value:  27.6 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3208,var3647 
+
+ Iteration 191 :  Optimal value:  27.6 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3208,var3647 
+
+ Iteration 192 :  Optimal value:  27.6 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3208,var3647 
+
+ Iteration 193 :  Optimal value:  27.6 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3208,var3647 
+
+ Iteration 194 :  Optimal value:  27.6 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3208,var3647 
+
+ Iteration 195 :  Optimal value:  27.6 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3208,var3647 
+
+ Iteration 196 :  Optimal value:  27.6 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3208,var3647 
+
+ Iteration 197 :  Optimal value:  27.6 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3208,var3647 
+
+ Iteration 198 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 199 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 200 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 201 :  Optimal value:  27.6 
+ Optimal List:   var478,var610,var694,var721,var914,var2941,var735,var3600,var3208,var3647 
+
+ Iteration 202 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 203 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 204 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 205 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var721,var914,var2941,var735,var3600,var3647,var3208 
+
+ Iteration 206 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 207 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3208,var3647 
+
+ Iteration 208 :  Optimal value:  27.6 
+ Optimal List:   var478,var610,var694,var721,var914,var2941,var735,var3600,var3208,var3647 
+
+ Iteration 209 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3208,var3647 
+
+ Iteration 210 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 211 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 212 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var721,var914,var735,var2941,var3600,var3208,var3647 
+
+ Iteration 213 :  Optimal value:  27.6 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3208,var3647 
+
+ Iteration 214 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 215 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 216 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 217 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 218 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 219 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 220 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 221 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 222 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 223 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 224 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 225 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 226 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 227 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 228 :  Optimal value:  27.6 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3208,var3647 
+
+ Iteration 229 :  Optimal value:  27.6 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3208,var3647 
+
+ Iteration 230 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 231 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 232 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 233 :  Optimal value:  28 
+ Optimal List:   var478,var610,var721,var735,var914,var2941,var694,var3600,var3647,var3208 
+
+ Iteration 234 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 235 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 236 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 237 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 238 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 239 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 240 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 241 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 242 :  Optimal value:  28 
+ Optimal List:   var478,var610,var721,var735,var914,var2941,var694,var3600,var3647,var3208 
+
+ Iteration 243 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 244 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 245 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 246 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 247 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 248 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 249 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 250 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 251 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 252 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 253 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 254 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 255 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 256 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 257 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 258 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+
+ Iteration 259 :  Optimal value:  28 
+ Optimal List:   var478,var610,var694,var735,var914,var2941,var721,var3600,var3647,var3208 
+[1] "test acc rank aggreg GA:0.682926829268293"
+[1] "test AUC acc rank aggreg GA:0.7175"
+[1] "10 fold train rank aggreg res GA85.2459016393443"
+[1] "confusion matrix train 10 fold rank aggreg GA"
+            nci_y
+pred10foldRA  1  2
+           1 36  0
+           2  0 25
+[1] "Num itr RA GA"
+[1] 260
+[1] "Test BER aggreg GA is"
+[1] 0.7175
+Warning messages:
+1: In if (is.na(boostweight) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+2: In if (is.na(testm) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+3: In if (is.na(testclass) == TRUE) { :
+  the condition has length > 1 and only the first element will be used
+> 
+> cma_feat_list<-colnames(trainm)
+> 
+> save(CMAres,file="CMAres.Rda")
+> write.table(cma_feat_list,file="selected_cma_feat_list.txt",sep="t",row.names=FALSE)
+> 
+> # modtraindata=modtrain, modtestdata=modtest, blindtest=testacc, modtrainclass=nci_y, modtestclass=test_y
+> #if(FALSE)
+> {
++ trainm<-CMAres$modtraindata
++ testm<-CMAres$modtestdata
++ trainclass<-CMAres$modtrainclass
++ testclass<-CMAres$modtestclass
++ learningsets<-CMAres$learningsets
++ }
+> 
+> if(FALSE)
++ {
++ trainclass<-trainm[,1] #CMAres$modtrainclass
++ testclass<-testm[,1] #CMAres$modtestclass
++ trainm<-trainm[,-c(1)] #CMAres$modtrainmata
++ testm<-testm[,-c(1)] #CMAres$modtestmata
++ 
++ }
+> 
+> d_dim<-dim(trainm)
+> 
+> print("Original dimension")
+[1] "Original dimension"
+> print(d_dim)
+[1] 61 18
+> 
+> system.time(psores<-run_pso(outloc=outloc,trainm,trainclass,testm,testclass,transition_matrix,c1=2.05,
++ c2=2.05,
++ itr=10,
++ globalpso_maxitr=10,
++ global_max_itr=5,
++ num_part=20,
++ kname="radial",
++ errortype="BER",
++ weightA<-as.numeric(args[1]),
++ weightB<-as.numeric(args[2]),
++ weightC<-as.numeric(args[3]),
++ weightD<-as.numeric(args[4]),
++ featweight.max=0.01,
++ featweight.min=0.01,
++ numfolds=10,
++ followerprob=as.numeric(args[6]),
++ confusionprob=as.numeric(args[7]),
++ leaderprob=as.numeric(args[8]),
++ wmax=1,
++ wmin=1,
++ behavior_reset_itr=5,
++ maxitrreset=10,
++ num_neighbors=3,
++ minselect.pct=0.5,
++ evalMode="CV2",
++ minfitnessthresh=50,
++ maxnum=as.numeric(args[10]),minnum=3,inertia_method=args[5],particlebehav_method="randbased",constriction_factor=1,
++ select.global.best=TRUE,numnodes=4,evalFunc=eval_fit_kfold_diff,itr.terminate=FALSE,train.pct=0.8))
+[1] "c1: 2.05"
+[1] "c2: 2.05"
+[1] "itr: 10"
+[1] "globalpso_maxitr: 10"
+[1] "global_max_itr: 5"
+[1] "num_part: 20"
+[1] "kname: radial"
+[1] "errortype: BER"
+[1] "weightA: 0.7"
+[1] "weightB: 0.2"
+[1] "weightC: 0.05"
+[1] "weightD: 0.05"
+[1] "featweight.max: 0.01"
+[1] "featweight.min: 0.01"
+[1] "numfolds: 10"
+[1] "followerprob: 0.45"
+[1] "confusionprob: 0.2"
+[1] "leaderprob: 0.25"
+[1] "wmax: 1"
+[1] "wmin: 1"
+[1] "behavior_reset_itr: 5"
+[1] "maxitrreset: 10"
+[1] "num_neighbors: 3"
+[1] "minselect.pct: 0.5"
+[1] "minfitnessthresh: 50"
+[1] "maxnum: 10"
+[1] "minnum: 3"
+[1] "inertia_method: global"
+[1] "particlebehav_method: randbased"
+[1] "constriction_factor: 10"
+[1] "select.global.best: TRUE"
+[1] "train 10 fold"
+[1] 96.72131
+[1] "here"
+[1] "s"
+[1] 48.8
+[1] 61 18
+[1] 10
+[1] "learning sets: 1"
+ [1] 33 53 59 24 17 35  8 14 47  4 30 16 38  7 10 51 52 60 27 43  6 39 46 20  9
+[26] 11 32 37 12 22 31 25 36 54 21 55 44  3 34 57 29 49 18 58 19 13 40 48
+[1] "Starting global iteration number : 1"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -44.45992
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "iteration number: "
+[1] 8
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 18
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "RE-INITIALIZING..."
+[1] 7
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "RE-INITIALIZING..."
+[1] 8
+[1] 5
+[1] 0
+[1] "No change for 8 iterations. Exiting PSO."
+ [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18
+[1] 1
+[1] "##################################"
+[1] "Results summary for itr:1"
+[1] "number of features selected using population mean"
+[1] 0
+[1] "number of features selected using current global best"
+[1] 18
+[1] "feat ind length"
+[1] 18
+[1] "best accuracy"
+[1] 44.45992
+[1] "test acc:1"
+[1] "##################################"
+[1] "learning sets: 2"
+ [1] 60 26 18  4 59  3  1 42 13 39 23 21 48 19 36 58  8 11 25 53  5 32 61 17 20
+[26] 28 14 56 33 37 40  9  2 43 41 27 38 31 50 35 49 55 46 29 57 51 34 52
+[1] "Starting global iteration number : 2"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -55.1853
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "Best fitness updated to:"
+[1] -55.32447
+[1] "Best solution:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0
+[1] 1
+[1] "iteration number: "
+[1] 8
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 30
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 41
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 74
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "RE-INITIALIZING..."
+[1] 7
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "RE-INITIALIZING..."
+[1] 8
+[1] 5
+[1] 0
+[1] "No change for 8 iterations. Exiting PSO."
+ [1]  2  5  6  7  8  9 10 15 16 17 18
+[1] 2
+[1] "##################################"
+[1] "Results summary for itr:2"
+[1] "number of features selected using population mean"
+[1] 0
+[1] "number of features selected using current global best"
+[1] 11
+[1] "feat ind length"
+[1] 11
+[1] "best accuracy"
+[1] 55.32447
+[1] "test acc:1"
+[1] "##################################"
+[1] "learning sets: 3"
+ [1] 54 25 58 45 13 43 53 31  1 35 38 56 28  9 48 30 55 49  2 40 41  4 57 46 47
+[26] 16 24 10 27 12 23 20 22 18 29  6 21  5  8 59 32 42 26 11 37  3 50 36
+[1] "Starting global iteration number : 3"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -44.53069
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "Best fitness updated to:"
+[1] -50.35762
+[1] "Best solution:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0
+[1] 1
+[1] "iteration number: "
+[1] 8
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 30
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 41
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 74
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "RE-INITIALIZING..."
+[1] 7
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "RE-INITIALIZING..."
+[1] 8
+[1] 5
+[1] 0
+[1] "No change for 8 iterations. Exiting PSO."
+ [1]  2  5  6  7  8  9 10 15 16 17 18
+[1] 3
+[1] "##################################"
+[1] "Results summary for itr:3"
+[1] "number of features selected using population mean"
+[1] 0
+[1] "number of features selected using current global best"
+[1] 11
+[1] "feat ind length"
+[1] 11
+[1] "best accuracy"
+[1] 50.35762
+[1] "test acc:0.923076923076923"
+[1] "##################################"
+[1] "learning sets: 4"
+ [1] 24 37 54 57 55 13 33 28  4 52 34 31  3 47 14 30 15 25  7 26 38 50 22 51  9
+[26]  8 56 39 35 12 49 16 18  5 23 48 29  2 10 60 46 20 32 27 45 58 44 59
+[1] "Starting global iteration number : 4"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -50.84873
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "Best fitness updated to:"
+[1] -51.52611
+[1] "Best solution:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0
+[1] 1
+[1] "iteration number: "
+[1] 8
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 30
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 41
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 74
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "RE-INITIALIZING..."
+[1] 7
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "RE-INITIALIZING..."
+[1] 8
+[1] 5
+[1] 0
+[1] "No change for 8 iterations. Exiting PSO."
+ [1]  2  5  6  7  8  9 10 15 16 17 18
+[1] 4
+[1] "##################################"
+[1] "Results summary for itr:4"
+[1] "number of features selected using population mean"
+[1] 0
+[1] "number of features selected using current global best"
+[1] 11
+[1] "feat ind length"
+[1] 11
+[1] "best accuracy"
+[1] 51.52611
+[1] "test acc:1"
+[1] "##################################"
+[1] "learning sets: 5"
+ [1] 56 19  1 55 33 25 17  2 39 46 58 26 27  4 57 28 60 32 53 37 14 21 12  3 52
+[26] 59 41  5 42 36 50  6  8 29 31 16 38 44 22 13 11 49 24 61 48 34  7 47
+[1] "Starting global iteration number : 5"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -37.2274
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "Best fitness updated to:"
+[1] -41.63484
+[1] "Best solution:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0
+[1] 1
+[1] "iteration number: "
+[1] 8
+[1] "Best fitness updated to:"
+[1] -42.60263
+[1] "Best solution:"
+ [1] 0 0 0 0 1 1 0 1 1 1 0 0 0 0 1 0 1 1
+[1] 8
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 18
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "Best fitness updated to:"
+[1] -47.41353
+[1] "Best solution:"
+ [1] 0 0 0 0 1 1 0 1 1 1 0 0 0 0 1 0 1 1
+[1] 8
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "iteration number: "
+[1] 96
+[1] "iteration number: "
+[1] 97
+[1] "iteration number: "
+[1] 98
+[1] "iteration number: "
+[1] 99
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 100
+[1] "iteration number: "
+[1] 101
+[1] "iteration number: "
+[1] 102
+[1] "iteration number: "
+[1] 103
+[1] "iteration number: "
+[1] 104
+[1] "iteration number: "
+[1] 105
+[1] "iteration number: "
+[1] 106
+[1] "iteration number: "
+[1] 107
+[1] "iteration number: "
+[1] 108
+[1] "iteration number: "
+[1] 109
+[1] "iteration number: "
+[1] 110
+[1] "RE-INITIALIZING..."
+[1] 7
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 111
+[1] "iteration number: "
+[1] 112
+[1] "iteration number: "
+[1] 113
+[1] "iteration number: "
+[1] 114
+[1] "iteration number: "
+[1] 115
+[1] "iteration number: "
+[1] 116
+[1] "iteration number: "
+[1] 117
+[1] "iteration number: "
+[1] 118
+[1] "iteration number: "
+[1] 119
+[1] "iteration number: "
+[1] 120
+[1] "iteration number: "
+[1] 121
+[1] "RE-INITIALIZING..."
+[1] 8
+[1] 5
+[1] 0
+[1] "No change for 8 iterations. Exiting PSO."
+[1]  6  8  9 10 15 17 18
+[1] 5
+[1] "##################################"
+[1] "Results summary for itr:5"
+[1] "number of features selected using population mean"
+[1] 0
+[1] "number of features selected using current global best"
+[1] 7
+[1] "feat ind length"
+[1] 7
+[1] "best accuracy"
+[1] 47.41353
+[1] "test acc:0.769230769230769"
+[1] "##################################"
+[1] "learning sets: 6"
+ [1] 61  1 40 57  4 59 50 34 56 52 27  8 30 55  3 42 45 35 51 37 33 19  9 38 26
+[26] 58  5 24 49 44 25 46 14  6 23 53 39 47 48  7 54 17 32 11 13 29 20 10
+[1] "Starting global iteration number : 6"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -52.55744
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "iteration number: "
+[1] 8
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 18
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "RE-INITIALIZING..."
+[1] 7
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "RE-INITIALIZING..."
+[1] 8
+[1] 5
+[1] 0
+[1] "No change for 8 iterations. Exiting PSO."
+ [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18
+[1] 6
+[1] "##################################"
+[1] "Results summary for itr:6"
+[1] "number of features selected using population mean"
+[1] 0
+[1] "number of features selected using current global best"
+[1] 18
+[1] "feat ind length"
+[1] 18
+[1] "best accuracy"
+[1] 52.55744
+[1] "test acc:1"
+[1] "##################################"
+[1] "learning sets: 7"
+ [1]  5 46 20 14 48 49 44 13 51 43 18 57 33 10  4 39 37  7 40 36 19 31 17 45 26
+[26] 28 21 42 47 54  6 38  8 15 55 60 53 22 58 35 24  9 16 27  3 34 25 50
+[1] "Starting global iteration number : 7"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -43.50261
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "iteration number: "
+[1] 8
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 18
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "RE-INITIALIZING..."
+[1] 7
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "RE-INITIALIZING..."
+[1] 8
+[1] 5
+[1] 0
+[1] "No change for 8 iterations. Exiting PSO."
+ [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18
+[1] 7
+[1] "##################################"
+[1] "Results summary for itr:7"
+[1] "number of features selected using population mean"
+[1] 0
+[1] "number of features selected using current global best"
+[1] 18
+[1] "feat ind length"
+[1] 18
+[1] "best accuracy"
+[1] 43.50261
+[1] "test acc:0.846153846153846"
+[1] "##################################"
+[1] "learning sets: 8"
+ [1] 57 21 61 49 23 36 51 48 38 27 20 47  6 25 34 37 15 59 46 56 53 31 40 13 58
+[26] 39 35 24 22 54 29 12 14 32 50 45 42 18 60 43  7 19  2 33  9 44 55  4
+[1] "Starting global iteration number : 8"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -43.54056
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "iteration number: "
+[1] 8
+[1] "Best fitness updated to:"
+[1] -44.33203
+[1] "Best solution:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[1] 0
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 18
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "iteration number: "
+[1] 63
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "RE-INITIALIZING..."
+[1] 7
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "iteration number: "
+[1] 96
+[1] "RE-INITIALIZING..."
+[1] 8
+[1] 5
+[1] 0
+[1] "No change for 8 iterations. Exiting PSO."
+ [1]  2  5  6  7  8  9 10 15 16 17 18
+[1] 8
+[1] "##################################"
+[1] "Results summary for itr:8"
+[1] "number of features selected using population mean"
+[1] 0
+[1] "number of features selected using current global best"
+[1] 11
+[1] "feat ind length"
+[1] 11
+[1] "best accuracy"
+[1] 44.33203
+[1] "test acc:1"
+[1] "##################################"
+[1] "learning sets: 9"
+ [1] 17 43 36 29  4  7 26 44 34  9 10 14 48 21 33  1 38 42 52 16 60 61 45 53 40
+[26] 24 27 32 11 15 20 56 19 18 57 39 41 54 35 37 25 12  5  6 31 22 51  2
+[1] "Starting global iteration number : 9"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -41.46213
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "iteration number: "
+[1] 8
+[1] "Best fitness updated to:"
+[1] -41.73996
+[1] "Best solution:"
+ [1] 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[1] 0
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 18
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "iteration number: "
+[1] 63
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "RE-INITIALIZING..."
+[1] 7
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "iteration number: "
+[1] 96
+[1] "RE-INITIALIZING..."
+[1] 8
+[1] 5
+[1] 0
+[1] "No change for 8 iterations. Exiting PSO."
+ [1]  2  5  6  8  9 10 15 16 17 18
+[1] 9
+[1] "##################################"
+[1] "Results summary for itr:9"
+[1] "number of features selected using population mean"
+[1] 0
+[1] "number of features selected using current global best"
+[1] 10
+[1] "feat ind length"
+[1] 10
+[1] "best accuracy"
+[1] 41.73996
+[1] "test acc:1"
+[1] "##################################"
+[1] "learning sets: 10"
+ [1] 33 34  7 25 41 40 52 45 39 58 26 31 32  5 35 29 44 43 16 23 56  6 28 24 55
+[26] 47 18 30  8 10 37 15 57 59  9 22 42 53 17  4 19  2 61 13 48  3 50 36
+[1] "Starting global iteration number : 10"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -39.70338
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -41.3502
+[1] "Best solution:"
+ [1] 1 1 1 1 0 0 1 0 0 0 1 1 1 1 0 1 0 0
+[1] 10
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "Best fitness updated to:"
+[1] -43.63961
+[1] "Best solution:"
+ [1] 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0
+[1] 1
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "iteration number: "
+[1] 8
+[1] "Best fitness updated to:"
+[1] -50.95801
+[1] "Best solution:"
+ [1] 0 1 0 0 0 1 0 1 1 1 0 0 0 0 1 0 1 1
+[1] 8
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 3
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "iteration number: "
+[1] 63
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "RE-INITIALIZING..."
+[1] 7
+[1] 5
+[1] 0
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "iteration number: "
+[1] 96
+[1] "RE-INITIALIZING..."
+[1] 8
+[1] 5
+[1] 0
+[1] "No change for 8 iterations. Exiting PSO."
+[1]  2  6  8  9 10 15 16 17 18
+[1] 10
+[1] "##################################"
+[1] "Results summary for itr:10"
+[1] "number of features selected using population mean"
+[1] 0
+[1] "number of features selected using current global best"
+[1] 9
+[1] "feat ind length"
+[1] 9
+[1] "best accuracy"
+[1] 50.95801
+[1] "test acc:0.846153846153846"
+[1] "##################################"
+[1] "testacc"
+ [1] 1.0000000 1.0000000 0.9230769 1.0000000 0.7692308 1.0000000 0.8461538
+ [8] 1.0000000 1.0000000 0.8461538
+[1] 0.9384615
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.7692  0.8654  1.0000  0.9385  1.0000  1.0000 
+[1] 0.08733019
+      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
+ [1,]    1    0    0    0    0    1    1    0    0     0
+ [2,]    1    1    1    1    0    1    1    1    1     1
+ [3,]    1    0    0    0    0    1    1    0    0     0
+ [4,]    1    0    0    0    0    1    1    0    0     0
+ [5,]    1    1    1    1    0    1    1    1    1     0
+ [6,]    1    1    1    1    1    1    1    1    1     1
+ [7,]    1    1    1    1    0    1    1    1    0     0
+ [8,]    1    1    1    1    1    1    1    1    1     1
+ [9,]    1    1    1    1    1    1    1    1    1     1
+[10,]    1    1    1    1    1    1    1    1    1     1
+[11,]    1    0    0    0    0    1    1    0    0     0
+[12,]    1    0    0    0    0    1    1    0    0     0
+[13,]    1    0    0    0    0    1    1    0    0     0
+[14,]    1    0    0    0    0    1    1    0    0     0
+[15,]    1    1    1    1    1    1    1    1    1     1
+[16,]    1    1    1    1    0    1    1    1    1     1
+[17,]    1    1    1    1    1    1    1    1    1     1
+[18,]    1    1    1    1    1    1    1    1    1     1
+[1] "dim of scoring matrix is "
+[1] 18 10
+[1] "DS index stage 2"
+[1] 0.8242853
+[1] "KI index stage 2"
+[1] -Inf
+[1] 1
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  3.000   3.000   8.500   6.889  10.000  10.000 
+[1] "Number of features selected in 1 iterations:"
+[1] 18
+[1] "Number of features selected in 1 iterations:"
+[1] 18
+[1] 1 1
+[1] 1 1
+[1] "accuracy: 93.2753331845407 num_feat:18 fitness:52.283280189459"
+$fitfunc
+[1] -52.28328
+
+$cverror
+[1] 93.27533
+
+$cvpermerror
+[1] 59.53317
+
+$testacc
+[1] 100
+
+$reverseacc
+[1] 100
+
+[1] -52.28328
+[1] "Number of features selected in 2 iterations:"
+[1] 18
+[1] 1 1
+[1] 1 1
+[1] "accuracy: 93.2753331845407 num_feat:18 fitness:52.283280189459"
+$fitfunc
+[1] -52.28328
+
+$cverror
+[1] 93.27533
+
+$cvpermerror
+[1] 59.53317
+
+$testacc
+[1] 100
+
+$reverseacc
+[1] 100
+
+[1] -52.28328
+[1] "Number of features selected in 3 iterations:"
+[1] 18
+[1] 1 1
+[1] 1 1
+[1] "accuracy: 93.2753331845407 num_feat:18 fitness:52.283280189459"
+$fitfunc
+[1] -52.28328
+
+$cverror
+[1] 93.27533
+
+$cvpermerror
+[1] 59.53317
+
+$testacc
+[1] 100
+
+$reverseacc
+[1] 100
+
+[1] -52.28328
+[1] "Number of features selected in 4 iterations:"
+[1] 11
+[1] 0.9722222 1.0000000
+[1] 0.9722222 1.0000000
+[1] "accuracy: 93.5152397814033 num_feat:11 fitness:50.7642368874589"
+$fitfunc
+[1] -50.76424
+
+$cverror
+[1] 93.51524
+
+$cvpermerror
+[1] 62.0198
+
+$testacc
+[1] 98.61111
+
+$reverseacc
+[1] 98.61111
+
+[1] -50.76424
+[1] "Number of features selected in 5 iterations:"
+[1] 11
+[1] 0.9722222 1.0000000
+[1] 0.9722222 1.0000000
+[1] "accuracy: 93.5152397814033 num_feat:11 fitness:50.7642368874589"
+$fitfunc
+[1] -50.76424
+
+$cverror
+[1] 93.51524
+
+$cvpermerror
+[1] 62.0198
+
+$testacc
+[1] 98.61111
+
+$reverseacc
+[1] 98.61111
+
+[1] -50.76424
+[1] "Number of features selected in 6 iterations:"
+[1] 11
+[1] 0.9722222 1.0000000
+[1] 0.9722222 1.0000000
+[1] "accuracy: 93.5152397814033 num_feat:11 fitness:50.7642368874589"
+$fitfunc
+[1] -50.76424
+
+$cverror
+[1] 93.51524
+
+$cvpermerror
+[1] 62.0198
+
+$testacc
+[1] 98.61111
+
+$reverseacc
+[1] 98.61111
+
+[1] -50.76424
+[1] "Number of features selected in 7 iterations:"
+[1] 11
+[1] 0.9722222 1.0000000
+[1] 0.9722222 1.0000000
+[1] "accuracy: 93.5152397814033 num_feat:11 fitness:50.7642368874589"
+$fitfunc
+[1] -50.76424
+
+$cverror
+[1] 93.51524
+
+$cvpermerror
+[1] 62.0198
+
+$testacc
+[1] 98.61111
+
+$reverseacc
+[1] 98.61111
+
+[1] -50.76424
+[1] "Number of features selected in 8 iterations:"
+[1] 10
+[1] 1 1
+[1] 1 1
+[1] "accuracy: 92.2736961400954 num_feat:10 fitness:46.3344720046521"
+$fitfunc
+[1] -46.33447
+
+$cverror
+[1] 92.2737
+
+$cvpermerror
+[1] 67.19638
+
+$testacc
+[1] 98.61111
+
+$reverseacc
+[1] 100
+
+[1] -46.33447
+[1] "Number of features selected in 9 iterations:"
+[1] 9
+[1] 1.00 0.96
+[1] 1.00 0.96
+[1] "accuracy: 92.9404826421079 num_feat:9 fitness:47.849186028008"
+$fitfunc
+[1] -47.84919
+
+$cverror
+[1] 92.94048
+
+$cvpermerror
+[1] 65.68343
+
+$testacc
+[1] 98.61111
+
+$reverseacc
+[1] 98
+
+[1] -47.84919
+[1] "Number of features selected in 10 iterations:"
+[1] 7
+[1] 1.00 0.92
+[1] 1.00 0.92
+[1] "accuracy: 87.350648560935 num_feat:7 fitness:41.2064065395781"
+$fitfunc
+[1] -41.20641
+
+$cverror
+[1] 87.35065
+
+$cvpermerror
+[1] 69.02527
+
+$testacc
+[1] 98
+
+$reverseacc
+[1] 96
+
+[1] -41.20641
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.7692  0.8654  1.0000  0.9385  1.0000  1.0000 
+[1] "Number of features selected in 1 iterations:"
+[1] 18
+[1] "Modified train 10 fold accuracy using train data is "
+[1] 96.72131
+[1] "Modified train accuracy is "
+[1] 1
+[1] "train confusion matrix is "
+          trainclass
+pred_train  1  2
+         1 36  0
+         2  0 25
+[1] "Train dimension is "
+[1] 61 18
+[1] "Test dimension is "
+[1] 41 18
+[1] "Test confusion matrix is "
+    
+pred  1  2
+   1 14 11
+   2  2 14
+[1] "Test acc is "
+[1] 0.6829268
+[1] "train 10 fold"
+[1] 96.72131
+[1] "Test confusion matrix is "
+    
+pred  1  2
+   1 14 11
+   2  2 14
+[1] "Test acc is "
+[1] 0.6829268
+[1] "Test AUC:"
+[1] 0.7175
+[1] "Train acc is "
+[1] 1
+[1] "# of features after CMA:"
+NULL
+[1] "# of features after PSO:"
+[1] 61 19
+    user   system  elapsed 
+ 139.963   21.205 7562.676 
+There were 50 or more warnings (use warnings() to see the first 50)
+> 
+> 
+> 
+> feat_ind<-psores$bestfeatlist
+> feat_names<-psores$bestfeatnames
+> 
+> scoringmatrix<-as.data.frame(psores$scoringmatrix)
+> print(scoringmatrix)
+   V1 V2 V3 V4 V5 V6 V7 V8 V9 V10
+1   1  0  0  0  0  1  1  0  0   0
+2   1  1  1  1  0  1  1  1  1   1
+3   1  0  0  0  0  1  1  0  0   0
+4   1  0  0  0  0  1  1  0  0   0
+5   1  1  1  1  0  1  1  1  1   0
+6   1  1  1  1  1  1  1  1  1   1
+7   1  1  1  1  0  1  1  1  0   0
+8   1  1  1  1  1  1  1  1  1   1
+9   1  1  1  1  1  1  1  1  1   1
+10  1  1  1  1  1  1  1  1  1   1
+11  1  0  0  0  0  1  1  0  0   0
+12  1  0  0  0  0  1  1  0  0   0
+13  1  0  0  0  0  1  1  0  0   0
+14  1  0  0  0  0  1  1  0  0   0
+15  1  1  1  1  1  1  1  1  1   1
+16  1  1  1  1  0  1  1  1  1   1
+17  1  1  1  1  1  1  1  1  1   1
+18  1  1  1  1  1  1  1  1  1   1
+> print(feat_names[feat_ind])
+ [1] "V1"  "V2"  "V3"  "V4"  "V5"  "V6"  "V7"  "V8"  "V9"  "V10" "V11" "V12"
+[13] "V13" "V14" "V15" "V16" "V17" "V18"
+> 
+> save(psores,file="psores.Rda")
+> print("Complete")
+[1] "Complete"
+> 

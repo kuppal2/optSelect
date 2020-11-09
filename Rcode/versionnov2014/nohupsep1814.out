@@ -1,0 +1,5768 @@
+
+R version 3.1.2 (2014-10-31) -- "Pumpkin Helmet"
+Copyright (C) 2014 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> library(snow)
+> library(e1071)
+> library(yaImpute)
+
+Attaching package: ‘yaImpute’
+
+The following object is masked from ‘package:e1071’:
+
+    impute
+
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+> library(bioDist)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘parallel’
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, clusterSplit, makeCluster, parApply,
+    parCapply, parLapply, parRapply, parSapply, splitIndices,
+    stopCluster
+
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parRapply, parSapply
+
+The following object is masked from ‘package:stats’:
+
+    xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, as.vector, cbind, colnames,
+    do.call, duplicated, eval, evalq, Filter, Find, get, intersect,
+    is.unsorted, lapply, Map, mapply, match, mget, order, paste, pmax,
+    pmax.int, pmin, pmin.int, Position, rank, rbind, Reduce, rep.int,
+    rownames, sapply, setdiff, sort, table, tapply, union, unique,
+    unlist, unsplit
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: KernSmooth
+KernSmooth 2.23 loaded
+Copyright M. P. Wand 1997-2009
+> 
+> library(CMA)
+
+Attaching package: ‘CMA’
+
+The following object is masked from ‘package:pROC’:
+
+    roc
+
+The following object is masked from ‘package:e1071’:
+
+    tune
+
+> library(expm)
+Loading required package: Matrix
+
+Attaching package: ‘expm’
+
+The following object is masked from ‘package:Matrix’:
+
+    expm
+
+> 
+> cl<-makeCluster(20)
+> 
+> source("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014/svm_cv_v1.1.R")
+> 
+> source("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014/performCMA_consensus_tenfold_ber_nominal_lungheart_train_test_sep52013_backward.R")
+> 
+> 
+> 
+> if(FALSE){
++ trainy<-read.csv("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/arcene_train.labels", header=FALSE)
++ testy<-read.csv("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/arcene_valid.labels", header=FALSE)
++ 
++ trainm<-read.table("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/arcene_train.data", sep=" ",header=FALSE)
++ testm<-read.table("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/arcene_valid.data", sep=" ",header=FALSE)
++ }
+> if(FALSE){
++ #/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/khan.xtest
++ trainy<-read.table("/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/khan.ytrain", header=FALSE)
++ testy<-read.table("/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/khan.ytest", header=FALSE)
++ 
++ trainy<-t(trainy)
++ testy<-t(testy)
++ 
++ #trainm<-read.table("/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/khan.xtrain", sep=" ",header=FALSE)
++ #testm<-read.table("/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/khan.xtest", sep=" ",header=FALSE)
++ 
++ 
++ trainm<-read.table("/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/khan.xtrain")
++ 
++ testm<-read.table("/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/khan.xtest")
++ 
++ trainm<-t(trainm) #[,-c(10001)]
++ testm<-t(testm) #[,-c(10001)]
++ trainm<-cbind(trainy,trainm)
++ testm<-cbind(testy,testm)
++ 
++ trainm<-na.omit(trainm)
++ testm<-na.omit(testm)
++ 
++ #outloc<-"/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/minpres2union_pso1000f0.25c0.25_backwardfalse_cvfoldthres0.7itr4w1/"
++ outloc<-"/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/itr1cmapso100_best90pctf0.3c0.1behav0.2w1_0920eval10foldVIP_minpres_all2/"
++ #trainm<-read.csv("/home/stu/kuppal3/Research/SpectF_data/SPECTF.train", header=FALSE)
++ #outloc<-"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/itr6_allmethods_minmethods1_ttestfilt_backwardsel_pso10/"
++ trainm<-read.csv("/home/stu/kuppal3/Research/SpectF_data/SPECTF.train", header=FALSE)
++ testm<-read.csv("/home/stu/kuppal3/Research/SpectF_data/SPECTF.test", header=FALSE)
++ outloc<-"/home/stu/kuppal3/Research/SpectF_data/Results/itr1pso100wrand_neigh0.6conf0.1behav0.3/"
++ 
++ }
+> 
+> trainm<-read.csv("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014/SPECTF.train", header=FALSE)
+> testm<-read.csv("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014/SPECTF.test", header=FALSE)
+> 
+> 
+> outloc<-"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014//CMAPSOitr1vsep1814/"
+> 
+> 
+> #trainy<-trainm[,c(1)]
+> #testy<-testm[,c(1)]
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014//CMAPSOitr1vsep1814' already exists
+> setwd(outloc)
+> temp2=t(trainm)
+> temp2=apply(temp2, 2, function(x){which(x=="MD")})
+> temp2=unlist(temp2)
+> temp2=unique(temp2)
+> if(length(temp2)>1)
++ {
++ 	trainm=trainm[,-c(temp2)]
++ 
++ 	rm(temp2)
++ }
+> 
+> minfeats=2
+> maxgenes=2000
+> mingenes=1
+> stepitr=1
+> #methods=c("rf","rfe","limma","lasso","elasticnet","kruskal.test","f.test") #, "f.test", "elasticnet", "wilcox.test", "welch.test")
+> #methods=c("t.test")
+> #methods=methods[2]
+> methods=c("rf") #,"rfe") #,"t.test") #"elasticnet","lasso")
+> #methods=methods[2]
+> #methods=c("elasticnet")
+> percentTest=0.40
+> kname="radial"
+> maxitrs=100
+> removeindex=c(0)
+> norm_method="none" #"znorm"
+> evalmethod="10 fold"
+> classindex=1
+> maxfacts=0
+> percentTest=0.40
+> kname="radial"
+> upclasssep=1
+> dclasssep=-1
+> tolerance=0.1
+> accWeight=1
+> featWeight=0.06
+> minpresent=1 #round(1*length(methods))
+> maxfeats=1000 #dim(datafile)[2]-length(removeindex)-1
+> maxfeatspercent=0.1
+> evalmethod="CV"
+> numfolds=10
+> CVfoldthresh=0.7
+> backward.sel=TRUE
+> scheme_val="one-vs-all"
+> iter_learn=5
+> ######PSO parameters#########
+> c1=2.05
+> c2=2.05
+> itr=50
+> maxitr=(0.25)*itr
+> num_part=50
+> kname="radial"
+> errortype="BER"
+> accuracyweight=1
+> featweight=0.1*1
+> k<-numfolds
+> followerprob=0.6
+> confusionprob=0.1
+> wmax<-1
+> wmin<-0.4
+> behavior_reset_itr<-(0.3)*itr
+> maxitrreset<-0.2*itr
+> num_neighbors<-3
+> max_num_feats<-5 #0.1*dim(trainm[,-c(1)])[1]
+> minselect.pct<-0.7
+> bootstrap_val=FALSE
+> ##################
+> 
+> #id<-sample(1:data_dim[1],size=percentTest*data_dim[1],replace=F)
+> 
+> #testm<-datafile[id,]
+> 
+> #ncid<-datafile[-id,]
+> 
+> 
+> 
+> 
+> 
+> print("Stage 1: Consensus based")
+[1] "Stage 1: Consensus based"
+> print("Stage 1: Consensus based")
+[1] "Stage 1: Consensus based"
+> #CMAres<-preProcess(datafile, outloc, percentTest,norm_method,classindex, upclasssep, dclasssep, removeindex, maxfacts)
+> #CMAres<-performCMA(trainm, testm, outloc, maxfeatspercent, minfeats, stepitr, methods, percentTest, featWeight,accWeight, kname, maxitrs, minpresent, norm_method, tolerance, classindex, upclasssep, dclasssep, removeindex, maxfacts,numfolds=k,evalmethod,CVfoldthresh,backward.sel,scheme_val,iter_learn)
+> 
+> 
+> #if(FALSE)
+> print("Stage 2: Selecting optimal subset using PSO")
+[1] "Stage 2: Selecting optimal subset using PSO"
+> #system.time(
+> 
+> #psores<-performPSO(trainx, testx, trainy, testy, outloc, numitrs, reinititrs, numpart, c1, c2, kname, percentTest, 0.04, fitfunc)
+> 
+> #psores<-performPSO(CMAres$modtrainmata, CMAres$modtestmata, CMAres$modtrainclass, CMAres$modtestclass,outloc, numitrs, reinititrs, numpart, c1, c2, kname, percentTest, 0.0, 1, fitfunc)
+> 
+> if(FALSE)
++ {
++ trainm<-CMAres$modtrainmata
++ testm<-CMAres$modtestmata
++ trainclass<-CMAres$modtrainclass
++ testclass<-CMAres$modtestclass
++ }
+> 
+> #if(FALSE)
+> {
++ trainclass<-trainm[,1] #CMAres$modtrainclass
++ testclass<-testm[,1] #CMAres$modtestclass
++ trainm<-trainm[,-c(1)] #CMAres$modtrainmata
++ testm<-testm[,-c(1)] #CMAres$modtestmata
++ 
++ }
+> 
+> d_dim<-dim(trainm)
+> 
+> print("Original dimension")
+[1] "Original dimension"
+> print(d_dim)
+[1] 80 44
+> 
+> if(d_dim[2]>5){
++ #Function to find top 100 similar samples for every platform
++ find_similar_samples<-function(part_group, particle_ind=NA,num_neighbors=3){
++ 
++ 	bcdata<-as.matrix(part_group)
++ 
++ 	if(is.na(particle_ind)==FALSE){
++ 	targetdata<-as.matrix(part_group[particle_ind,])
++ 	}else{
++ 
++ 	targetdata<-as.matrix(part_group)
++ 	}
++ 
++ 	data_dim<-dim(bcdata)
++ 
++ 	#num_neighb<-100
++ 	affy_names<-colnames(bcdata)
++ 
++ 	bc.names<-rownames(bcdata)
++ 
++ 	i<-1
++ 	
++ 	dist.matrix<-{}
++ 	
++ 	#k=100, for top 100 matches
++ 	dist.matrix<-ann(ref=as.matrix(bcdata), target=as.matrix(targetdata), tree.type="brute", k=num_neighbors, split.rule="midpt", shrink.rule="centroid", verbose=TRUE)
++ 
++ 	rm(bcdata)
++ 	
++ 	if(FALSE){
++ 	dist.print<-t(dist.matrix$knnIndexDist)
++ 
++ 	sample_names<-bc.names[dist.print[1:100,]]
++ 
++ 	sample_list<-{}
++ 	exp_list<-{}
++ 	tissue_list<-{}
++ 	pval_list<-{}
++ 	match_bclist<-{}
++ 
++ 
++ 	for (i in 1:100)
++ 	{
++ 		#format sample names##
++ 
++ 		
++ 		sample<-sapply(strsplit(as.character(sample_names[i]), "\\."), head, n=2)[1]
++ 
++ 		sample<-toupper(sample)
++ 
++ 		sample_list<-rbind(sample_list, sample)
++ 
++ 		
++ 	}
++ 
++ 	tab<-data.frame(Number=(1:100), Sample=as.factor(sample_list), Distance=dist.print[101:200,], row.names=T)
++ 	
++ 	return(tab)
++ 	}
++ 	return(dist.matrix$knnIndexDist)
++ }
++ 
++ 
++ #function to find nearest neighbor of a particle
++ nn_search<-function(particle_ind, part_group)
++ {
++ 	partm<-as.matrix(part_group[particle_ind,])
++ 	
++ 	#nn_arr<-array(0,2)
++ 	dist_mat<-dist(as.matrix(part_group))
++ 	dist_mat<-as.matrix(dist_mat)
++ 	nn_order<-order(dist_mat[particle_ind,])
++ 	nn_order<-nn_order[-c(1)]
++ 	if(FALSE){
++ 	for(i in 1:length(part_group))
++ 	{
++ 		groupm<-as.matrix(part_group[i])
++ 		
++ 		pdist<-dist(rbind(partm, groupm))
++ 		
++ 		nn_arr<-rbind(nn_arr, as.array(cbind(i,pdist)))
++ 	}
++ 	
++ 	#ascending order with respect to distance
++ 	nn_order<-order(nn_arr[,2])
++ 	}
++ 
++ 	return(nn_order)
++ }
++ 	
++  #function to evaluate k-fold CV
++         eval_fit_kfold_diff<-function(particle, numfolds,errortype="AUC")
++         {
++ 
++                 num_feat<-0
++                 #select the columns with selected features 
++                 ind<-which(particle==1)
++ 
++                 #need to add 1 to take into account the index of the feature in the original dataset
++                 col_sel<-ind
++ 		folderror<-{}
++                         folderror_perm<-{}
++                 num_feat<-length(col_sel)
++                 #print("itr num feat:")
++                 #print(length(ind))     
++                 if(num_feat>1)
++                 {
++                         trainset<-trainm[,c(col_sel)]
++                         trainset<-cbind(trainclass,trainset)
++ 
++                         trainset<-data.frame(trainset)
++ 
++                         #print(trainset[1:4,])
++                         #trainset<-trainmata[,c(col_sel)]
++ 
++                         #model<-svm(trainset, trainclass, type="C", kernel=kname, cross=kcross)
++ 
++                         #model<-svm(trainset, trainclass, type="C", kernel=kname, degree=tune_degree, gamma=tune_gamma, cost=tune_cost, cross=kcross)
++                         folderror<-{}
++ 			folderror_perm<-{}
++                         #if(FALSE)
++ 			{
++                          for(f in 1:3)
++                         {
++                          
++ 			model<-svm_cv(v=numfolds,x=trainset[,-1],y=trainset$trainclass,kname=kname,errortype=errortype)
++ 
++ 			#model<-svm(trainset, trainclass, type="C", kernel=kname, cross=numfolds)
++         
++ 			#cur_acc_vec<-model$accuracies
++ 
++ 			#cur_acc_sderror<-sd(cur_acc_vec,na.rm=TRUE)/sqrt(length(cur_acc_vec))
++ 			            
++ 			#folderror_cur<-mean(cur_acc_vec,na.rm=TRUE)-(1.96*cur_acc_sderror)
++ 	
++ 			folderror_cur<-model$confint[1] #mean_acc
++                         print(model)
++                         print(folderror_cur)
++                         folderror<-c(folderror,folderror_cur) #model$tot.accuracy)
++ 			
++ 			rm(model)
++ 
++ 			
++ 			#if(FALSE)
++ 			{
++ 			rand_ind<-sample(x=seq(1,length(trainset$trainclass)),size=length(trainset$trainclass))
++ 			
++ 			model<-svm_cv(v=numfolds,x=trainset[,-1],y=trainset$trainclass[rand_ind],kname=kname,errortype=errortype)
++ 
++ 			 #model<-svm(trainset, trainclass[rand_ind], type="C", kernel=kname, cross=numfolds)
++                         
++                         #cur_acc_vec<-model$accuracies
++ 
++                         #cur_acc_sderror<-sd(cur_acc_vec,na.rm=TRUE)/sqrt(length(cur_acc_vec))
++ 
++                         #folderror_cur_perm<-mean(cur_acc_vec,na.rm=TRUE)+(1.96*cur_acc_sderror)
++ 
++                         folderror_cur_perm<-model$confint[2]
++                         
++ 			print(model)
++                         print(folderror_cur_perm)
++                         folderror_perm<-c(folderror_perm,folderror_cur_perm)
++ 				rm(model)	
++ 				}
++ 
++ 
++                         }
++ 				folderror<-mean(folderror,na.rm=TRUE) #-(1.96*(sd(folderror,na.rm=TRUE)/sqrt(3)))
++ 				#folderror<-mean(folderror,na.rm=TRUE)  
++ 				folderror_perm<-mean(folderror_perm,na.rm=TRUE)
++                        		#folderror_perm<-mean(folderror_perm,na.rm=TRUE) #+(1.96*(sd(folderror_perm,na.rm=TRUE)/sqrt(3)))
++ 			}
++ 	}
++                 else
++                 {
++                 folderror<-1
++                 }
++ #                fitfunc<-(accuracyweight*(folderror-folderror_perm))-(featweight*10*(num_feat/length(particle)))  #+(featweight*(1-num_feat))
++ 		fitfunc<-(accuracyweight*(folderror-folderror_perm))+(featweight*(1-num_feat))
++                 print(paste("accuracy: ", folderror," num_feat:",num_feat," fitness:", fitfunc,sep=""))
++                 rm(col_sel)
++                 rm(num_feat)
++                 return(fitfunc)
++ 
++         }
++ 
++ 
++ 
++ 
++ 
++ 
++ 	#function to evaluate k-fold CV
++ 	eval_fit_test_diff<-function(particle, numfolds,trainm,trainclass,testm,testclass,errortype="AUC")
++ 	{
++ 		
++ 		num_feat<-0
++ 		#select the columns with selected features 
++ 		ind<-which(particle==1)
++ 
++ 		#need to add 1 to take into account the index of the feature in the original dataset
++ 		col_sel<-ind
++ 		num_feat<-length(col_sel)
++ 		#print("itr num feat:")
++ 		#print(length(ind))	
++ 		if(num_feat>1)
++ 		{
++ 			trainset<-trainm[,c(col_sel)]
++ 			trainset<-cbind(trainclass,trainset)
++ 			
++ 			trainset<-data.frame(trainset)
++ 			
++ 			#print(trainset[1:4,])
++ 			#trainset<-trainmata[,c(col_sel)]
++ 			
++ 			#model<-svm(trainset, trainclass, type="C", kernel=kname, cross=kcross)
++ 
++ 			#model<-svm(trainset, trainclass, type="C", kernel=kname, degree=tune_degree, gamma=tune_gamma, cost=tune_cost, cross=kcross)
++ 			folderror<-{}
++ 			if(FALSE){
++ 			 for(f in 1:3)
++                         {
++ 			 model<-svm_cv(v=numfolds,x=trainset[,-1],y=trainset$trainclass,kname=kname,errortype="AUC")
++ 		
++ 			folderror_cur<-model$mean_acc
++ 			print(model)
++ 			print(folderror_cur)	
++ 			folderror<-c(folderror,folderror_cur) #model$tot.accuracy)
++ 			
++                         }
++                        } 
++ 			mod_cv <- svm(x=trainm,y=trainclass, type="C",kernel=kname)
++ predfit<-predict(mod_cv,testm)
++ svm_table<-table(predfit,testclass)
++ 
++ class_names<-rownames(svm_table)
++ beracc<-{}
++ i<-1
++ svm_acc<-{}
++ totacc<-length(which(predfit==testclass))/length(testclass)
++ for(c in 1:dim(svm_table)[1]){
++ testclass_ind<-which(testclass==class_names[c])
++ beracc<-c(beracc,length(which(predfit[testclass_ind]==testclass[testclass_ind]))/length(testclass_ind))
++ }
++ 
++ beracc<-mean(beracc,na.rm=TRUE)
++ 
++ if(errortype=="CV"){
++         svm_acc[i]<-(totacc*100)
++ }else{
++ if(errortype=="AUC"){
++         pred_acc<-multiclass.roc(testclass,as.numeric(predfit))
++         pred_acc_orig<-pred_acc$auc[1]
++         auc_acc<-pred_acc_orig
++ 
++ 
++         svm_acc[i]<-(auc_acc*100)
++ }else{
++ svm_acc[i]<-(beracc*100)
++ }
++ }
++ 
++ 		#	folderror<-mean(folderror)-(1.96*(sd(folderror)/sqrt(3)))
++ 		folderror<-svm_acc[i]
++ 
++ 
++ 					
++ 	
++ 			#folderror<-model$tot.accuracy
++ 			#folderror<-(1-ber)*100
++ 			rm(trainset)
++ 
++ 		}
++ 		else
++ 		{
++ 		folderror<-1
++ 		}
++ 		fitfunc<-(accuracyweight*(folderror))+(featweight*(1-num_feat))  #-(featweight*100*(num_feat/length(particle)))  #+(featweight*(1-num_feat))
++ 		print(paste("accuracy: ", folderror," num_feat:",num_feat," fitness:", fitfunc,sep=""))
++ 		rm(col_sel)
++ 		rm(num_feat)
++ 		return(fitfunc)
++ 
++ 	}
++ 	
++ 	#run_pso<-function(d_dim)
++ 	{
++ 	 #iitrt:<-numitrs
++ 	 #maxitr<-50 #reinititrs
++ 	 d<-dim(trainm)[2]
++ 	 
++ 	c1<-2.05
++ 
++ 	 c2<-2.05
++ 	 
++ 	 ll<-0
++ 
++ 	 ul<-1
++ 	fitness_x<-array(100000000000000000, dim=c(num_part, 1)) 
++ 	 fitness_gbest<-100000000000000 #(-1)*CMAres$tenfoldacc #10000000000000000
++ 	prev_gbest<-fitness_gbest+1 
++ 	 fitness_lbest<-array(100000000000000000, dim=c(num_part, 1))
++ 	 feat_names<-colnames(trainm)
++ 		feat_list<-feat_names
++ 
++ 		global_no_change<-0
++ 		no_change<-0
++ 		
++ 		global_best_index<-10000000000000000000
++ 		
++ 		min_fit_x<-1000000000000000
++ 
++ 		min_fit_index<-100000000000000000
++ 	
++ 	#position
++ 	 x<-array(0, dim=c(num_part,d_dim[2]))
++ 
++ 	#velocity
++ 	v<-array(0, dim=c(num_part,d_dim[2]))
++ 	
++ 	x_gbest<-array(0, dim=c(d_dim[2]))
++ 
++ 	p_gbest<-array(0, dim=c(d_dim[2]))
++ 	   x_lbest<-array(0, dim=c(num_part, d_dim[2]))
++ 	   count_feat<-array(0,dim=c(num_part))
++ 	 
++ 	for (row in 1:num_part)
++ 	 {
++ 		num_feat<-0
++ 	
++ 		ran<-runif(d_dim[2],0,1)	
++ 		for (col in 1:d_dim[2])		
++ 		{
++ 			if (ran[col]<0.05)
++ 			{
++ 				x[row,col]<-0
++ 				x_lbest[row,col]<-0
++ 				#num_feat<-num_feat+1
++ 
++ 			}
++ 			else
++ 			
++ 			{
++ 				x[row,col]<-1
++ 				x_lbest[row,col]<-1
++ 				num_feat<-num_feat+1
++ 				
++ 				#col_sel[row,num_feat]<-col
++ 				
++ 			}
++ 			
++ 		}
++ 		 count_feat[row]<-num_feat
++ 	 
++ 	 }
++ 	 
++ 	 num_featl<-d 
++ 	 num_featg<-d
++ 
++ 	clusterExport(cl, "x")
++ 
++ 	clusterExport(cl, "eval_fit_test_diff")
++ 	clusterExport(cl, "eval_fit_kfold_diff")
++ 	clusterExport(cl, "trainm")
++ 	clusterExport(cl, "trainclass")
++ 	clusterExport(cl, "accuracyweight")
++ 	clusterExport(cl, "featweight")
++ 	clusterExport(cl, "k")
++         clusterExport(cl, "kname")	
++ 	clusterExport(cl, "svm_cv")
++ 	#clusterExport(cl, library(pROC))
++ 	clusterEvalQ<-function(cl, expr)
++ 	clusterCall(cl, eval, substitute(expr), env=.GlobalEnv)
++ 
++ 	#load a library on all clusters
++ 	clusterEvalQ(cl, library(e1071))
++ 
++ 	clusterCall(cl, function() library(pROC))
++  	agent_behavior<-runif(num_part,0,1)	
++ 	itr_data={}
++ 	k<-0
++ 	#for (k in 1:itr)
++ 		repeat
++ 		{
++ 			k<-k+1
++ 			feat_sel<-0
++ 		
++ 			itr_val={}	
++ 			print("iteration number: ") 
++ 			print(k)
++ 
++ 			min_fit_x<-1000000000000000
++ 			 
++ 			min_fit_index<-100000000000000000 
++ 			part_list={}
++ 			for (i in 1:num_part)
++ 			{
++ 				#each element of the list represents a particle
++ 				part_list=c(part_list, c=list(sapply(x[i,],head)))
++ 				
++ 				if(k%%behavior_reset_itr==0){
++ 					agent_behavior=runif(num_part,0,1)
++ 				}	
++ 			}
++ 				#res1=clusterCall(cl, (-1)*eval_fit_kfold(x[i,], 10,1,0.01))
++ 				
++ 				#res1=clusterCall(cl, function(y) eval_fit_kfold(x[y,],10), 1)
++ 				#res1=parLapply(cl,list(a=as.data.frame(x[1,]),b=as.data.frame(x[5,1:5])),eval_fit_kfold_diff)
++ 				
++ 				#correct method
++ 				#res1<-clusterApply(cl,list(a=as.data.frame(x[1,]),b=as.data.frame(x[5,1:5])),eval_fit_kfold_diff))
++ 			
++ 				all_ind<-seq(1,dim(trainm)[1])
++ 				boot_fitness<-new("list") #{}	
++ 
++ 		if(bootstrap_val==TRUE)
++ 			{
++ 				for(boot_itr in 1:10){
++ 				subtrain_ind<-sample(x=seq(1,dim(trainm)[1]),size=dim(trainm)[1],replace=TRUE)
++ 				subtrain<-trainm[subtrain_ind,]
++ 				subtrainclass<-trainclass[subtrain_ind]
++ 
++ 				subtest_ind<-all_ind[-subtrain_ind]
++ 				subtest<-trainm[subtest_ind,]
++ 				subtestclass<-testclass[subtest_ind]
++ 
++ 			
++ 				res1<-clusterApply(cl,part_list,eval_fit_test_diff,numfolds=numfolds,trainm=subtrain,trainclass=subtrainclass,
++ 						testm=subtest,testclass=subtestclass,errortype=errortype)
++ 				
++ 				#res1<-clusterApply(cl,part_list,eval_fit_kfold_diff,numfolds=numfolds,errortype="BER")
++ 				fitness_x<-sapply(res1,head)
++ 				boot_fitness[[boot_itr]]<-fitness_x #c(boot_fitness[[bool_itr]],fitness_x)
++ 				
++ 				}
++ 				
++ 				boot_fitness<-as.data.frame(boot_fitness)
++ 
++ 				boot_fitness<-apply(boot_fitness,1,function(x){mean(x,na.rm=TRUE)+1.96*(sd(x,na.rm=TRUE)/sqrt(boot_itr))}) #mean(boot_fitness,na.rm=TRUE)
++ 				fitness_x<-(-1)*boot_fitness #fitness_x
++ 			
++ 			}	
++ 				else
++ 				{
++ 				res1<-clusterApply(cl,part_list,eval_fit_kfold_diff,numfolds=numfolds,errortype=errortype)
++                                 fitness_x<-sapply(res1,head)	
++ 				fitness_x<-(-1)*fitness_x
++ 				}
++ 
++ 				print("fitness is: ")
++ 				print(fitness_x)	
++ 				if(FALSE){
++ 				for(i in 1:num_part){
++ 				fitness_curx<-eval_fit_kfold_diff(part_list[[i]])
++ 				fitness_x<-c(fitness_x,(-1)*fitness_curx)
++ 				print("fitness is ")
++ 				print(fitness_curx)
++ 				print(part_list[i])
++ 				}
++ 				}
++ 			
++ 				med_fit_x<-(-1)*median(fitness_x)	
++ 				min_fit_x<-min(fitness_x)
++ 				min_fit_index<-which(fitness_x==min_fit_x)
++ 				
++ 				bestind<-runif(1,1,length(which(fitness_x==min_fit_x)))
++ 				bestind<-min_fit_index[bestind]
++ 				#print(bestind)
++ 				numfeatl<-length(which(x[bestind[1],]==1))
++ 				
++ 				for (i in 1:num_part)
++ 				{
++ 					if(fitness_x[i]<fitness_lbest[i])
++ 					{
++ 					
++ 						fitness_lbest[i]<-fitness_x[i]
++ 						for (j in 1:d_dim[2])
++ 						{
++ 							
++ 							x_lbest[i,j] <- x[i,j]
++ 						
++ 						}
++ 					
++ 					}
++ 				
++ 				}
++ 			 rank_vec<-rank(fitness_x)
++ 			 
++ 			 #update the global best and its fitness
++ 			if(min_fit_x < fitness_gbest)
++ 			{
++ 				no_change<-0
++ 
++ 				
++ 						fitness_gbest<-min_fit_x
++ 					
++ 						global_best_index<-bestind
++ 						num_featg<-num_featl
++ 						print ("global fitness updated to :")
++ 						print(fitness_gbest)
++ 						print(min(fitness_x))
++ 						print("min fit index")
++ 						print(min_fit_index)
++ 						print(global_best_index)
++ 						print ("golbal best num features updated to")
++ 						
++ 						print(length(which(x[global_best_index,]==1)))
++ 						
++ 						#global_best_index<-round(runif(1,1,length(global_best_index)))
++ 						
++ 						for (j in 1:d_dim[2])
++ 						{
++ 							
++ 							x_gbest[j]<-x[global_best_index,j]
++ 							
++ 						}
++ 						print(length(which(x_gbest==1)))
++ 			}
++ 			else
++ 			{
++ 				no_change<-no_change+1
++ 
++ 				if(no_change>maxitrreset)
++ 				{
++ 				
++ 					global_no_change<-global_no_change+1
++ 					print("RE-INITIALIZING...")
++ 				 	#stop(paste("No change for ",maxitr," iterations",sep=""))	
++ 					 fitness_lbest<-array(100000000000000000, dim=c(num_part, 1))
++ 					#print(paste("No change for ",maxitr," iterations. Exiting PSO.",sep=""))
++ 					if(global_no_change>maxitr){
++ 				
++ 					#	print(dim(x_lbest))	
++ 					#	x_lbest<-apply(x_lbest,2,median)
++ 						print(paste("No change for ",global_no_change," iterations. Exiting PSO.",sep=""))
++ 					break;
++ 					}
++ 				#	print("exited")
++ 					min_fit_x<-1000000000000000000000
++ 					
++ 					# if(k%%behavior_reset_itr==0)
++ 					{
++                                         agent_behavior=runif(num_part,0,1)
++                                 	} 
++ 					for (row in 1:num_part)
++ 					{
++ 						num_feat<-0
++ 					
++ 
++ 						for (col in 1:d_dim[2])
++ 
++ 						{
++ 							ran<-runif(d_dim[2],0,1)
++ 							if (ran[col]<0.8)
++ 							{
++ 								ran2<-runif(1,0,1)
++ 								
++ 								if(ran2<0.9)
++ 								{	
++ 									x[row,col]<-0
++ 								}
++ 								else
++ 								{
++ 									x[row,col]<-1
++ 									num_feat<-num_feat+1	
++ 								}
++ 
++ 								#x_lbest[row,col]<-x_gbest[col]
++ 
++ 							#	if(ran==1)
++ 							#	{
++ 							#		num_feat<-num_feat+1
++ 							#	}
++ 							}else{
++ 								x[row,col]<-x_gbest[col]
++ 								x_lbest[row,col]<-x_gbest[col]
++ 								if(x_gbest[col]==1){
++ 								num_feat<-num_feat+1}
++ 
++ 								#col_sel[row,num_feat]<-col
++ 
++ 							}
++ 
++ 						}
++ 						count_feat[row]<-num_feat
++ 
++ 					}				
++ 
++ 
++ 					no_change<-0
++ 				}
++ 			}
++ 			
++ 			
++ 				#print("x_lbest")
++                                 #print(x_lbest[i,])
++                                 #print(x[i,])
++ 				#print(x_gbest)
++ 
++ 			 ###update the particle velocity and position
++ 
++ 				nn_search_res<-find_similar_samples(x,NA,num_neighbors)
++ 				print(dim(nn_search_res))
++ 				print(head(nn_search_res))
++ 			for (i in 1:num_part)
++ 			{
++ 					feat_sel<-0
++ 			      
++ 				
++ 				#w<-1/(3-exp(-num_part/200)+((rank_vec[i])/(8*d_dim[2]))^2)
++ 				#w<-(exp(rank_vec[i]/num_part))-(exp(1/num_part))	
++ 				#w<-((exp(rank_vec[i]/num_part))/1.7)-((exp(1/num_part))/1.705)
++ 				#w<-((exp(rank_vec[i]/num_part))/1.359)
++ 				#constant; global search
++ 				#w<-1				
++ 				
++ 				#random inertia;
++ 				w<-(-1)+(runif(1,0,1)/2)
++ 				
++ 				#linearly increasing with rank
++ 				#w<-wmin+(((wmax-wmin)/num_part)*rank_vec[i])
++ 
++ 				#w<-wmax-(((wmax-wmin)/num_part)*rank_vec[i])
++ 				
++ 				#w<-(wmax-wmin)*((itr-k)/itr)+wmin
++ 				#print("x_lbest")
++ 				#print(x_lbest[i,])
++ 				#print(x[i,])		
++ 
++ 
++ 
++ 				x_curbest<-x_gbest
++                                         if(agent_behavior[i]<confusionprob)
++                                         {
++                                                         ran<-runif(d_dim[2],0,1)
++                                                 
++                 for (col in 1:d_dim[2]) 
++                 {                               
++                                                         
++                         if (ran[col]<0.9)         
++                         {
++                                 x_curbest[col]<-0
++ 
++                         }else{
++ 
++                                 x_curbest[col]<-1
++ 
++                         }
++ 
++                 }
++                 
++ 
++                                                 #x_gbest[j]<- #generaterandom
++                                         }else{
++                                                 if(agent_behavior[i]<(confusionprob+followerprob)){
++                                                         x_curbest_ind<- nn_search_res[i,c(1:num_neighbors)]  #nn_search(i,x) #getnearestneighbor
++                                 			print("nearest neighbors are ")
++ 							print(x_curbest_ind)
++ 				                	if(num_neighbors>1){
++ 							x_curbest<-apply(x[x_curbest_ind,],2,function(x){y<-quantile(x,0.75);return(round(y));})
++ 							}else{
++ 							x_curbest<-x[x_curbest_ind[1],]
++ 							}	
++ 							
++ 						}else{
++ 							x_curbest<-x_gbest
++ 						}
++ 
++                                         }
++ 		
++ 			r1<-runif(d_dim[2],0,1)
++ 
++                                         r2<-runif(d_dim[2],0,1)			
++ 			
++ 			r3<-runif(d_dim[2],0,1)
++ 	
++ 			       for (j in 1:d_dim[2])
++ 				{
++ 					#r1<-runif(1,0,1)
++ 
++ 					#r2<-runif(1,0,1)
++ 
++ 					#r3<-runif(1,0,1)
++ 							
++ 					v[i,j]<-((w*v[i,j])+(c1*r1[j]*(x_lbest[i,j]-x[i,j]))+(c2*r2[j]*(x_curbest[j]-x[i,j])))
++ 					
++ 					if(v[i,j]>6)
++ 					{
++ 						v[i,j]=6
++ 					}	
++ 					if(v[i,j]< (-6))
++ 					{
++ 						v[i,j]=-6
++ 					}
++ 					
++ 					S<-1/(1+exp(-v[i,j]))
++ 					
++ 					if(S>r3[j])
++ 					{
++ 							x[i,j]<-1
++ 
++ 							feat_sel<-feat_sel+1
++ 							
++ 							count_feat[i]<-feat_sel						
++ 
++ 					}			
++ 					else
++ 					{
++ 						x[i,j]<-0
++ 						
++ 					}
++ 				}
++ 					
++ 			}		
++ 			itr_val<-cbind(itr_val, k)
++ 			itr_val<-cbind(itr_val, w)
++ 			itr_val<-cbind(itr_val, num_featg)
++ 			itr_val<-cbind(itr_val, (-1)*fitness_gbest)
++ 			itr_val<-cbind(itr_val, (-1)*min_fit_x)
++ 			itr_val<-cbind(itr_val, count_feat[min_fit_index])
++ 			itr_val<-cbind(itr_val,length(which(x_gbest==1)))
++ 			itr_val<-cbind(itr_val,length(which(x_lbest[min_fit_index,]==1)))
++ 			itr_data<-rbind(itr_data, itr_val)
++ 			
++ 		
++ 			 x_lbest_mean<-apply(x_lbest,2,mean)
++ 	
++ 		#	print(head(x_lbest))
++ 			feat_global_num<-length(which(x_gbest==1))
++ 
++ 	                feat_ind<-which(x_lbest_mean>=(minselect.pct))
++ 			
++ 			len_feat_ind<-length(feat_ind)
++ 
++ 			#	if(len_feat_ind<=max_num_feats*2 & len_feat_ind>2 & med_fit_x>90 & len_feat_ind<=feat_global_num & no_change>50){
++ 
++ 			#	      print(paste("Population consensus reached after ",k," iterations! Exiting PSO.",sep=""))
++ 			#		break;
++ 				
++ 			#	}
++ 
++ 				 if(fitness_gbest<(-90) & feat_global_num<=max_num_feats){
++ 				
++ 				# if(len_feat_ind<=max_num_feats){
++                                       print(paste("Population consensus reached after ",k," iterations! Exiting PSO.",sep=""))
++                                         break;
++ 
++                                 }
++ 
++ 				
++ 				if(k>itr){
++ 						print("k")
++ 						break;
++ 				}
++ 		}
++ 		
++ 		filestr<-paste(outloc,  "multiobj_itr_descpso.txt", sep="")
++ 
++ 	cnames_sum<-c("Iteration #", "Inertia", "Number of features","Global best fitness","Current best fitness","Number of features in current best agent","Number of features in global best", 
++ 			"Number of features in local best")
++ 
++ 	colnames(itr_data)<-cnames_sum
++ 	write.table(itr_data, file=filestr, sep="\t", row.names=F)
++ 
++ 		print("numfeatg is ")
++ 		print(num_featg)
++ 
++ 		feat_col<-0
++ 		#feat_list<-array("",dim(1))
++ 
++ 		#feat_ind<-which(x_gbest==1)
++ 
++ 		print(dim(x_lbest))
++ 
++ 		 x_lbest_mean<-apply(x_lbest,2,mean)
++ 
++ 
++                 feat_ind<-which(x_lbest_mean>=minselect.pct)
++ 
++                 print("number of features selected using population mean")
++                 print(length(feat_ind))
++ 
++ 		if(length(feat_ind)<200){
++                 	
++ 		feat_ind<-which(x_gbest==1)
++ 		}
++ 
++                 feat_list<-feat_names[feat_ind]
++ 
++                 feat_col<-feat_ind
++                 print("number of features selected using global best")
++                 print(length(which(x_gbest==1)))
++ 
++ 		print("best accuracy")
++ 		print((-1)*fitness_gbest)
++ 
++ 		if(length(feat_ind)<1){
++ 		print(stop("No features selected!"))
++ 		}
++ 		sumr<-paste("global num features ", length(feat_list)-1, "global best set of features ", x_gbest, "global best accuracy ", 1-fitness_gbest)
++ 
++ 	filestr2<-paste(outloc,  "selected_feature_index.csv", sep="")
++ 	write.table(feat_col, file=filestr2, sep=",", row.names=FALSE)
++ 
++ 		trainmata<-trainm
++ 		testmata<-testm
++ 		rm(trainm)
++ 		rm(testm)
++ 	 
++ 		#print(feat_col)
++ 		#print(trainmata[1:2,])
++ 		finalset<-trainmata[,c(feat_col)]
++ 			
++ 
++ 		test_mod<-testmata[,c(feat_col)]
++ 
++ 
++ 	filestr2<-paste(outloc, "modified_train.csv", sep="")
++ 
++ 	Class=trainclass
++ 
++ 	modtrain<-cbind(finalset, Class)
++ 	
++ 	Class=testclass
++ 	modtest<-cbind(test_mod, Class)
++ 
++ 	write.table(modtrain, file=filestr2, sep=",", row.names=FALSE)
++ 
++ 	filestr3<-paste(outloc, "modified_test.csv", sep="")
++ 	write.table(modtest, file=filestr3, sep=",", row.names=FALSE)
++ 
++ 
++ 	modtrain<-data.frame(modtrain)
++ 	modtest<-data.frame(modtest)
++ 	#model_train_err<-svm(finalset, trainclass,  kernel=kname, type="C", cross=10)
++ 
++ 	#model_train_valid<-svm(finalset, trainclass,   kernel=kname, type="C")
++ 
++ 	model_train_err<-svm(modtrain$Class~., data=modtrain, type="C", cross=10)
++ 
++ 	print("Modified train 10 fold accuracy using train data is ")
++         print(model_train_err$tot.accuracy)
++ 
++           filestr3<-paste(outloc, "10foldaccuracy.csv", sep="")
++         write.table(model_train_err$tot.accuracy, file=filestr3, sep=",", row.names=FALSE)
++ 
++ 
++ 
++ #	model_train_valid<-svm(modtrain$Class~., data=modtrain, type="C")
++ 
++ 	model_train_valid<-svm(finalset, trainclass,   kernel=kname, type="C")	
++ 		pred_train<-predict(model_train_valid, finalset)
++ 		train.table<-table(pred_train, trainclass)
++ 		
++ 	
++ 
++ 
++ 
++ 	error<-1-sum(diag(train.table))/(dim(finalset)[1])
++ 	print("Modified train accuracy is ")
++ 	print(1-error)
++ 
++ 	print("train confusion matrix is ")
++ 	print(train.table)
++ 	print("Train dimension is ")
++ 	print(dim(finalset))
++ 	
++ 	#print(modtrain[1:4,])
++ 	#print(modtest[1:4,])
++ 	
++ 	 mod_dim=dim(modtest)[2]
++ 	 
++ 	 test_mod<-as.data.frame(test_mod)
++ 
++ 	#	pred_test<-predict(model_train_valid, test_mod)
++ 		
++ 	#	test.table<-table(pred_test, testclass)
++ 
++ 	#knn.table<-table(test_mod[,1],knn(finalset[,-c(1)],test_mod[,-c(1)],finalset[,1],k=best_k[1],l=0,prob=FALSE, use.all=TRUE))
++ 	  
++ 	#print("test predicted table")
++ 	#print(test.table)
++ 
++ 	#testacc<-sum(diag(test.table))/(dim(test_mod)[1])
++ 	#print("Test accuracy is ")
++ 	#print(testacc)
++ 
++ 	#finalsetx<-finalset
++ 	#finalsety<-trainclass
++ 
++ 	#kname="radial"
++ 
++ 	# filestr3<-paste(outloc, "testaccuracy.csv", sep="")
++         #write.table(testacc, file=filestr3, sep=",", row.names=FALSE)
++ 
++ 	#res<-svm_10fold_blind(10,finalsetx,finalsety,test_mod, testclass, kname, classA, classB)
++ 	#folderror<-(res$avg)
++ 
++ 	#print("Modified 10fold blind test accuracy is ")
++ 	#print(1-folderror)
++ 
++ 	print("Test dimension is ")
++ 	print(dim(test_mod))
++ 
++ 	rm(test_mod)
++ 	rm(finalset)
++ 	}
++ 		
++ 		#run_pso(data_dim)		
++ 
++ trainf=paste(outloc, "modified_train.csv", sep="")
++ testf=paste(outloc, "modified_test.csv", sep="")
++ trainm<-read.csv(trainf, header=TRUE)
++ 
++ testm<-read.csv(testf, header=TRUE)
++ trainm<-as.data.frame(trainm)
++ testm<-as.data.frame(testm)
++ mod<-svm(trainm$Class~., data=trainm,type="C")
++ testmim=dim(testm)[2]
++ 
++ trainmim=dim(trainm)[2]
++ 
++ pred<-predict(mod,testm[,-c(testmim)])
++ test.table=table(pred,testm$Class)
++ print("Test confusion matrix is ")
++ print(test.table)
++ testacc<-(sum(diag(test.table))/(dim(testm)[1]))
++ print("Test acc is ")
++ print(testacc)
++ 
++ filestr3<-paste(outloc, "testaccuracy.csv", sep="")
++ write.table(testacc, file=filestr3, sep=",", row.names=FALSE)
++ 
++ 
++ #testy<-testy[order(testy)]
++ #pred<-pred[order(testy)]
++ 
++ 
++ if(dim(trainm)[2]>3)
++ {
++ 
++ #trainx=as.matrix(trainm[,-c(dim(trainm)[2])])
++ #trainy=trainm[,dim(trainm)[2]]
++ 
++ #testx=as.matrix(testm[,-c(Class)])
++ #testy=testm[,dim(testm)[2]]
++ 
++ trainx=subset(trainm, select=-c(Class))
++ trainy=trainm$Class
++ 
++ testx=subset(testm, select=-c(Class))
++ testy=testm$Class
++ 
++ mod<-svm(trainm$Class~., data=trainm,type="C", cross=10)
++ #fitfunc<-testacc #-(0.04*(1-testmim-1))
++ 
++ print("train 10 fold")
++ print(mod$tot.accuracy)
++ 
++ filestr3<-paste(outloc, "psotenfoldaccuracy.csv", sep="")
++         write.table(mod$tot.accuracy, file=filestr3, sep=",", row.names=FALSE)
++ 
++ trainf=paste(outloc, "modified_train.csv", sep="")
++ testf=paste(outloc, "modified_test.csv", sep="")
++ trainm<-read.csv(trainf, header=TRUE)
++ testm<-read.csv(testf, header=TRUE)
++ trainm<-as.data.frame(trainm)
++ testm<-as.data.frame(testm)
++ 
++ mod<-svm(trainm$Class~., data=trainm,type="C")
++ testmim=dim(testm)[2]
++ 
++ pred<-predict(mod,testm[,-c(testmim)])
++ test.table=table(pred,testm$Class)
++ print("Test confusion matrix is ")
++ print(test.table)
++ 
++ testacc<-(sum(diag(test.table))/(dim(testm)[1]))
++ print("Test acc is ")
++ print(testacc)
++ filestr3<-paste(outloc, "testaccuracy.csv", sep="")
++         write.table(testacc, file=filestr3, sep=",", row.names=FALSE)
++ 
++ pred_acc<-multiclass.roc(testm$Class,as.numeric(pred))
++         pred_acc_orig<-pred_acc$auc[1]
++         auc_acc<-pred_acc_orig
++ 
++ print("Test AUC:")
++ print(auc_acc)
++  filestr3<-paste(outloc, "testAUC.csv", sep="")
++  write.table(auc_acc, file=filestr3, sep=",", row.names=FALSE)
++ 
++ 
++ 
++ pred<-predict(mod,trainm[,-c(trainmim)])
++ train.table=table(pred,trainm$Class)
++ 
++ trainacc<-(sum(diag(train.table))/(dim(trainm)[1]))
++ print("Train acc is ")
++ print(trainacc)
++ filestr3<-paste(outloc, "trainaccuracy.csv", sep="")
++ write.table(trainacc, file=filestr3, sep=",", row.names=FALSE)
++ }
++ #)
++ #print("# of features after CMA:")
++ #print(dim(CMAres$modtrainmata))
++ print("# of features after PSO:")
++ print(dim(trainm))
++ }else{
++ 
++ #print("# of features after CMA:")
++ #print(dim(CMAres$modtrainmata))
++ }
+[1] "iteration number: "
+[1] 1
+[1] "fitness is: "
+ [1] -3.0447970  2.6549158 -0.2777345 -2.9804061  0.2420302 -0.6144644
+ [7] -0.9858260 -4.1260772 -5.4848636  1.6366804 -3.6670300  5.1205121
+[13] -4.1649359 -2.9804061 -2.9804061 -1.9367367 -3.8305785 -4.7624865
+[19] -6.5178745 -2.9804061 -5.6125221 -2.9804061 -3.0866923 -1.2784251
+[25] -2.9804061 -3.2026203 -6.6076160  1.3800075 -7.5753494 -0.7470786
+[31] -4.1000568 -3.1508542  0.5155443 -4.5431164 -2.9804061 -2.9493557
+[37] -2.3939234 -0.5614701 -4.5470772 -3.4302917  1.7586308 -4.4399531
+[43] -6.3441206 -3.0804061 -2.9804061 -2.9804061 -0.2565579 -5.7296063
+[49] -2.4635746 -3.0657761
+[1] "global fitness updated to :"
+[1] -7.575349
+[1] -7.575349
+[1] "min fit index"
+[1] 29
+[1] 29
+[1] "golbal best num features updated to"
+[1] 40
+[1] 40
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    4   14    0    3    3
+[2,]    2    4   14    0    3    3
+[3,]    3    4   14    0    1    1
+[4,]    4   14   15    0    0    0
+[5,]    5    4   10    0    1    1
+[6,]    6    4   14    0    1    1
+[1] "nearest neighbors are "
+[1]  1  4 14
+[1] "nearest neighbors are "
+[1]  2  4 14
+[1] "nearest neighbors are "
+[1]  3  4 14
+[1] "nearest neighbors are "
+[1]  4 14 15
+[1] "nearest neighbors are "
+[1]  6  4 14
+[1] "nearest neighbors are "
+[1]  7  4 14
+[1] "nearest neighbors are "
+[1]  8  4 14
+[1] "nearest neighbors are "
+[1]  9 19  4
+[1] "nearest neighbors are "
+[1] 10  5  4
+[1] "nearest neighbors are "
+[1] 11  4 13
+[1] "nearest neighbors are "
+[1] 12  6 11
+[1] "nearest neighbors are "
+[1]  4 14 15
+[1] "nearest neighbors are "
+[1]  4 14 15
+[1] "nearest neighbors are "
+[1] 16 39  4
+[1] "nearest neighbors are "
+[1]  4 14 15
+[1] "nearest neighbors are "
+[1]  4 14 15
+[1] "nearest neighbors are "
+[1] 26  4 13
+[1] "nearest neighbors are "
+[1] 27 38 50
+[1] "nearest neighbors are "
+[1] 28  4 14
+[1] "nearest neighbors are "
+[1] 29  5 40
+[1] "nearest neighbors are "
+[1] 30  1  4
+[1] "nearest neighbors are "
+[1] 31 44  4
+[1] "nearest neighbors are "
+[1] 34 26  4
+[1] "nearest neighbors are "
+[1] 38  4 14
+[1] "nearest neighbors are "
+[1] 39 16  1
+[1] "nearest neighbors are "
+[1] 40 38  4
+[1] "nearest neighbors are "
+[1] 41  5  4
+[1] "nearest neighbors are "
+[1] 43 11  4
+[1] "nearest neighbors are "
+[1] 44  4 14
+[1] "nearest neighbors are "
+[1]  4 14 15
+[1] "nearest neighbors are "
+[1]  4 14 15
+[1] "nearest neighbors are "
+[1] 50  4 14
+[1] "iteration number: "
+[1] 2
+[1] "fitness is: "
+ [1]  -1.63308903  -0.86412474  -2.05494325  -7.86362576   5.00827463
+ [6]  -4.95189110   0.63214318  -6.07629954 -14.63794809 -12.48374372
+[11]   2.63812039  -8.50712376  -1.27372806 -11.34106080  -1.49452961
+[16]   7.20627188  -0.73835769  -0.93178674  -8.37993117  -0.60085822
+[21] -21.87167613 -17.12289148 -14.06198453   0.58241561 -16.23960511
+[26]  11.14739892  -0.44200260  -6.40232283  12.28163101   2.22099604
+[31]  -2.08421301  -0.07898922  -8.84241695   8.32177589 -10.80083203
+[36]  -2.07597695  -1.77364623  -2.72679489 -17.45075772 -17.63241809
+[41]   1.01253988  -2.99875882  -0.46669185 -10.51078947  -1.73935872
+[46] -12.50576405 -14.76483366 -17.93573450  -5.91867237 -14.51003907
+[1] "global fitness updated to :"
+[1] -21.87168
+[1] -21.87168
+[1] "min fit index"
+[1] 21
+[1] 21
+[1] "golbal best num features updated to"
+[1] 13
+[1] 13
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   21   23    0   12   15
+[2,]    2   33   11    0   14   17
+[3,]    3   16   20    0   14   15
+[4,]    4   45   10    0   15   16
+[5,]    5   26   37    0   16   16
+[6,]    6    2   14    0   18   18
+[1] "nearest neighbors are "
+[1]  1 21 23
+[1] "nearest neighbors are "
+[1]  2 33 11
+[1] "nearest neighbors are "
+[1]  3 16 20
+[1] "nearest neighbors are "
+[1]  4 45 10
+[1] "nearest neighbors are "
+[1]  6  2 14
+[1] "nearest neighbors are "
+[1]  7 49 24
+[1] "nearest neighbors are "
+[1]  8 15 17
+[1] "nearest neighbors are "
+[1]  9 47 43
+[1] "nearest neighbors are "
+[1] 10 28  4
+[1] "nearest neighbors are "
+[1] 11 18  2
+[1] "nearest neighbors are "
+[1] 12 38  3
+[1] "nearest neighbors are "
+[1] 14 15 46
+[1] "nearest neighbors are "
+[1] 15  8 14
+[1] "nearest neighbors are "
+[1] 16  3 26
+[1] "nearest neighbors are "
+[1] 20 19 17
+[1] "nearest neighbors are "
+[1] 22 37 28
+[1] "nearest neighbors are "
+[1] 26 27 16
+[1] "nearest neighbors are "
+[1] 27 26 49
+[1] "nearest neighbors are "
+[1] 28 10 14
+[1] "nearest neighbors are "
+[1] 29 30 37
+[1] "nearest neighbors are "
+[1] 30 29  4
+[1] "nearest neighbors are "
+[1] 31 41 48
+[1] "nearest neighbors are "
+[1] 34 32 37
+[1] "nearest neighbors are "
+[1] 38 45  4
+[1] "nearest neighbors are "
+[1] 39 40 35
+[1] "nearest neighbors are "
+[1] 40 39 15
+[1] "nearest neighbors are "
+[1] 41 31  4
+[1] "nearest neighbors are "
+[1] 43 33 17
+[1] "nearest neighbors are "
+[1] 44 37 42
+[1] "nearest neighbors are "
+[1] 45  4 14
+[1] "nearest neighbors are "
+[1] 46 17 25
+[1] "nearest neighbors are "
+[1] 50 30 13
+[1] "iteration number: "
+[1] 3
+[1] "fitness is: "
+ [1]  -3.4648401  -3.4614200 -12.1820837   2.5710460 -11.5967485  -7.1144256
+ [7]  -8.7641920  -6.7428886 -12.4058945  -4.1242622 -13.8843936  -6.0220416
+[13]  -9.1108386  -6.6839609 -10.9501996  -8.3177527  -5.5250833  -6.4563680
+[19]  -6.0128053  -9.1559827  -4.5277558   5.5728199  -2.3241441   1.2574679
+[25]   1.0957500  -7.8882899  -0.9276286 -11.5316370  -8.4819490 -12.0038600
+[31] -14.3925940  -3.0905715 -12.8988952  -7.2842671 -19.2986682 -18.0824715
+[37]  -1.4812238 -13.4125549 -18.6585065  -3.0045670 -10.1471393  -8.8317547
+[43]  -9.4973961  -1.0336743  -5.4672163  -3.4626528 -20.5651247 -10.9133605
+[49] -16.3443046  -4.3701147
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   11   12    0   15   17
+[2,]    2   25   50    0   15   17
+[3,]    3   50   16    0   14   15
+[4,]    4   22   11    0   15   16
+[5,]    5   45   50    0   13   15
+[6,]    6   21   16    0   12   17
+[1] "nearest neighbors are "
+[1]  1 11 12
+[1] "nearest neighbors are "
+[1]  2 25 50
+[1] "nearest neighbors are "
+[1]  3 50 16
+[1] "nearest neighbors are "
+[1]  4 22 11
+[1] "nearest neighbors are "
+[1]  6 21 16
+[1] "nearest neighbors are "
+[1]  7 12 37
+[1] "nearest neighbors are "
+[1]  8 39  3
+[1] "nearest neighbors are "
+[1]  9  8 15
+[1] "nearest neighbors are "
+[1] 10 13 28
+[1] "nearest neighbors are "
+[1] 11  1  4
+[1] "nearest neighbors are "
+[1] 12  7  4
+[1] "nearest neighbors are "
+[1] 14 27 36
+[1] "nearest neighbors are "
+[1] 15 23 26
+[1] "nearest neighbors are "
+[1] 16  3  6
+[1] "nearest neighbors are "
+[1] 20 17 42
+[1] "nearest neighbors are "
+[1] 22  4 25
+[1] "nearest neighbors are "
+[1] 26 23 15
+[1] "nearest neighbors are "
+[1] 27 14  5
+[1] "nearest neighbors are "
+[1] 28 10 48
+[1] "nearest neighbors are "
+[1] 29 38 50
+[1] "nearest neighbors are "
+[1] 30 40 37
+[1] "nearest neighbors are "
+[1] 31 43 35
+[1] "nearest neighbors are "
+[1] 34 42 38
+[1] "nearest neighbors are "
+[1] 38 29 34
+[1] "nearest neighbors are "
+[1] 39  8 50
+[1] "nearest neighbors are "
+[1] 40 30 12
+[1] "nearest neighbors are "
+[1] 41 21 24
+[1] "nearest neighbors are "
+[1] 43 31 34
+[1] "nearest neighbors are "
+[1] 44 13 32
+[1] "nearest neighbors are "
+[1] 45  5 17
+[1] "nearest neighbors are "
+[1] 46 20 15
+[1] "nearest neighbors are "
+[1] 50 29 39
+[1] "iteration number: "
+[1] 4
+[1] "fitness is: "
+ [1]  -3.7440208  -0.0544555 -11.2207027 -12.0543366  13.0451535  -1.2733458
+ [7] -12.6933574  -4.5571108  -5.5614824  -2.4919258 -11.1961046 -10.9904579
+[13]  -5.3159960   2.2668026  -4.7802839 -10.1767631   4.7826123 -16.0921708
+[19]  -5.6547052   4.4402597 -29.4365325  -8.7299683 -10.6517988 -11.7210943
+[25] -12.9967743   4.9993451 -12.8093202 -10.3247516  -5.7753405 -10.3548409
+[31]  -0.8166307   0.5595758 -12.7968594 -18.3006331  -6.6278617   2.7502514
+[37]   9.5313996 -11.4113142  -0.8717994 -13.6037329  -8.0866679  -4.3235652
+[43]   1.8807537 -15.1622172   1.5416210  -9.0724654  -9.2185782  -2.6680905
+[49] -15.0340597  -3.0031436
+[1] "global fitness updated to :"
+[1] -29.43653
+[1] -29.43653
+[1] "min fit index"
+[1] 21
+[1] 21
+[1] "golbal best num features updated to"
+[1] 14
+[1] 14
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   17   25    0   13   14
+[2,]    2   42    6    0   14   18
+[3,]    3   27   13    0   16   18
+[4,]    4   47   19    0   14   16
+[5,]    5   15   20    0   17   17
+[6,]    6   16   26    0   14   15
+[1] "nearest neighbors are "
+[1]  1 17 25
+[1] "nearest neighbors are "
+[1]  2 42  6
+[1] "nearest neighbors are "
+[1]  3 27 13
+[1] "nearest neighbors are "
+[1]  4 47 19
+[1] "nearest neighbors are "
+[1]  6 16 26
+[1] "nearest neighbors are "
+[1]  7 15 26
+[1] "nearest neighbors are "
+[1]  8 27 34
+[1] "nearest neighbors are "
+[1]  9 41 42
+[1] "nearest neighbors are "
+[1] 10 26 12
+[1] "nearest neighbors are "
+[1] 11 29 25
+[1] "nearest neighbors are "
+[1] 12 10 30
+[1] "nearest neighbors are "
+[1] 14 39 48
+[1] "nearest neighbors are "
+[1] 15 21 37
+[1] "nearest neighbors are "
+[1] 16  6 21
+[1] "nearest neighbors are "
+[1] 20 19 17
+[1] "nearest neighbors are "
+[1] 22  5  4
+[1] "nearest neighbors are "
+[1] 26 10 37
+[1] "nearest neighbors are "
+[1] 27 35  3
+[1] "nearest neighbors are "
+[1] 28 38 11
+[1] "nearest neighbors are "
+[1] 29 38 17
+[1] "nearest neighbors are "
+[1] 30 45 17
+[1] "nearest neighbors are "
+[1] 31 16 45
+[1] "nearest neighbors are "
+[1] 34  8  7
+[1] "nearest neighbors are "
+[1] 38 46 29
+[1] "nearest neighbors are "
+[1] 39 14  5
+[1] "nearest neighbors are "
+[1] 40  4 11
+[1] "nearest neighbors are "
+[1] 41 38  9
+[1] "nearest neighbors are "
+[1] 43 33 10
+[1] "nearest neighbors are "
+[1] 44 45 20
+[1] "nearest neighbors are "
+[1] 45 30 44
+[1] "nearest neighbors are "
+[1] 46 38 26
+[1] "nearest neighbors are "
+[1] 50  1 29
+[1] "iteration number: "
+[1] 5
+[1] "fitness is: "
+ [1] -19.3623964  -9.7512627  -8.4229089  -8.2684775 -16.3640409 -18.7993007
+ [7]   1.7346129  -3.3332760   2.1020536 -10.5007182  -7.8880191 -10.8619868
+[13] -10.3977905 -26.3547334  -9.0428474  -0.6742128  -0.7857257  -0.8351115
+[19]  -8.5140541  -3.1786456  -3.5881471 -11.2473827  -0.3027262  -2.3137574
+[25]  -5.7223259 -18.9261890 -10.5334318  -8.6329560  -9.2282959  -6.5856268
+[31] -18.9698885   2.7144123  -5.3199740  -4.4512923 -17.2983576 -21.0809132
+[37]  -9.0958251  -2.6859357 -16.5573769   2.1207054  11.9917660 -10.9936898
+[43] -15.0732224  -1.6813574  -7.4344181  -5.6112206  -1.8060845 -13.2951716
+[49] -11.9077130  -5.7114478
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   15   30    0   14   15
+[2,]    2    7   35    0   15   15
+[3,]    3   18   20    0   15   16
+[4,]    4   14   23    0   15   15
+[5,]    5   24   26    0   13   16
+[6,]    6   10   12    0   14   15
+[1] "nearest neighbors are "
+[1]  1 15 30
+[1] "nearest neighbors are "
+[1]  2  7 35
+[1] "nearest neighbors are "
+[1]  3 18 20
+[1] "nearest neighbors are "
+[1]  4 14 23
+[1] "nearest neighbors are "
+[1]  6 10 12
+[1] "nearest neighbors are "
+[1]  7 34  2
+[1] "nearest neighbors are "
+[1]  8 40 42
+[1] "nearest neighbors are "
+[1]  9  7 34
+[1] "nearest neighbors are "
+[1] 10  6 37
+[1] "nearest neighbors are "
+[1] 11 25  7
+[1] "nearest neighbors are "
+[1] 12  6 26
+[1] "nearest neighbors are "
+[1] 14  4  2
+[1] "nearest neighbors are "
+[1] 15  1 45
+[1] "nearest neighbors are "
+[1] 16 22 31
+[1] "nearest neighbors are "
+[1] 20 19 17
+[1] "nearest neighbors are "
+[1] 22 16 20
+[1] "nearest neighbors are "
+[1] 26 12  5
+[1] "nearest neighbors are "
+[1] 27  4  5
+[1] "nearest neighbors are "
+[1] 28 30 10
+[1] "nearest neighbors are "
+[1] 29 48 32
+[1] "nearest neighbors are "
+[1] 30 50 29
+[1] "nearest neighbors are "
+[1] 31 37 29
+[1] "nearest neighbors are "
+[1] 34  7 25
+[1] "nearest neighbors are "
+[1] 38  1 15
+[1] "nearest neighbors are "
+[1] 39 49  5
+[1] "nearest neighbors are "
+[1] 40  3  8
+[1] "nearest neighbors are "
+[1] 41 19 45
+[1] "nearest neighbors are "
+[1] 43 10 31
+[1] "nearest neighbors are "
+[1] 44 37 10
+[1] "nearest neighbors are "
+[1] 45 10 15
+[1] "nearest neighbors are "
+[1] 46 12 49
+[1] "nearest neighbors are "
+[1] 50 30 32
+[1] "iteration number: "
+[1] 6
+[1] "fitness is: "
+ [1]  -7.6934054   5.3517027 -13.1915562  -8.8473674 -10.8398277 -11.6081967
+ [7]  -9.3314889 -12.5553289 -11.5233374  -3.3076712  -7.6792543  -7.9607052
+[13] -13.3206415 -10.8937513  -9.6954615  -4.9209709 -14.6765801 -16.4532105
+[19] -21.3451399   2.4487333 -20.4677015 -10.7936881 -17.6610959 -13.7629522
+[25]   8.3087759   5.3529519 -11.3616612  -9.3562903   2.8654603  -6.4533498
+[31]  -6.5812304  -3.1636673  -7.2514985  -5.6485866 -18.1436913  -4.5492842
+[37]   4.5670211 -11.4417862   7.2297167 -16.9596077 -15.7149774   8.8552424
+[43]  -2.4901660  -5.0009923   1.8695754  -7.0594913  -0.6231457  -7.1731153
+[49]  -9.2260774 -10.5178946
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   31   37    0   13   16
+[2,]    2   26   43    0   16   17
+[3,]    3   12   10    0   13   17
+[4,]    4   40   14    0   14   15
+[5,]    5   34   25    0   12   13
+[6,]    6   31    8    0   14   16
+[1] "nearest neighbors are "
+[1]  1 31 37
+[1] "nearest neighbors are "
+[1]  2 26 43
+[1] "nearest neighbors are "
+[1]  3 12 10
+[1] "nearest neighbors are "
+[1]  4 40 14
+[1] "nearest neighbors are "
+[1]  6 31  8
+[1] "nearest neighbors are "
+[1]  7  9 24
+[1] "nearest neighbors are "
+[1] 8 5 6
+[1] "nearest neighbors are "
+[1]  9 19  7
+[1] "nearest neighbors are "
+[1] 10 25 21
+[1] "nearest neighbors are "
+[1] 11 33 29
+[1] "nearest neighbors are "
+[1] 12  3 15
+[1] "nearest neighbors are "
+[1] 14 43  4
+[1] "nearest neighbors are "
+[1] 15 40 48
+[1] "nearest neighbors are "
+[1] 16 37 32
+[1] "nearest neighbors are "
+[1] 20 13 37
+[1] "nearest neighbors are "
+[1] 22 47 50
+[1] "nearest neighbors are "
+[1] 26 42  5
+[1] "nearest neighbors are "
+[1] 27 31 41
+[1] "nearest neighbors are "
+[1] 28 43 10
+[1] "nearest neighbors are "
+[1] 29 10 25
+[1] "nearest neighbors are "
+[1] 30 17 18
+[1] "nearest neighbors are "
+[1] 31  1  6
+[1] "nearest neighbors are "
+[1] 34  5 25
+[1] "nearest neighbors are "
+[1] 38 48 28
+[1] "nearest neighbors are "
+[1] 39 14 19
+[1] "nearest neighbors are "
+[1] 40  4 15
+[1] "nearest neighbors are "
+[1] 41 27 48
+[1] "nearest neighbors are "
+[1] 43 14 28
+[1] "nearest neighbors are "
+[1] 44 45 34
+[1] "nearest neighbors are "
+[1] 45 25 17
+[1] "nearest neighbors are "
+[1] 46 17 20
+[1] "nearest neighbors are "
+[1] 50 17 32
+[1] "iteration number: "
+[1] 7
+[1] "fitness is: "
+ [1] -20.4465685  -1.4628244  -9.7572282  -4.9025380 -18.4237356  -2.9844319
+ [7]  -2.5825473  -6.6694790  -1.4125118  -1.6526333 -10.7449044  -4.6872170
+[13]  -7.4263396 -17.5941513   4.5008837 -11.6178238  -5.3756620  -3.5776063
+[19]  -6.9587250   0.7973717  -2.7222285  -7.3381736  -5.6882199   3.7904826
+[25]   1.0835848 -25.4145593   0.2355042 -10.2096997 -12.4579307  -6.0060822
+[31] -17.4881477  -7.1958092 -11.8916957  -1.6059001 -20.5435664 -23.0259875
+[37] -18.6475834  -6.2183880 -15.1057010  -3.3821628   1.5372966  -4.8091885
+[43] -17.2868781   4.4777324  -3.4233193   3.2404291  -0.3126952  -9.4017967
+[49]  -6.9754096  -1.9355202
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   19   29    0   15   15
+[2,]    2    9   24    0   16   16
+[3,]    3   16   18    0   16   17
+[4,]    4   39   19    0   13   14
+[5,]    5   48    8    0   14   16
+[6,]    6   36   43    0   15   15
+[1] "nearest neighbors are "
+[1]  1 19 29
+[1] "nearest neighbors are "
+[1]  2  9 24
+[1] "nearest neighbors are "
+[1]  3 16 18
+[1] "nearest neighbors are "
+[1]  4 39 19
+[1] "nearest neighbors are "
+[1]  6 36 43
+[1] "nearest neighbors are "
+[1]  7 20  8
+[1] "nearest neighbors are "
+[1]  8 40  5
+[1] "nearest neighbors are "
+[1] 9 2 4
+[1] "nearest neighbors are "
+[1] 10 43 17
+[1] "nearest neighbors are "
+[1] 11 46  4
+[1] "nearest neighbors are "
+[1] 12 27  6
+[1] "nearest neighbors are "
+[1] 14 30  4
+[1] "nearest neighbors are "
+[1] 15 50 23
+[1] "nearest neighbors are "
+[1] 16  3 13
+[1] "nearest neighbors are "
+[1] 20 17 42
+[1] "nearest neighbors are "
+[1] 22 50 17
+[1] "nearest neighbors are "
+[1] 26 32 39
+[1] "nearest neighbors are "
+[1] 27 39 12
+[1] "nearest neighbors are "
+[1] 28 40  8
+[1] "nearest neighbors are "
+[1] 29  1 26
+[1] "nearest neighbors are "
+[1] 30 14 37
+[1] "nearest neighbors are "
+[1] 31 46 19
+[1] "nearest neighbors are "
+[1] 34 50 20
+[1] "nearest neighbors are "
+[1] 38 34 15
+[1] "nearest neighbors are "
+[1] 39 27  4
+[1] "nearest neighbors are "
+[1] 40  8 28
+[1] "nearest neighbors are "
+[1] 41  4  9
+[1] "nearest neighbors are "
+[1] 43 36 10
+[1] "nearest neighbors are "
+[1] 44 45 21
+[1] "nearest neighbors are "
+[1] 45 17 25
+[1] "nearest neighbors are "
+[1] 46 11 17
+[1] "nearest neighbors are "
+[1] 50 34 15
+[1] "iteration number: "
+[1] 8
+[1] "fitness is: "
+ [1]  -1.6111892  -8.9638319 -14.0395024  -6.7309379  12.4561678 -13.7818151
+ [7]  -0.6132825  -4.9689137 -13.3105502 -18.2591110 -21.4017594 -13.4857327
+[13]  -7.5895650  -2.6623159  -1.5500128   0.5581332 -11.6374499  -7.7605882
+[19] -16.7482278 -15.6056402 -25.4168165 -13.2440723 -19.9360156 -10.9476159
+[25]  -8.6694851  -3.5867591 -12.2650714 -14.3435899  -7.3429251  -3.3360054
+[31]  -3.8283817   3.3440845 -20.1248108 -10.0515131 -11.7690487   2.7109626
+[37]  -6.1613975   1.3011844   3.2924232  -5.4858390  -7.4366820   9.9338237
+[43]  -1.0866441 -17.1905930   0.7415100   0.5813356 -17.8674883   3.2812909
+[49]  -9.1136737  -7.0119977
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   28    7    0   15   17
+[2,]    2    9   28    0   14   16
+[3,]    3   18   21    0   16   16
+[4,]    4   39   14    0    9   15
+[5,]    5   31    8    0   15   16
+[6,]    6    9    8    0   15   16
+[1] "nearest neighbors are "
+[1]  1 28  7
+[1] "nearest neighbors are "
+[1]  2  9 28
+[1] "nearest neighbors are "
+[1]  3 18 21
+[1] "nearest neighbors are "
+[1]  4 39 14
+[1] "nearest neighbors are "
+[1] 6 9 8
+[1] "nearest neighbors are "
+[1]  7 28  1
+[1] "nearest neighbors are "
+[1]  8 34  9
+[1] "nearest neighbors are "
+[1] 9 2 6
+[1] "nearest neighbors are "
+[1] 10 33 41
+[1] "nearest neighbors are "
+[1] 11 12 47
+[1] "nearest neighbors are "
+[1] 12 11 28
+[1] "nearest neighbors are "
+[1] 14 39 26
+[1] "nearest neighbors are "
+[1] 15 16 50
+[1] "nearest neighbors are "
+[1] 16 15 40
+[1] "nearest neighbors are "
+[1] 20 17 21
+[1] "nearest neighbors are "
+[1] 22  3 17
+[1] "nearest neighbors are "
+[1] 26 14 23
+[1] "nearest neighbors are "
+[1] 27  9  2
+[1] "nearest neighbors are "
+[1] 28 12 34
+[1] "nearest neighbors are "
+[1] 29 44 36
+[1] "nearest neighbors are "
+[1] 30 14 17
+[1] "nearest neighbors are "
+[1] 31  5 19
+[1] "nearest neighbors are "
+[1] 34  8 21
+[1] "nearest neighbors are "
+[1] 38 46 30
+[1] "nearest neighbors are "
+[1] 39  4 14
+[1] "nearest neighbors are "
+[1] 40 15 16
+[1] "nearest neighbors are "
+[1] 41 39 10
+[1] "nearest neighbors are "
+[1] 43 36 19
+[1] "nearest neighbors are "
+[1] 44 12 29
+[1] "nearest neighbors are "
+[1] 45 25 17
+[1] "nearest neighbors are "
+[1] 46 17 25
+[1] "nearest neighbors are "
+[1] 50 15 32
+[1] "iteration number: "
+[1] 9
+[1] "fitness is: "
+ [1] -14.0747273  -5.2609601   3.6467088  -9.1623067 -22.0401236  -9.3416659
+ [7]  -0.1698502   1.8675490  -6.1934104  -3.5174413 -17.5590477   3.6997256
+[13] -14.9317767 -12.9417771  -3.9197028 -11.2967569   1.8917689  -2.5601525
+[19]  -2.3935214  -7.7249841  -4.3352659   8.6809411   3.8567829   2.7214821
+[25]   3.5800729  -5.4562884  10.4030378   1.5438899 -27.1390218  -4.4273771
+[31] -14.3636194  -4.9719795  -8.9991955  -3.9622116  -5.7945730 -10.1748068
+[37] -18.4512612   3.2729435 -13.2272908  -1.3669936  -7.1306556 -15.4405479
+[43]  -1.2223924  -6.1460899   0.1379066  -4.5114208  -8.4418285 -11.1908829
+[49] -10.6958308   0.8840081
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   31   29    0   13   15
+[2,]    2    9   27    0   14   14
+[3,]    3    7    2    0   18   19
+[4,]    4   48   10    0   15   17
+[5,]    5   26   42    0   13   15
+[6,]    6   37   25    0   15   16
+[1] "nearest neighbors are "
+[1]  1 31 29
+[1] "nearest neighbors are "
+[1]  2  9 27
+[1] "nearest neighbors are "
+[1] 3 7 2
+[1] "nearest neighbors are "
+[1]  4 48 10
+[1] "nearest neighbors are "
+[1]  6 37 25
+[1] "nearest neighbors are "
+[1]  7 16 27
+[1] "nearest neighbors are "
+[1]  8 21 11
+[1] "nearest neighbors are "
+[1]  9  2 27
+[1] "nearest neighbors are "
+[1] 10 38 17
+[1] "nearest neighbors are "
+[1] 11 29  8
+[1] "nearest neighbors are "
+[1] 12 25 37
+[1] "nearest neighbors are "
+[1] 14 39 18
+[1] "nearest neighbors are "
+[1] 15 38 10
+[1] "nearest neighbors are "
+[1] 16  7 27
+[1] "nearest neighbors are "
+[1] 20 17 42
+[1] "nearest neighbors are "
+[1] 22 50 17
+[1] "nearest neighbors are "
+[1] 26 32 45
+[1] "nearest neighbors are "
+[1] 27  2  9
+[1] "nearest neighbors are "
+[1] 28 23 34
+[1] "nearest neighbors are "
+[1] 29  1 13
+[1] "nearest neighbors are "
+[1] 30 50 13
+[1] "nearest neighbors are "
+[1] 31  1 29
+[1] "nearest neighbors are "
+[1] 34 48 50
+[1] "nearest neighbors are "
+[1] 38 10 20
+[1] "nearest neighbors are "
+[1] 39 14 37
+[1] "nearest neighbors are "
+[1] 40 12 15
+[1] "nearest neighbors are "
+[1] 41 43 22
+[1] "nearest neighbors are "
+[1] 43 36 41
+[1] "nearest neighbors are "
+[1] 44  6 37
+[1] "nearest neighbors are "
+[1] 45 17 24
+[1] "nearest neighbors are "
+[1] 46 25 33
+[1] "nearest neighbors are "
+[1] 50 30 13
+[1] "iteration number: "
+[1] 10
+[1] "fitness is: "
+ [1]   2.0765386  -7.5940522  -4.2813145 -10.9560375   7.7323791 -20.8058081
+ [7]  -1.3853957 -13.0182203  -7.9072561  -6.1458761  -9.8280948 -24.5182711
+[13]  -5.8256462  -2.8746787  -1.1053582  -7.6423852 -15.1676783  -9.7214564
+[19]  -9.4032109 -11.1398506 -10.8647460  -6.6287689 -19.9360156 -17.8600202
+[25] -12.0313421  -8.9422115  -4.6399852 -10.6757606   4.7588680  -8.8316196
+[31]  -1.2135045  -6.2687322  -7.2323921  -8.1662126 -15.5047162 -18.8372281
+[37]  13.0528548 -19.8485836   6.8882733 -16.9303443  -0.5469592   6.5484567
+[43]  -1.9009044 -11.4651438  -6.9888748 -20.0171887 -12.2739012   0.3268701
+[49]  -6.1874747  -5.6892686
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   29   37    0   13   15
+[2,]    2   42    7    0   15   18
+[3,]    3   12   41    0   13   13
+[4,]    4   25   39    0   14   15
+[5,]    5   31   39    0   14   16
+[6,]    6   19    4    0   17   18
+[1] "nearest neighbors are "
+[1]  1 29 37
+[1] "nearest neighbors are "
+[1]  2 42  7
+[1] "nearest neighbors are "
+[1]  3 12 41
+[1] "nearest neighbors are "
+[1]  4 25 39
+[1] "nearest neighbors are "
+[1]  6 19  4
+[1] "nearest neighbors are "
+[1] 7 9 2
+[1] "nearest neighbors are "
+[1]  8 34 26
+[1] "nearest neighbors are "
+[1]  9 41  4
+[1] "nearest neighbors are "
+[1] 10 26 44
+[1] "nearest neighbors are "
+[1] 11 13 31
+[1] "nearest neighbors are "
+[1] 12  3 18
+[1] "nearest neighbors are "
+[1] 14 39  4
+[1] "nearest neighbors are "
+[1] 15 27 24
+[1] "nearest neighbors are "
+[1] 16 13 32
+[1] "nearest neighbors are "
+[1] 20 17 25
+[1] "nearest neighbors are "
+[1] 22 24 41
+[1] "nearest neighbors are "
+[1] 26 10 49
+[1] "nearest neighbors are "
+[1] 27 15 35
+[1] "nearest neighbors are "
+[1] 28 44 12
+[1] "nearest neighbors are "
+[1] 29 37  1
+[1] "nearest neighbors are "
+[1] 30 18 39
+[1] "nearest neighbors are "
+[1] 31  5 19
+[1] "nearest neighbors are "
+[1] 34 38  8
+[1] "nearest neighbors are "
+[1] 38 34 15
+[1] "nearest neighbors are "
+[1] 39 46  4
+[1] "nearest neighbors are "
+[1] 40 21 44
+[1] "nearest neighbors are "
+[1] 41  3  9
+[1] "nearest neighbors are "
+[1] 43 45 29
+[1] "nearest neighbors are "
+[1] 44 25 50
+[1] "nearest neighbors are "
+[1] 45 24 17
+[1] "nearest neighbors are "
+[1] 46 17 39
+[1] "nearest neighbors are "
+[1] 50 32 44
+[1] "iteration number: "
+[1] 11
+[1] "fitness is: "
+ [1]  -9.4398442 -20.7176780  -9.2435439  -3.1281413 -24.0106183  -1.9290524
+ [7]   2.8081457 -12.6938835   3.3997830 -13.3970342  -9.6823772  -9.5347845
+[13] -10.9189735  -7.0792914 -18.5609677 -20.1519738  -7.0235921  -0.5216300
+[19]  -5.3443512   3.0039959  -9.6211292 -11.5192064  -0.3949139   1.4208116
+[25]   3.7718363 -19.0731662 -13.7710083 -12.2669955 -15.4764033   2.2785643
+[31] -14.7480724  -5.1930400  -7.2265047   0.9966937  -5.0442857  -2.4403570
+[37] -13.4075214   2.8096503 -13.7009254  -4.7213738 -13.2608524 -17.4829706
+[43] -11.3744384  -7.8858747  -4.4726197  -2.0070241  -9.3505230 -13.3500220
+[49] -10.3077461  -4.1738904
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   29   28    0   16   17
+[2,]    2   49   27    0   13   14
+[3,]    3   49   16    0   16   18
+[4,]    4    6   20    0   13   16
+[5,]    5    8   10    0   15   16
+[6,]    6    4   11    0   13   17
+[1] "nearest neighbors are "
+[1]  1 29 28
+[1] "nearest neighbors are "
+[1]  2 49 27
+[1] "nearest neighbors are "
+[1]  3 49 16
+[1] "nearest neighbors are "
+[1]  4  6 20
+[1] "nearest neighbors are "
+[1]  6  4 11
+[1] "nearest neighbors are "
+[1]  7 22 17
+[1] "nearest neighbors are "
+[1]  8  5 21
+[1] "nearest neighbors are "
+[1]  9 28 43
+[1] "nearest neighbors are "
+[1] 10 26 44
+[1] "nearest neighbors are "
+[1] 11  6 13
+[1] "nearest neighbors are "
+[1] 12 22 23
+[1] "nearest neighbors are "
+[1] 14 48 27
+[1] "nearest neighbors are "
+[1] 15 44 22
+[1] "nearest neighbors are "
+[1] 16 15  3
+[1] "nearest neighbors are "
+[1] 20 17 46
+[1] "nearest neighbors are "
+[1] 22 12  5
+[1] "nearest neighbors are "
+[1] 26 10 43
+[1] "nearest neighbors are "
+[1] 27  2 14
+[1] "nearest neighbors are "
+[1] 28  9  5
+[1] "nearest neighbors are "
+[1] 29 37 43
+[1] "nearest neighbors are "
+[1] 30 17 50
+[1] "nearest neighbors are "
+[1] 31 19 46
+[1] "nearest neighbors are "
+[1] 34 38 48
+[1] "nearest neighbors are "
+[1] 38 20 34
+[1] "nearest neighbors are "
+[1] 39 20  9
+[1] "nearest neighbors are "
+[1] 40  4 21
+[1] "nearest neighbors are "
+[1] 41 35 42
+[1] "nearest neighbors are "
+[1] 43 36  9
+[1] "nearest neighbors are "
+[1] 44 10 15
+[1] "nearest neighbors are "
+[1] 45 50 32
+[1] "nearest neighbors are "
+[1] 46 25 20
+[1] "nearest neighbors are "
+[1] 50 32 45
+[1] "iteration number: "
+[1] 12
+[1] "fitness is: "
+ [1]  -2.016896  -6.095347  -8.702934  -7.007080  20.806455  -2.889187
+ [7] -12.484573 -11.743095  -1.689436  -8.555839  -5.000341 -13.555258
+[13]  -8.362659  -7.433824  -7.623230   0.718029  -6.240910 -10.782292
+[19]  -4.877847  -8.716562 -19.555341 -14.403850 -18.287586 -11.957132
+[25] -13.448965   5.599930  -7.544825 -15.698619  -9.423318  -1.100200
+[31]  -2.114760  -8.008700  -2.789814 -20.831817 -11.636910   2.811660
+[37]   2.095535 -19.736066   6.492979  -8.245335   1.385009   9.383580
+[43] -12.362538   9.324406 -11.940029  -1.146839 -17.853557  -1.214291
+[49]  -7.844450 -24.862612
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    2    5    0   16   16
+[2,]    2    1   15    0   16   16
+[3,]    3   11   20    0   15   16
+[4,]    4   48   15    0   14   16
+[5,]    5    8    1    0   13   16
+[6,]    6   42   11    0   14   16
+[1] "nearest neighbors are "
+[1] 1 2 5
+[1] "nearest neighbors are "
+[1]  2  1 15
+[1] "nearest neighbors are "
+[1]  3 11 20
+[1] "nearest neighbors are "
+[1]  4 48 15
+[1] "nearest neighbors are "
+[1]  6 42 11
+[1] "nearest neighbors are "
+[1]  7 36 14
+[1] "nearest neighbors are "
+[1]  8  5 34
+[1] "nearest neighbors are "
+[1]  9 37 34
+[1] "nearest neighbors are "
+[1] 10 48 19
+[1] "nearest neighbors are "
+[1] 11  3  6
+[1] "nearest neighbors are "
+[1] 12 22 35
+[1] "nearest neighbors are "
+[1] 14  4 21
+[1] "nearest neighbors are "
+[1] 15  2  4
+[1] "nearest neighbors are "
+[1] 16 23 26
+[1] "nearest neighbors are "
+[1] 20 17 21
+[1] "nearest neighbors are "
+[1] 22 12 15
+[1] "nearest neighbors are "
+[1] 26 44 10
+[1] "nearest neighbors are "
+[1] 27 41 19
+[1] "nearest neighbors are "
+[1] 28 38 34
+[1] "nearest neighbors are "
+[1] 29 36 26
+[1] "nearest neighbors are "
+[1] 30 18 17
+[1] "nearest neighbors are "
+[1] 31 19 39
+[1] "nearest neighbors are "
+[1] 34 38 21
+[1] "nearest neighbors are "
+[1] 38 34 40
+[1] "nearest neighbors are "
+[1] 39 31  5
+[1] "nearest neighbors are "
+[1] 40 36 38
+[1] "nearest neighbors are "
+[1] 41 27 26
+[1] "nearest neighbors are "
+[1] 43 36  6
+[1] "nearest neighbors are "
+[1] 44 26 48
+[1] "nearest neighbors are "
+[1] 45 42 17
+[1] "nearest neighbors are "
+[1] 46 25 23
+[1] "nearest neighbors are "
+[1] 50 24 32
+[1] "iteration number: "
+[1] 13
+[1] "fitness is: "
+ [1] -15.67508969  -8.81852380  -9.09703348 -11.27812366 -18.25191408
+ [6]  -3.57021936  -1.83524760  -0.53023520  -0.59715870  -2.52953305
+[11]  -7.70686553   0.38359562 -19.48614839   2.86831989  -3.60666608
+[16] -10.45244556  -1.97182454   2.67023470  -8.99012223 -17.88446563
+[21]  -8.16016191 -14.00659839   2.08625509   1.71762028   1.16469606
+[26] -21.69935034   2.50159307  -6.23882358 -10.51154758  -0.86421047
+[31] -17.28215152  -8.32283336 -10.23464648  -1.88092923   2.28020998
+[36]  -5.17762404 -11.55619445  -0.38745813  -9.50900823   4.22276889
+[41]  -5.27487215 -16.75606110  -4.17167592 -14.68015027  -9.09090458
+[46]   0.93223675  -2.65899074  -5.42540630  -6.51593319   0.04433609
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    8    3    0   17   19
+[2,]    2   27   49    0   11   15
+[3,]    3   46   14    0   11   16
+[4,]    4    6   35    0   15   15
+[5,]    5   31   39    0   15   15
+[6,]    6   38    4    0   14   15
+[1] "nearest neighbors are "
+[1] 1 8 3
+[1] "nearest neighbors are "
+[1]  2 27 49
+[1] "nearest neighbors are "
+[1]  3 46 14
+[1] "nearest neighbors are "
+[1]  4  6 35
+[1] "nearest neighbors are "
+[1]  6 38  4
+[1] "nearest neighbors are "
+[1]  7 18 16
+[1] "nearest neighbors are "
+[1]  8  1 21
+[1] "nearest neighbors are "
+[1]  9 25 27
+[1] "nearest neighbors are "
+[1] 10 26 25
+[1] "nearest neighbors are "
+[1] 11 45 14
+[1] "nearest neighbors are "
+[1] 12 43 25
+[1] "nearest neighbors are "
+[1] 14 41  3
+[1] "nearest neighbors are "
+[1] 15 16  4
+[1] "nearest neighbors are "
+[1] 16 15  3
+[1] "nearest neighbors are "
+[1] 20 17 40
+[1] "nearest neighbors are "
+[1] 22 17 37
+[1] "nearest neighbors are "
+[1] 26 10 41
+[1] "nearest neighbors are "
+[1] 27  2  9
+[1] "nearest neighbors are "
+[1] 28 18 44
+[1] "nearest neighbors are "
+[1] 29 45 49
+[1] "nearest neighbors are "
+[1] 30 17 50
+[1] "nearest neighbors are "
+[1] 31  5 26
+[1] "nearest neighbors are "
+[1] 34 38 50
+[1] "nearest neighbors are "
+[1] 38 48  6
+[1] "nearest neighbors are "
+[1] 39  5 26
+[1] "nearest neighbors are "
+[1] 40 41 20
+[1] "nearest neighbors are "
+[1] 41 40 26
+[1] "nearest neighbors are "
+[1] 43 36 12
+[1] "nearest neighbors are "
+[1] 44 26  9
+[1] "nearest neighbors are "
+[1] 45 17 29
+[1] "nearest neighbors are "
+[1] 46  3 17
+[1] "nearest neighbors are "
+[1] 50 32 30
+[1] "iteration number: "
+[1] 14
+[1] "fitness is: "
+ [1]   0.8074294 -21.2751744  -6.4665987  -5.2495005   4.1565789 -10.4659699
+ [7]  -6.7096836  -5.5031797 -15.1749033 -17.2641333  -2.3493218  -1.1086212
+[13]  -9.5592255 -10.9124967  -4.1584955  -4.6278330 -16.5708613  -7.5338250
+[19]  -7.0304216 -16.7063981 -14.2926841 -12.9083195 -27.6747952 -16.4741117
+[25] -16.2573132   2.1469540  -6.1040106  -6.4214679  -8.2894383  -1.2986118
+[31]   6.3040438 -14.7707676   6.7540224  -6.5896259 -12.7694420  -3.9630749
+[37]   7.9228510 -12.1984145   9.3184523 -11.3955158   3.3114509   9.3835805
+[43]  -6.6200205 -11.8160060  -8.7811888  10.7938261 -12.0603210  -6.6230906
+[49]  -1.5473486 -20.9719638
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   31   28    0   14   15
+[2,]    2   49   32    0   15   19
+[3,]    3   11   14    0   14   15
+[4,]    4   39   33    0   12   14
+[5,]    5    6   26    0   15   15
+[6,]    6    5   28    0   15   16
+[1] "nearest neighbors are "
+[1]  1 31 28
+[1] "nearest neighbors are "
+[1]  2 49 32
+[1] "nearest neighbors are "
+[1]  3 11 14
+[1] "nearest neighbors are "
+[1]  4 39 33
+[1] "nearest neighbors are "
+[1]  6  5 28
+[1] "nearest neighbors are "
+[1]  7 28 20
+[1] "nearest neighbors are "
+[1]  8 36 20
+[1] "nearest neighbors are "
+[1]  9 14 18
+[1] "nearest neighbors are "
+[1] 10  1 31
+[1] "nearest neighbors are "
+[1] 11  3 25
+[1] "nearest neighbors are "
+[1] 12 25 44
+[1] "nearest neighbors are "
+[1] 14 43  3
+[1] "nearest neighbors are "
+[1] 15 44 39
+[1] "nearest neighbors are "
+[1] 16 37  4
+[1] "nearest neighbors are "
+[1] 20 30 45
+[1] "nearest neighbors are "
+[1] 22 47 26
+[1] "nearest neighbors are "
+[1] 26 25  5
+[1] "nearest neighbors are "
+[1] 27  4 39
+[1] "nearest neighbors are "
+[1] 28  1  7
+[1] "nearest neighbors are "
+[1] 29 50 18
+[1] "nearest neighbors are "
+[1] 30 20 18
+[1] "nearest neighbors are "
+[1] 31  1  5
+[1] "nearest neighbors are "
+[1] 34 21 32
+[1] "nearest neighbors are "
+[1] 38 48 32
+[1] "nearest neighbors are "
+[1] 39  4 41
+[1] "nearest neighbors are "
+[1] 40 46 36
+[1] "nearest neighbors are "
+[1] 41 39 33
+[1] "nearest neighbors are "
+[1] 43 36 14
+[1] "nearest neighbors are "
+[1] 44 17 15
+[1] "nearest neighbors are "
+[1] 45 17 20
+[1] "nearest neighbors are "
+[1] 46 17 40
+[1] "nearest neighbors are "
+[1] 50 32 45
+[1] "iteration number: "
+[1] 15
+[1] "fitness is: "
+ [1] -14.8546690   2.8174173 -20.8020863  -2.9211340 -26.4311799 -20.2431521
+ [7]  -5.2328080   1.8520818 -13.3552331   0.9610809  -3.7455862  -5.6293742
+[13] -10.4799279  -2.3742998 -10.8396440  -9.7384250   1.5454059   9.1050844
+[19]  -9.4399263   7.2773905  -4.3352659 -14.5190911  -0.1865437  -7.1242974
+[25]  -3.6426020 -16.8761302  -5.7955166  -8.7736494 -18.0776063   1.3046261
+[31] -11.9530593 -15.2113009  -9.3781599  -4.5019716  -8.4040540  -6.6723549
+[37]  -8.8880601  -2.8752155  -5.6393685 -10.2989188 -14.6633304 -13.4633612
+[43] -10.0006370 -13.6626174 -11.2658878  -3.0114758  -0.4434541 -10.0984126
+[49] -16.4490815   8.6126083
+[1] "RE-INITIALIZING..."
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    4   24    0    5    5
+[2,]    2    4   33    0    7    7
+[3,]    3   34   41    0    7    8
+[4,]    4   24   33    0    4    4
+[5,]    5   25   37    0    3    5
+[6,]    6   10   13    0    7    8
+[1] "nearest neighbors are "
+[1]  4 24 33
+[1] "nearest neighbors are "
+[1]  5 25 37
+[1] "nearest neighbors are "
+[1]  7 13 23
+[1] "nearest neighbors are "
+[1] 10 41 23
+[1] "nearest neighbors are "
+[1] 11 34 13
+[1] "nearest neighbors are "
+[1] 12 41 42
+[1] "nearest neighbors are "
+[1] 13  7 11
+[1] "nearest neighbors are "
+[1] 14 37 32
+[1] "nearest neighbors are "
+[1] 16 13 35
+[1] "nearest neighbors are "
+[1] 17 35 41
+[1] "nearest neighbors are "
+[1] 19 34  4
+[1] "nearest neighbors are "
+[1] 20  4 33
+[1] "nearest neighbors are "
+[1] 21 33 35
+[1] "nearest neighbors are "
+[1] 22 30 34
+[1] "nearest neighbors are "
+[1] 23 34 41
+[1] "nearest neighbors are "
+[1] 26 30 32
+[1] "nearest neighbors are "
+[1] 27 32 34
+[1] "nearest neighbors are "
+[1] 29 34  4
+[1] "nearest neighbors are "
+[1] 33  4 42
+[1] "nearest neighbors are "
+[1] 36 41 23
+[1] "nearest neighbors are "
+[1] 37 41  5
+[1] "nearest neighbors are "
+[1] 38 11 32
+[1] "nearest neighbors are "
+[1] 39  5 34
+[1] "nearest neighbors are "
+[1] 44 41 32
+[1] "nearest neighbors are "
+[1] 45  5 32
+[1] "nearest neighbors are "
+[1] 46  4  5
+[1] "nearest neighbors are "
+[1] 47  1 12
+[1] "nearest neighbors are "
+[1] 48 41 12
+[1] "nearest neighbors are "
+[1] 49 11  4
+[1] "nearest neighbors are "
+[1] 50 32 25
+[1] "iteration number: "
+[1] 16
+[1] "fitness is: "
+ [1]  -5.27719042 -21.59608498 -13.83166415  -9.31345304  -7.44583991
+ [6] -10.10632974  -3.60814384   3.89104223  -3.79889792  -5.07393078
+[11]  -9.53555412 -13.75939475  -2.89547216  -3.51623291 -16.56793573
+[16]  -2.26892368 -12.17159827  -7.80540436  -8.52166682  -0.06430751
+[21] -14.44857717  -8.51241486 -18.44668663 -18.60586830 -16.67598081
+[26]  10.71083523 -12.53353260 -14.84789395  -7.13835083  -6.47286986
+[31]  -1.88896903  -2.94896492   1.43998964   2.71247073  -9.67981061
+[36]   3.33401124   2.51349294  -7.98193422   8.24797482   0.14535239
+[41]   3.18525765  -7.27033265  -5.57917669  -8.19994197  -9.04799329
+[46]   3.58135967 -14.86318725  -3.94988145  -9.61464224 -17.73218431
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   12   16    0   15   15
+[2,]    2   24    6    0   16   17
+[3,]    3    4   15    0   14   17
+[4,]    4    3   40    0   14   14
+[5,]    5   33   10    0   14   15
+[6,]    6    4    2    0   16   17
+[1] "nearest neighbors are "
+[1]  4  3 40
+[1] "nearest neighbors are "
+[1]  5 33 10
+[1] "nearest neighbors are "
+[1]  7 31 20
+[1] "nearest neighbors are "
+[1] 10 41  5
+[1] "nearest neighbors are "
+[1] 11 17 48
+[1] "nearest neighbors are "
+[1] 12 15  1
+[1] "nearest neighbors are "
+[1] 13 28  6
+[1] "nearest neighbors are "
+[1] 14 37  9
+[1] "nearest neighbors are "
+[1] 16  1  4
+[1] "nearest neighbors are "
+[1] 17 45 44
+[1] "nearest neighbors are "
+[1] 19 31 30
+[1] "nearest neighbors are "
+[1] 20 30 38
+[1] "nearest neighbors are "
+[1] 21 34 47
+[1] "nearest neighbors are "
+[1] 22 43 12
+[1] "nearest neighbors are "
+[1] 23 29 27
+[1] "nearest neighbors are "
+[1] 26  5 43
+[1] "nearest neighbors are "
+[1] 27 12 18
+[1] "nearest neighbors are "
+[1] 29 23 32
+[1] "nearest neighbors are "
+[1] 33  5 39
+[1] "nearest neighbors are "
+[1] 36 32 40
+[1] "nearest neighbors are "
+[1] 37 14 43
+[1] "nearest neighbors are "
+[1] 38 20 30
+[1] "nearest neighbors are "
+[1] 39 34 42
+[1] "nearest neighbors are "
+[1] 44 17 25
+[1] "nearest neighbors are "
+[1] 45 17 50
+[1] "nearest neighbors are "
+[1] 46 45 50
+[1] "nearest neighbors are "
+[1] 47 38 44
+[1] "nearest neighbors are "
+[1] 48  4 11
+[1] "nearest neighbors are "
+[1] 49 14 29
+[1] "nearest neighbors are "
+[1] 50 45 46
+[1] "iteration number: "
+[1] 17
+[1] "fitness is: "
+ [1]   1.39648005 -10.63610009  -2.17358093  -8.18929132 -16.83241589
+ [6] -17.40460763   2.73868363  -5.46249002  -2.95531156  -6.01661920
+[11] -17.98090261  -6.87582149  -6.43741602 -12.02409944  -3.57159107
+[16]  -4.02318052   0.81718703   2.15882882  -7.21939996 -15.85912311
+[21]  -6.93533484   0.85839321   5.89787645   3.61710720  -7.29810852
+[26] -19.09506870  -7.09328844 -16.60974356 -14.05112432   4.84950054
+[31] -11.08036410   7.74497981 -13.17303359   2.58836151  -8.17392611
+[36]  -7.06077279 -21.61875027  -0.05131629  -7.98255331  -1.50309552
+[41] -15.48235811 -14.25008140  -6.41945496   1.15652546 -15.94303938
+[46]  -5.76305850 -14.09110338  -9.43158948  -6.20137934   3.86480266
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   31    2    0   17   18
+[2,]    2   28    6    0   14   16
+[3,]    3   35   14    0   16   18
+[4,]    4   16   17    0   13   16
+[5,]    5   26   35    0   14   15
+[6,]    6   13   18    0   12   14
+[1] "nearest neighbors are "
+[1]  4 16 17
+[1] "nearest neighbors are "
+[1]  5 26 35
+[1] "nearest neighbors are "
+[1]  7 11 32
+[1] "nearest neighbors are "
+[1] 10 47 15
+[1] "nearest neighbors are "
+[1] 11  7 19
+[1] "nearest neighbors are "
+[1] 12 22 45
+[1] "nearest neighbors are "
+[1] 13  6 14
+[1] "nearest neighbors are "
+[1] 14 34 13
+[1] "nearest neighbors are "
+[1] 16  4 33
+[1] "nearest neighbors are "
+[1] 17 45 44
+[1] "nearest neighbors are "
+[1] 19 11 20
+[1] "nearest neighbors are "
+[1] 20 27 19
+[1] "nearest neighbors are "
+[1] 21 43 34
+[1] "nearest neighbors are "
+[1] 22 12  9
+[1] "nearest neighbors are "
+[1] 23 29  7
+[1] "nearest neighbors are "
+[1] 26  5 39
+[1] "nearest neighbors are "
+[1] 27  9 16
+[1] "nearest neighbors are "
+[1] 29 23 33
+[1] "nearest neighbors are "
+[1] 33 16 29
+[1] "nearest neighbors are "
+[1] 36 32 41
+[1] "nearest neighbors are "
+[1] 37 16 42
+[1] "nearest neighbors are "
+[1] 38 18 42
+[1] "nearest neighbors are "
+[1] 39 26  5
+[1] "nearest neighbors are "
+[1] 44 17 34
+[1] "nearest neighbors are "
+[1] 45 17 50
+[1] "nearest neighbors are "
+[1] 46 44 49
+[1] "nearest neighbors are "
+[1] 47 10  6
+[1] "nearest neighbors are "
+[1] 48  8 31
+[1] "nearest neighbors are "
+[1] 49 46 29
+[1] "nearest neighbors are "
+[1] 50 30 45
+[1] "iteration number: "
+[1] 18
+[1] "fitness is: "
+ [1]  -1.0028876  -3.8154139  -7.9630844   2.7952886   1.3664920 -14.3023313
+ [7] -18.3713390 -12.6039230  -3.8174811  -2.4873173  -7.4244082  -6.7085266
+[13]   3.4759122  -6.0034490 -17.0983958   3.2029773 -17.7512875 -11.7693149
+[19] -13.1912566  -7.5921210  -5.2240606 -20.5064924 -10.5274726 -12.2023421
+[25] -14.2806408   6.5082227 -14.3101401 -12.3226011  -8.8394507  -6.9732425
+[31] -18.5213146  -2.0247783 -17.6702153 -16.3601093  -2.7048537  -7.1343038
+[37]   0.7208828  -2.5582853   0.4679387 -18.6997780  11.7854310   2.5233132
+[43]  -9.2682551   7.4299307  -5.0316510 -10.9336886  -0.5118389  -4.6268037
+[49]  -9.8192079 -20.5191584
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   38    7    0   16   17
+[2,]    2   30   13    0   13   14
+[3,]    3   15   16    0   17   17
+[4,]    4   46   40    0   12   15
+[5,]    5   26   36    0   13   16
+[6,]    6   33   10    0   17   18
+[1] "nearest neighbors are "
+[1]  4 46 40
+[1] "nearest neighbors are "
+[1]  5 26 36
+[1] "nearest neighbors are "
+[1]  7 29 33
+[1] "nearest neighbors are "
+[1] 10 20 21
+[1] "nearest neighbors are "
+[1] 11 28  7
+[1] "nearest neighbors are "
+[1] 12 14 37
+[1] "nearest neighbors are "
+[1] 13 30  2
+[1] "nearest neighbors are "
+[1] 14 12 39
+[1] "nearest neighbors are "
+[1] 16 37 44
+[1] "nearest neighbors are "
+[1] 17 44 43
+[1] "nearest neighbors are "
+[1] 19 31 30
+[1] "nearest neighbors are "
+[1] 20 47 10
+[1] "nearest neighbors are "
+[1] 21 47 18
+[1] "nearest neighbors are "
+[1] 22 34  9
+[1] "nearest neighbors are "
+[1] 23  7 22
+[1] "nearest neighbors are "
+[1] 26  5  9
+[1] "nearest neighbors are "
+[1] 27 22 28
+[1] "nearest neighbors are "
+[1] 29 49  7
+[1] "nearest neighbors are "
+[1] 33 29  7
+[1] "nearest neighbors are "
+[1] 36  5 32
+[1] "nearest neighbors are "
+[1] 37 16  4
+[1] "nearest neighbors are "
+[1] 38 20  1
+[1] "nearest neighbors are "
+[1] 39 42 46
+[1] "nearest neighbors are "
+[1] 44 17 16
+[1] "nearest neighbors are "
+[1] 45 43 50
+[1] "nearest neighbors are "
+[1] 46  4 39
+[1] "nearest neighbors are "
+[1] 47 20 21
+[1] "nearest neighbors are "
+[1] 48  3 18
+[1] "nearest neighbors are "
+[1] 49 29  1
+[1] "nearest neighbors are "
+[1] 50 45 17
+[1] "iteration number: "
+[1] 19
+[1] "fitness is: "
+ [1]  -0.6567939  -6.1384608  -0.3043490 -14.6062730 -17.2621030 -14.8559015
+ [7] -23.6751211   5.1700742  -7.3481052 -17.3820020  -3.9762884  -3.7881905
+[13] -15.3429501 -20.0244351  -5.4156246 -20.8710747   0.9833495  -3.9932716
+[19]  -6.7220235  -5.3130425 -11.5183471  -5.5403945 -12.7290542 -24.8584124
+[25]  -4.3501493 -19.9124471  -6.0623272 -10.9882835  -0.9928268   9.6257905
+[31] -11.9809676   5.8923514  -8.5724429   4.1007010 -10.1110199  -1.8337392
+[37] -24.3127598   2.2334063 -16.2406500 -13.4025154 -12.0674219  -0.8200612
+[43]  -4.4775945  -5.3601910  -8.0348426   0.6566497 -14.7254661 -14.9874543
+[49]  -5.3347929  -8.4126679
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   31   40    0   16   17
+[2,]    2    5    4    0   15   17
+[3,]    3    7    6    0   11   15
+[4,]    4   40    5    0   13   16
+[5,]    5    6   47    0   14   14
+[6,]    6   35    5    0   12   14
+[1] "nearest neighbors are "
+[1]  4 40  5
+[1] "nearest neighbors are "
+[1]  5  6 47
+[1] "nearest neighbors are "
+[1]  7  3 11
+[1] "nearest neighbors are "
+[1] 10 23 26
+[1] "nearest neighbors are "
+[1] 11  7 14
+[1] "nearest neighbors are "
+[1] 12 30  3
+[1] "nearest neighbors are "
+[1] 13 29  7
+[1] "nearest neighbors are "
+[1] 14 32 37
+[1] "nearest neighbors are "
+[1] 16 37 41
+[1] "nearest neighbors are "
+[1] 17 45 50
+[1] "nearest neighbors are "
+[1] 19  9 20
+[1] "nearest neighbors are "
+[1] 20 38 43
+[1] "nearest neighbors are "
+[1] 21 25 34
+[1] "nearest neighbors are "
+[1] 22 27  5
+[1] "nearest neighbors are "
+[1] 23 10 46
+[1] "nearest neighbors are "
+[1] 26  9 41
+[1] "nearest neighbors are "
+[1] 27 18 22
+[1] "nearest neighbors are "
+[1] 29 13 49
+[1] "nearest neighbors are "
+[1] 33  7 20
+[1] "nearest neighbors are "
+[1] 36 32 43
+[1] "nearest neighbors are "
+[1] 37 16 49
+[1] "nearest neighbors are "
+[1] 38 45 20
+[1] "nearest neighbors are "
+[1] 39 26 42
+[1] "nearest neighbors are "
+[1] 44 41 25
+[1] "nearest neighbors are "
+[1] 45 50 38
+[1] "nearest neighbors are "
+[1] 46 23 39
+[1] "nearest neighbors are "
+[1] 47  5 32
+[1] "nearest neighbors are "
+[1] 48 16 40
+[1] "nearest neighbors are "
+[1] 49  6 37
+[1] "nearest neighbors are "
+[1] 50 45 17
+[1] "iteration number: "
+[1] 20
+[1] "fitness is: "
+ [1]  -0.2496969  -6.8365131  -5.0283963  -0.1916308   5.8622008  -7.9632653
+ [7]  -1.3703275  -9.7994029   2.1810553  -0.7975165 -10.6477742 -15.9911621
+[13]  -4.8443558  -7.7831886 -20.1995111 -12.4749391 -15.1461471 -18.0678499
+[19]  -6.9627119  -1.7349215 -10.0386765  -7.6717149  -4.7505061 -11.2100649
+[25] -12.6531999   7.0415936  -7.8448084 -13.8192429  -1.1370451  -2.7302936
+[31]  -6.7052637 -13.1169004 -15.6672929 -12.1633936   2.1806238 -15.4371463
+[37]  -5.9801664  -7.8270177   2.4743282   1.4553645  12.9010976  -3.9150995
+[43]  -2.3531455   5.0688241  -4.2814186   0.2510877  -3.5074698  -1.8767629
+[49]  -2.8440763 -10.2929132
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   37   23    0   14   16
+[2,]    2    7    3    0   13   14
+[3,]    3    2    7    0   14   15
+[4,]    4   37   27    0   14   16
+[5,]    5   13   48    0   15   15
+[6,]    6   12    3    0   12   16
+[1] "nearest neighbors are "
+[1]  4 37 27
+[1] "nearest neighbors are "
+[1]  5 13 48
+[1] "nearest neighbors are "
+[1]  7  2 38
+[1] "nearest neighbors are "
+[1] 10 26 20
+[1] "nearest neighbors are "
+[1] 11 14 35
+[1] "nearest neighbors are "
+[1] 12  6 15
+[1] "nearest neighbors are "
+[1] 13 26 48
+[1] "nearest neighbors are "
+[1] 14  3 48
+[1] "nearest neighbors are "
+[1] 16  3  6
+[1] "nearest neighbors are "
+[1] 17 44 46
+[1] "nearest neighbors are "
+[1] 19 13 48
+[1] "nearest neighbors are "
+[1] 20 31 10
+[1] "nearest neighbors are "
+[1] 21 18 47
+[1] "nearest neighbors are "
+[1] 22 43  6
+[1] "nearest neighbors are "
+[1] 23 40  1
+[1] "nearest neighbors are "
+[1] 26 13  9
+[1] "nearest neighbors are "
+[1] 27 46  9
+[1] "nearest neighbors are "
+[1] 29 31 37
+[1] "nearest neighbors are "
+[1] 33 11  1
+[1] "nearest neighbors are "
+[1] 36 32  8
+[1] "nearest neighbors are "
+[1] 37  1  4
+[1] "nearest neighbors are "
+[1] 38  7 50
+[1] "nearest neighbors are "
+[1] 39 26 10
+[1] "nearest neighbors are "
+[1] 44 46 25
+[1] "nearest neighbors are "
+[1] 45 43 44
+[1] "nearest neighbors are "
+[1] 46 44 27
+[1] "nearest neighbors are "
+[1] 47 21 32
+[1] "nearest neighbors are "
+[1] 48 13 32
+[1] "nearest neighbors are "
+[1] 49 13 42
+[1] "nearest neighbors are "
+[1] 50 30 34
+[1] "iteration number: "
+[1] 21
+[1] "fitness is: "
+ [1] -11.5194063  -7.6706677  -2.3399740 -11.7768042  -7.4080893  -8.4242359
+ [7]  -3.3867506   1.9066556  -4.8417250 -16.4780994  -3.2926386   4.7719191
+[13] -29.2551562 -10.2467486  -2.6675395   4.1473809  -2.7686521   0.6985441
+[19]  -8.0450206  -9.0105818  -6.6257158  -2.3702738   1.0194381  -2.9690989
+[25]  -0.4350376 -18.0257596   0.9541363 -13.9267015  -5.5690518  -3.5932548
+[31] -14.1759388 -10.2570639  -7.2886788  -0.9031140  -4.2629959  -0.2406921
+[37] -24.6555954  -5.1884238 -15.4501186 -11.6167166 -13.9265805  -6.4798573
+[43]  -1.7939909 -11.8399032 -14.4082319  -6.8015786 -12.6003399  -7.1227274
+[49] -11.2317915  -3.9349779
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   40   37    0   15   16
+[2,]    2    6   20    0   15   15
+[3,]    3   35   16    0   13   15
+[4,]    4   44   46    0   16   16
+[5,]    5   47   14    0   14   15
+[6,]    6   13   14    0   14   14
+[1] "nearest neighbors are "
+[1]  4 44 46
+[1] "nearest neighbors are "
+[1]  5 47 14
+[1] "nearest neighbors are "
+[1]  7 12 32
+[1] "nearest neighbors are "
+[1] 10 26 28
+[1] "nearest neighbors are "
+[1] 11 19 25
+[1] "nearest neighbors are "
+[1] 12  7 28
+[1] "nearest neighbors are "
+[1] 13  9  6
+[1] "nearest neighbors are "
+[1] 14  6  5
+[1] "nearest neighbors are "
+[1] 16  3  2
+[1] "nearest neighbors are "
+[1] 17 50  8
+[1] "nearest neighbors are "
+[1] 19 11 30
+[1] "nearest neighbors are "
+[1] 20  2 28
+[1] "nearest neighbors are "
+[1] 21 10 36
+[1] "nearest neighbors are "
+[1] 22 34  6
+[1] "nearest neighbors are "
+[1] 23 27  3
+[1] "nearest neighbors are "
+[1] 26  9 44
+[1] "nearest neighbors are "
+[1] 27  6 17
+[1] "nearest neighbors are "
+[1] 29 32 15
+[1] "nearest neighbors are "
+[1] 33  9 13
+[1] "nearest neighbors are "
+[1] 36 50 17
+[1] "nearest neighbors are "
+[1] 37 40  1
+[1] "nearest neighbors are "
+[1] 38 30 33
+[1] "nearest neighbors are "
+[1] 39 41 42
+[1] "nearest neighbors are "
+[1] 44 46 25
+[1] "nearest neighbors are "
+[1] 45 44 13
+[1] "nearest neighbors are "
+[1] 46 44  4
+[1] "nearest neighbors are "
+[1] 47  5 10
+[1] "nearest neighbors are "
+[1] 48 32 42
+[1] "nearest neighbors are "
+[1] 49 37 21
+[1] "nearest neighbors are "
+[1] 50 36 17
+[1] "iteration number: "
+[1] 22
+[1] "fitness is: "
+ [1]  -7.110463  -2.718438  -8.098594   1.308053   0.897050 -18.482796
+ [7] -15.441775  -1.257473  -7.234327  -8.835803 -19.782091 -10.174306
+[13]   1.734402  -7.627679 -19.007845  -5.452207 -15.156055 -13.377280
+[19] -10.853917  -8.537770 -22.866215  -5.691530  -5.077075  -6.783779
+[25] -15.295999  -3.813716  -3.810392  -7.380256  -5.081101  -2.124245
+[31]   1.173582 -16.705289  -4.199399 -10.444072 -13.348693  -5.091348
+[37]   6.187762  -3.985309   1.234340 -11.499386  16.461523  -1.309555
+[43] -18.173092   5.183408  -5.464882   1.072793   1.751635  -6.467824
+[49]   4.949682 -11.394987
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   40   12    0   15   16
+[2,]    2    6   16    0   14   15
+[3,]    3    7   36    0   14   15
+[4,]    4   48   31    0   12   15
+[5,]    5   35   44    0   16   16
+[6,]    6   12    2    0    9   14
+[1] "nearest neighbors are "
+[1]  4 48 31
+[1] "nearest neighbors are "
+[1]  5 35 44
+[1] "nearest neighbors are "
+[1]  7  3 16
+[1] "nearest neighbors are "
+[1] 10 20 37
+[1] "nearest neighbors are "
+[1] 11 44 25
+[1] "nearest neighbors are "
+[1] 12  6 30
+[1] "nearest neighbors are "
+[1] 13  2  6
+[1] "nearest neighbors are "
+[1] 14 35  6
+[1] "nearest neighbors are "
+[1] 16  7  2
+[1] "nearest neighbors are "
+[1] 17  7 50
+[1] "nearest neighbors are "
+[1] 19 17 29
+[1] "nearest neighbors are "
+[1] 20 10 21
+[1] "nearest neighbors are "
+[1] 21 20 43
+[1] "nearest neighbors are "
+[1] 22  6 18
+[1] "nearest neighbors are "
+[1] 23 39  1
+[1] "nearest neighbors are "
+[1] 26 27 39
+[1] "nearest neighbors are "
+[1] 27  9 26
+[1] "nearest neighbors are "
+[1] 29 39 19
+[1] "nearest neighbors are "
+[1] 33 27 42
+[1] "nearest neighbors are "
+[1] 36  3 32
+[1] "nearest neighbors are "
+[1] 37 49 10
+[1] "nearest neighbors are "
+[1] 38 19  1
+[1] "nearest neighbors are "
+[1] 39 26 29
+[1] "nearest neighbors are "
+[1] 44 11 25
+[1] "nearest neighbors are "
+[1] 45 37 50
+[1] "nearest neighbors are "
+[1] 46 43 26
+[1] "nearest neighbors are "
+[1] 47 32 46
+[1] "nearest neighbors are "
+[1] 48  4  3
+[1] "nearest neighbors are "
+[1] 49 37 39
+[1] "nearest neighbors are "
+[1] 50  8 17
+[1] "iteration number: "
+[1] 23
+[1] "fitness is: "
+ [1] -14.5809950 -13.2779719  -0.7138708  -8.0939840  -0.6064715  -9.8785358
+ [7] -11.2567351   5.3722634 -13.9861251  -8.6924418   3.4492803  -9.4282476
+[13] -17.5349779 -13.9127397  -4.3985020  -6.5262194  -2.2607373   3.1693488
+[19]  -6.8791133  -5.2395517 -11.2363167  -5.5015544  -1.8765445  -5.2855726
+[25]  -2.5408748 -10.4636077  -3.0936546  -8.2601547  -9.8468409  -0.4763879
+[31]  -8.9607586   8.8682851  -7.6573687  -9.0372329  -5.4894348  -6.9052228
+[37] -14.6595111 -12.0960223 -19.5416452  -8.9024078 -12.6790842  -4.9372726
+[43]   2.6190748  -5.4529690 -13.1123554 -16.3064086 -15.0823685  -1.1071925
+[49] -16.2743437  -1.6648949
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   12   23    0   15   15
+[2,]    2   34   13    0   12   14
+[3,]    3   48   36    0   12   14
+[4,]    4   12   48    0   14   14
+[5,]    5   18   21    0   16   16
+[6,]    6   12   22    0   12   12
+[1] "nearest neighbors are "
+[1]  4 12 48
+[1] "nearest neighbors are "
+[1]  5 18 21
+[1] "nearest neighbors are "
+[1]  7  8 30
+[1] "nearest neighbors are "
+[1] 10 38 20
+[1] "nearest neighbors are "
+[1] 11 44 18
+[1] "nearest neighbors are "
+[1] 12  6  4
+[1] "nearest neighbors are "
+[1] 13  2 18
+[1] "nearest neighbors are "
+[1] 14  3 27
+[1] "nearest neighbors are "
+[1] 16 30  2
+[1] "nearest neighbors are "
+[1] 17  3  4
+[1] "nearest neighbors are "
+[1] 19 48 20
+[1] "nearest neighbors are "
+[1] 20 10 19
+[1] "nearest neighbors are "
+[1] 21  5 18
+[1] "nearest neighbors are "
+[1] 22  6 12
+[1] "nearest neighbors are "
+[1] 23 30  1
+[1] "nearest neighbors are "
+[1] 26 39 44
+[1] "nearest neighbors are "
+[1] 27  9  4
+[1] "nearest neighbors are "
+[1] 29 42 10
+[1] "nearest neighbors are "
+[1] 33 13  6
+[1] "nearest neighbors are "
+[1] 36  8 15
+[1] "nearest neighbors are "
+[1] 37  1  2
+[1] "nearest neighbors are "
+[1] 38 18 10
+[1] "nearest neighbors are "
+[1] 39 10 26
+[1] "nearest neighbors are "
+[1] 44 41 11
+[1] "nearest neighbors are "
+[1] 45 44 46
+[1] "nearest neighbors are "
+[1] 46 27 41
+[1] "nearest neighbors are "
+[1] 47 32 46
+[1] "nearest neighbors are "
+[1] 48  3 19
+[1] "nearest neighbors are "
+[1] 49 37 10
+[1] "nearest neighbors are "
+[1] 50 36 34
+[1] "iteration number: "
+[1] 24
+[1] "fitness is: "
+ [1]  -5.4438780   0.8492376 -12.1362663  -1.0168744  -7.4055953  -9.6479578
+ [7]  -1.6715489  -8.0915676  -9.4023485   4.2246728 -10.2402093 -12.7207251
+[13]   0.6018197  -3.2501191 -15.5137159   4.9766353 -16.4344029 -10.2597050
+[19]  -9.1427273 -24.6410037  -3.3696158 -14.5127815 -11.1857341  -7.5930561
+[25] -17.3279444   1.7375005  -4.2771142 -13.5171965  -7.1681337  -2.3819894
+[31]  -8.0442087 -18.6382812 -11.0969900 -20.2098239  -8.1710194 -13.5158841
+[37]  12.7503323  -6.9251827  -2.3556119 -21.8404314  14.9022494  -8.9230253
+[43] -12.9133880  15.7227818 -23.1074626 -10.1120974   3.6039600  -2.0339678
+[49]  -3.9840051 -15.4580374
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   38   29    0   15   16
+[2,]    2   13    6    0   11   13
+[3,]    3    7   14    0   13   13
+[4,]    4   14   17    0   12   12
+[5,]    5   21   23    0   14   18
+[6,]    6    2   12    0   13   14
+[1] "nearest neighbors are "
+[1]  4 14 17
+[1] "nearest neighbors are "
+[1]  5 21 23
+[1] "nearest neighbors are "
+[1] 7 8 3
+[1] "nearest neighbors are "
+[1] 10 26 37
+[1] "nearest neighbors are "
+[1] 11 44 35
+[1] "nearest neighbors are "
+[1] 12 17  6
+[1] "nearest neighbors are "
+[1] 13  2 31
+[1] "nearest neighbors are "
+[1] 14  4  3
+[1] "nearest neighbors are "
+[1] 16 47  2
+[1] "nearest neighbors are "
+[1] 17  4 12
+[1] "nearest neighbors are "
+[1] 19 48 30
+[1] "nearest neighbors are "
+[1] 20 33 29
+[1] "nearest neighbors are "
+[1] 21  5 25
+[1] "nearest neighbors are "
+[1] 22 12  6
+[1] "nearest neighbors are "
+[1] 23  7  3
+[1] "nearest neighbors are "
+[1] 26 10 38
+[1] "nearest neighbors are "
+[1] 27 46  6
+[1] "nearest neighbors are "
+[1] 29 49 38
+[1] "nearest neighbors are "
+[1] 33 20 13
+[1] "nearest neighbors are "
+[1] 36  8 50
+[1] "nearest neighbors are "
+[1] 37 49  2
+[1] "nearest neighbors are "
+[1] 38 29  1
+[1] "nearest neighbors are "
+[1] 39 29 49
+[1] "nearest neighbors are "
+[1] 44 41 11
+[1] "nearest neighbors are "
+[1] 45 40 15
+[1] "nearest neighbors are "
+[1] 46 27  6
+[1] "nearest neighbors are "
+[1] 47 32 16
+[1] "nearest neighbors are "
+[1] 48 19 42
+[1] "nearest neighbors are "
+[1] 49 29 37
+[1] "nearest neighbors are "
+[1] 50  8 36
+[1] "iteration number: "
+[1] 25
+[1] "fitness is: "
+ [1]   0.32345918 -13.27797194  -5.51727591 -13.05541556 -12.67248983
+ [6] -11.41718248  -7.84659166   3.98447383  -5.20047232 -11.17177668
+[11]   1.62616517   5.02971943 -22.36732603  -2.97692791  -7.36402904
+[16] -20.98771305  -8.25232560  -2.51994624  -9.01284647  -3.85031807
+[21] -12.59925499 -10.41537879  -5.02001955 -14.53999549   0.03309356
+[26] -15.08997900 -12.59594423  -4.71923337  -9.87235112  -2.66600724
+[31] -14.42552112  -0.10021419 -13.77872175  -9.45039221 -10.40677011
+[36]   6.08572786 -21.49217263  -4.43802829 -19.79864307   0.39046953
+[41] -17.56767616  -3.81257678   1.87859678  -3.46159600  -9.08123987
+[46] -18.57328316  -9.01773446  -1.48309303 -15.66769138  -2.38644020
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   16   18    0   15   16
+[2,]    2   13    6    0   13   14
+[3,]    3    7   14    0   12   14
+[4,]    4   14   30    0   14   15
+[5,]    5    4   24    0   16   16
+[6,]    6    2   37    0   14   14
+[1] "nearest neighbors are "
+[1]  4 14 30
+[1] "nearest neighbors are "
+[1]  5  4 24
+[1] "nearest neighbors are "
+[1]  7  3 23
+[1] "nearest neighbors are "
+[1] 10 26 20
+[1] "nearest neighbors are "
+[1] 11 35 32
+[1] "nearest neighbors are "
+[1] 12 18 22
+[1] "nearest neighbors are "
+[1] 13  2 33
+[1] "nearest neighbors are "
+[1] 14  3  4
+[1] "nearest neighbors are "
+[1] 16  2 37
+[1] "nearest neighbors are "
+[1] 17 24 15
+[1] "nearest neighbors are "
+[1] 19 48  4
+[1] "nearest neighbors are "
+[1] 20 10 23
+[1] "nearest neighbors are "
+[1] 21 48 12
+[1] "nearest neighbors are "
+[1] 22 12  7
+[1] "nearest neighbors are "
+[1] 23  7 20
+[1] "nearest neighbors are "
+[1] 26 10 39
+[1] "nearest neighbors are "
+[1] 27  9 46
+[1] "nearest neighbors are "
+[1] 29 20 23
+[1] "nearest neighbors are "
+[1] 33 16 13
+[1] "nearest neighbors are "
+[1] 36  8 14
+[1] "nearest neighbors are "
+[1] 37 45  6
+[1] "nearest neighbors are "
+[1] 38  1 18
+[1] "nearest neighbors are "
+[1] 39 26 27
+[1] "nearest neighbors are "
+[1] 44 41 46
+[1] "nearest neighbors are "
+[1] 45 37 40
+[1] "nearest neighbors are "
+[1] 46 27 41
+[1] "nearest neighbors are "
+[1] 47 32 10
+[1] "nearest neighbors are "
+[1] 48 19 21
+[1] "nearest neighbors are "
+[1] 49 39 37
+[1] "nearest neighbors are "
+[1] 50 32 34
+[1] "iteration number: "
+[1] 26
+[1] "fitness is: "
+ [1]  -1.8178808  -5.8038377 -12.5122545  -0.6205309   1.3998167  -7.1294048
+ [7]  -4.0533688   1.4200524  -8.1683634 -12.4069426 -18.3594523 -12.1143593
+[13]   1.4268829  -4.7908044 -19.2663482   2.0701411 -10.4691946  -1.4368227
+[19] -10.9677888  -9.1221714 -10.6924538   0.4831834  -8.0861791 -17.2825971
+[25] -20.9063961  -9.0459578  -3.9311274  -7.0997106 -11.4039974  -2.0697044
+[31] -10.8066769 -12.5067417  -1.9969487  -9.1037794 -17.8686184  -4.3937286
+[37]  -1.3740013  -4.4065315   1.7557761 -10.4532926  14.9022494  -0.5332250
+[43] -15.1216591   2.5697801 -18.4674854   6.2319594   6.6117183 -11.1727220
+[49]   5.4449092  -7.8413760
+[1] "RE-INITIALIZING..."
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    3   38    0    5    5
+[2,]    2   21   34    0    6    6
+[3,]    3    1   38    0    5    6
+[4,]    4   13    2    0    5    8
+[5,]    5   40   21    0    7    8
+[6,]    6   34   39    0    6    6
+[1] "nearest neighbors are "
+[1]  1  3 38
+[1] "nearest neighbors are "
+[1]  2 21 34
+[1] "nearest neighbors are "
+[1]  3  1 38
+[1] "nearest neighbors are "
+[1]  4 13  2
+[1] "nearest neighbors are "
+[1]  5 40 21
+[1] "nearest neighbors are "
+[1]  6 34 39
+[1] "nearest neighbors are "
+[1]  7 37 29
+[1] "nearest neighbors are "
+[1]  8 21 39
+[1] "nearest neighbors are "
+[1]  9  3 20
+[1] "nearest neighbors are "
+[1] 11 26 32
+[1] "nearest neighbors are "
+[1] 12 35  1
+[1] "nearest neighbors are "
+[1] 14 16 26
+[1] "nearest neighbors are "
+[1] 16 14 41
+[1] "nearest neighbors are "
+[1] 18 26 40
+[1] "nearest neighbors are "
+[1] 20 34 50
+[1] "nearest neighbors are "
+[1] 21 39 13
+[1] "nearest neighbors are "
+[1] 24 34 40
+[1] "nearest neighbors are "
+[1] 25 13 40
+[1] "nearest neighbors are "
+[1] 26 49 13
+[1] "nearest neighbors are "
+[1] 28  7 43
+[1] "nearest neighbors are "
+[1] 29  7 13
+[1] "nearest neighbors are "
+[1] 30  1 34
+[1] "nearest neighbors are "
+[1] 31 36 13
+[1] "nearest neighbors are "
+[1] 32 26 40
+[1] "nearest neighbors are "
+[1] 33 29 49
+[1] "nearest neighbors are "
+[1] 35 12 13
+[1] "nearest neighbors are "
+[1] 37 50  7
+[1] "nearest neighbors are "
+[1] 38  1  7
+[1] "nearest neighbors are "
+[1] 39 21 13
+[1] "nearest neighbors are "
+[1] 41 50 27
+[1] "nearest neighbors are "
+[1] 42 31  1
+[1] "nearest neighbors are "
+[1] 43 41 50
+[1] "nearest neighbors are "
+[1] 44 50 37
+[1] "nearest neighbors are "
+[1] 45 13 37
+[1] "nearest neighbors are "
+[1] 50 37 34
+[1] "iteration number: "
+[1] 27
+[1] "fitness is: "
+ [1]   0.9864028  -8.2223055  -2.3886212 -15.2994446 -12.0103245 -10.9416243
+ [7] -10.2285639  -3.2705467  -8.6519904  -7.3111638 -10.0028334   3.3920073
+[13]  -8.1927324  -2.2941628  -5.6974462  -8.3534785  -0.1076473  -5.5622249
+[19] -12.6163664 -10.2407346  -9.9263327  -4.7524835   0.1510578 -20.2805877
+[25]   5.4625336  -1.1658671 -10.4951307  -6.6436931 -15.3878670  -1.9875269
+[31]  -8.6608437   6.5779190  -9.0290254  -9.6249567  -5.3711450   1.0213370
+[37] -21.7773823 -15.3410822 -19.0816071  -2.8788761 -12.0674219  -5.4340620
+[43]  -4.9451588  -9.4439887 -22.2504830 -17.8154037  -2.1704990  -9.0805348
+[49]  -6.5805194  -6.5785296
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   15   14    0   15   17
+[2,]    2   50   16    0   16   17
+[3,]    3   22   35    0   15   16
+[4,]    4    8   39    0   15   17
+[5,]    5   26   43    0   13   14
+[6,]    6   34   16    0   12   14
+[1] "nearest neighbors are "
+[1]  1 15 14
+[1] "nearest neighbors are "
+[1]  2 50 16
+[1] "nearest neighbors are "
+[1]  3 22 35
+[1] "nearest neighbors are "
+[1]  4  8 39
+[1] "nearest neighbors are "
+[1]  5 26 43
+[1] "nearest neighbors are "
+[1]  6 34 16
+[1] "nearest neighbors are "
+[1]  7 22  3
+[1] "nearest neighbors are "
+[1] 8 4 7
+[1] "nearest neighbors are "
+[1]  9 27 36
+[1] "nearest neighbors are "
+[1] 11 15 33
+[1] "nearest neighbors are "
+[1] 12 22 21
+[1] "nearest neighbors are "
+[1] 14  6 22
+[1] "nearest neighbors are "
+[1] 16  6 33
+[1] "nearest neighbors are "
+[1] 18 21 28
+[1] "nearest neighbors are "
+[1] 20 30 29
+[1] "nearest neighbors are "
+[1] 21 18 42
+[1] "nearest neighbors are "
+[1] 24 28 27
+[1] "nearest neighbors are "
+[1] 25 10 15
+[1] "nearest neighbors are "
+[1] 26  5 20
+[1] "nearest neighbors are "
+[1] 28 18 24
+[1] "nearest neighbors are "
+[1] 29 35 42
+[1] "nearest neighbors are "
+[1] 30 20 38
+[1] "nearest neighbors are "
+[1] 31 35  4
+[1] "nearest neighbors are "
+[1] 32 50  5
+[1] "nearest neighbors are "
+[1] 33 16 28
+[1] "nearest neighbors are "
+[1] 35 31 29
+[1] "nearest neighbors are "
+[1] 37 49  5
+[1] "nearest neighbors are "
+[1] 38 49 30
+[1] "nearest neighbors are "
+[1] 39 46  4
+[1] "nearest neighbors are "
+[1] 41 46  5
+[1] "nearest neighbors are "
+[1] 42 48 29
+[1] "nearest neighbors are "
+[1] 43  5 41
+[1] "nearest neighbors are "
+[1] 44 29 41
+[1] "nearest neighbors are "
+[1] 45 46  5
+[1] "nearest neighbors are "
+[1] 50  2 30
+[1] "iteration number: "
+[1] 28
+[1] "fitness is: "
+ [1]  -1.8178808  -5.4463621  -9.9838235  -7.1090586  -0.7072214  -9.6270181
+ [7]  -3.8217954 -16.0544513  -7.3476785   4.9398966  -2.4071527 -23.5497528
+[13]   3.2085390 -12.3960810  -0.2715376   0.1261743   2.4395158 -11.1584193
+[19] -15.0258500   6.0105199 -11.4046678  -6.1922925  -7.3787327  -7.4993392
+[25] -18.3024129  -6.4430301   1.3879700 -13.2277594 -13.7667649  -3.2776820
+[31]  -2.9734094  -7.8537419 -14.6025626  -7.6798067 -18.7874934  -3.8347330
+[37]   2.7210665  -7.1511571  -4.3236803  -6.1877155   8.2545084  -4.6285402
+[43] -12.0164461   5.8131128  -2.8305351  -3.3326342   2.1170366  -7.8384909
+[49]   0.1401058 -18.8362152
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   13   38    0   14   15
+[2,]    2   37    3    0   16   17
+[3,]    3    7   16    0   14   14
+[4,]    4    8   24    0   16   16
+[5,]    5    7   16    0   16   16
+[6,]    6   11   15    0   14   14
+[1] "nearest neighbors are "
+[1]  1 13 38
+[1] "nearest neighbors are "
+[1]  2 37  3
+[1] "nearest neighbors are "
+[1]  3  7 16
+[1] "nearest neighbors are "
+[1]  4  8 24
+[1] "nearest neighbors are "
+[1]  5  7 16
+[1] "nearest neighbors are "
+[1]  6 11 15
+[1] "nearest neighbors are "
+[1] 7 3 9
+[1] "nearest neighbors are "
+[1]  8 50 39
+[1] "nearest neighbors are "
+[1]  9 27  7
+[1] "nearest neighbors are "
+[1] 11  6 15
+[1] "nearest neighbors are "
+[1] 12 23 24
+[1] "nearest neighbors are "
+[1] 14 45 20
+[1] "nearest neighbors are "
+[1] 16  3 30
+[1] "nearest neighbors are "
+[1] 18 28 50
+[1] "nearest neighbors are "
+[1] 20 44 10
+[1] "nearest neighbors are "
+[1] 21 41  8
+[1] "nearest neighbors are "
+[1] 24  4 26
+[1] "nearest neighbors are "
+[1] 25  4  8
+[1] "nearest neighbors are "
+[1] 26 46 10
+[1] "nearest neighbors are "
+[1] 28 33 18
+[1] "nearest neighbors are "
+[1] 29 14 42
+[1] "nearest neighbors are "
+[1] 30 16 40
+[1] "nearest neighbors are "
+[1] 31  1 40
+[1] "nearest neighbors are "
+[1] 32 43  6
+[1] "nearest neighbors are "
+[1] 33 28 26
+[1] "nearest neighbors are "
+[1] 35  3  8
+[1] "nearest neighbors are "
+[1] 37  7  2
+[1] "nearest neighbors are "
+[1] 38  1 10
+[1] "nearest neighbors are "
+[1] 39  8 21
+[1] "nearest neighbors are "
+[1] 41 46 21
+[1] "nearest neighbors are "
+[1] 42  1 29
+[1] "nearest neighbors are "
+[1] 43 32 27
+[1] "nearest neighbors are "
+[1] 44 20 47
+[1] "nearest neighbors are "
+[1] 45 14 23
+[1] "nearest neighbors are "
+[1] 50  8 18
+[1] "iteration number: "
+[1] 29
+[1] "fitness is: "
+ [1] -10.3559899  -9.4955932  -3.2141761 -18.3320657 -13.7396833 -15.9429442
+ [7] -13.6909113 -15.6012076  -7.6438891 -18.9547903   1.4093505   3.9226311
+[13] -11.8140531   1.6738824  -0.5980219 -14.9593599  -4.1128374  -1.3791900
+[19]  -7.4282229 -11.0970766  -8.6541633   1.7587227 -16.9245538   1.7727090
+[25] -10.5223200  -0.3241251   0.8307799 -12.0821759  -9.1715708   9.3267643
+[31] -16.6859439  -4.1390254  -3.4147487 -10.1418803  -2.0420446   6.3720236
+[37] -23.2285958  -0.9862615 -18.5908444  -7.5874145 -11.2063931  -8.9949146
+[43]  -4.3024886  -9.1988975 -14.7267828  -8.2697954  -1.3155900 -11.5482208
+[49] -12.1997087  -0.4822012
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   31   38    0   14   14
+[2,]    2   30   33    0   15   15
+[3,]    3   28    7    0   11   15
+[4,]    4   24   27    0   16   16
+[5,]    5   32   41    0   15   16
+[6,]    6   16    8    0   14   16
+[1] "nearest neighbors are "
+[1]  1 31 38
+[1] "nearest neighbors are "
+[1]  2 30 33
+[1] "nearest neighbors are "
+[1]  3 28  7
+[1] "nearest neighbors are "
+[1]  4 24 27
+[1] "nearest neighbors are "
+[1]  5 32 41
+[1] "nearest neighbors are "
+[1]  6 16  8
+[1] "nearest neighbors are "
+[1]  7  3 15
+[1] "nearest neighbors are "
+[1]  8 36  6
+[1] "nearest neighbors are "
+[1]  9 27 11
+[1] "nearest neighbors are "
+[1] 11  9 14
+[1] "nearest neighbors are "
+[1] 12  8 30
+[1] "nearest neighbors are "
+[1] 14 11 17
+[1] "nearest neighbors are "
+[1] 16  6  3
+[1] "nearest neighbors are "
+[1] 18 40 31
+[1] "nearest neighbors are "
+[1] 20 10 35
+[1] "nearest neighbors are "
+[1] 21  1 41
+[1] "nearest neighbors are "
+[1] 24 17 50
+[1] "nearest neighbors are "
+[1] 25 44 29
+[1] "nearest neighbors are "
+[1] 26 33 24
+[1] "nearest neighbors are "
+[1] 28  3  7
+[1] "nearest neighbors are "
+[1] 29 44 25
+[1] "nearest neighbors are "
+[1] 30  1  2
+[1] "nearest neighbors are "
+[1] 31  1 18
+[1] "nearest neighbors are "
+[1] 32 46  5
+[1] "nearest neighbors are "
+[1] 33 26  2
+[1] "nearest neighbors are "
+[1] 35 10  5
+[1] "nearest neighbors are "
+[1] 37  1  8
+[1] "nearest neighbors are "
+[1] 38  1 50
+[1] "nearest neighbors are "
+[1] 39  4 13
+[1] "nearest neighbors are "
+[1] 41 32  5
+[1] "nearest neighbors are "
+[1] 42 31  1
+[1] "nearest neighbors are "
+[1] 43 40 19
+[1] "nearest neighbors are "
+[1] 44 25 29
+[1] "nearest neighbors are "
+[1] 45 37  9
+[1] "nearest neighbors are "
+[1] 50 24 38
+[1] "iteration number: "
+[1] 30
+[1] "fitness is: "
+ [1] -10.1548239  -4.4123787 -11.1190572  -1.5756902 -12.7667390  -8.7544042
+ [7]  -4.1347877  -5.1112241  -6.6359108   0.7389542 -19.3556500 -30.1401568
+[13]   3.2979275  -3.8889714 -10.2705159  -1.2799234 -13.3571518 -12.5148946
+[19] -16.5268284 -12.0282043   4.7594762  -7.7914937  -9.5595098  -2.8470816
+[25]  -9.9899217   1.5108987  -2.1947156   0.3938045  -3.7669455  -4.1253478
+[31]  -3.1120649  -6.3147634  -3.4550972 -15.0554403  -2.2653042 -21.0614149
+[37]   8.3768096  -0.7955719   5.3950875  -3.7714097   5.6977543   3.1351718
+[43] -15.8407111 -10.8125156  -3.5708728  -2.3103148  -6.5280914 -11.6391651
+[49]  -1.9259902 -10.0126909
+[1] "global fitness updated to :"
+[1] -30.14016
+[1] -30.14016
+[1] "min fit index"
+[1] 12
+[1] 12
+[1] "golbal best num features updated to"
+[1] 26
+[1] 26
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   38   23    0   14   16
+[2,]    2    9    7    0   13   16
+[3,]    3    7   28    0   10   13
+[4,]    4   19   30    0   17   17
+[5,]    5   11    3    0   14   16
+[6,]    6   16   20    0   15   17
+[1] "nearest neighbors are "
+[1]  1 38 23
+[1] "nearest neighbors are "
+[1] 2 9 7
+[1] "nearest neighbors are "
+[1]  3  7 28
+[1] "nearest neighbors are "
+[1]  4 19 30
+[1] "nearest neighbors are "
+[1]  5 11  3
+[1] "nearest neighbors are "
+[1]  6 16 20
+[1] "nearest neighbors are "
+[1] 10 26 40
+[1] "nearest neighbors are "
+[1] 12 24 39
+[1] "nearest neighbors are "
+[1] 13 31 39
+[1] "nearest neighbors are "
+[1] 15 42 11
+[1] "nearest neighbors are "
+[1] 18 46 21
+[1] "nearest neighbors are "
+[1] 20 37  8
+[1] "nearest neighbors are "
+[1] 23 34  1
+[1] "nearest neighbors are "
+[1] 26 10 25
+[1] "nearest neighbors are "
+[1] 27 39 26
+[1] "nearest neighbors are "
+[1] 29 31 30
+[1] "nearest neighbors are "
+[1] 31 13 42
+[1] "nearest neighbors are "
+[1] 32 45  7
+[1] "nearest neighbors are "
+[1] 33 43 19
+[1] "nearest neighbors are "
+[1] 35 41 22
+[1] "nearest neighbors are "
+[1] 36  1  8
+[1] "nearest neighbors are "
+[1] 37 49 20
+[1] "nearest neighbors are "
+[1] 40 10 29
+[1] "nearest neighbors are "
+[1] 41 35 46
+[1] "nearest neighbors are "
+[1] 42 31 15
+[1] "nearest neighbors are "
+[1] 43 17 33
+[1] "nearest neighbors are "
+[1] 46 18 39
+[1] "nearest neighbors are "
+[1] 47 44 46
+[1] "nearest neighbors are "
+[1] 48 21 25
+[1] "nearest neighbors are "
+[1] 49 37 10
+[1] "nearest neighbors are "
+[1] 50 44  5
+[1] "iteration number: "
+[1] 31
+[1] "fitness is: "
+ [1]  -9.2918419 -17.7079677   0.7974487 -12.3408204 -10.5862048  -9.3273322
+ [7]  -5.2329632   4.5384702 -12.6781997  -6.0675872   4.1206591 -10.7140417
+[13]  -1.8691241  -8.6440018  -7.1261962  -6.1155072  -6.9237253   1.9507105
+[19]  -7.0811374   3.4137793  -2.5118001  -5.9513499  -7.3497661 -19.3859212
+[25]  -4.5451227 -16.9587430  -0.8134713  -5.1482603 -16.7062254   5.5519927
+[31] -15.6634764 -12.8425108 -10.9697792  -5.5283462   0.5540565  -0.2610581
+[37] -23.1038258  -5.0295773 -10.3940990 -11.2168282 -17.1783505 -15.7000786
+[43]  -1.5622164  -7.8814408 -29.5506157  -8.6808939  -7.2015441   1.4670713
+[49] -26.7113590  -7.2801700
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   23   13    0   14   15
+[2,]    2   34    4    0   15   16
+[3,]    3   14   35    0   12   12
+[4,]    4   44    2    0   15   16
+[5,]    5   17   21    0   14   17
+[6,]    6   46    3    0   16   17
+[1] "nearest neighbors are "
+[1]  1 23 13
+[1] "nearest neighbors are "
+[1]  2 34  4
+[1] "nearest neighbors are "
+[1]  3 14 35
+[1] "nearest neighbors are "
+[1]  4 44  2
+[1] "nearest neighbors are "
+[1]  5 17 21
+[1] "nearest neighbors are "
+[1]  6 46  3
+[1] "nearest neighbors are "
+[1] 10 35 39
+[1] "nearest neighbors are "
+[1] 12 15 14
+[1] "nearest neighbors are "
+[1] 13  1 37
+[1] "nearest neighbors are "
+[1] 15 31 12
+[1] "nearest neighbors are "
+[1] 18 28 30
+[1] "nearest neighbors are "
+[1] 20  7 34
+[1] "nearest neighbors are "
+[1] 23  1 34
+[1] "nearest neighbors are "
+[1] 26 39  9
+[1] "nearest neighbors are "
+[1] 27 46  9
+[1] "nearest neighbors are "
+[1] 29 35 22
+[1] "nearest neighbors are "
+[1] 31 15  1
+[1] "nearest neighbors are "
+[1] 32  9 46
+[1] "nearest neighbors are "
+[1] 33 14  7
+[1] "nearest neighbors are "
+[1] 35  3 10
+[1] "nearest neighbors are "
+[1] 36  8 44
+[1] "nearest neighbors are "
+[1] 37 49 13
+[1] "nearest neighbors are "
+[1] 40 31 41
+[1] "nearest neighbors are "
+[1] 41  7 16
+[1] "nearest neighbors are "
+[1] 42  1 15
+[1] "nearest neighbors are "
+[1] 43 47 19
+[1] "nearest neighbors are "
+[1] 46 47 27
+[1] "nearest neighbors are "
+[1] 47 46 25
+[1] "nearest neighbors are "
+[1] 48 21  4
+[1] "nearest neighbors are "
+[1] 49 37 10
+[1] "nearest neighbors are "
+[1] 50  7 34
+[1] "iteration number: "
+[1] 32
+[1] "fitness is: "
+ [1] -20.3145368  -9.9781793  -2.1558266  -2.0699999 -22.1315073 -21.2043521
+ [7]  -2.2127868  -7.1758428  -2.8124970  -3.4305017 -18.6526338 -17.5863360
+[13]  -7.3751147  -9.9620325 -12.0527937   3.9024583 -20.2998057 -16.1069604
+[19] -17.0013488  -3.7033752  -6.2190232 -17.7012831  -5.5156802   2.2753294
+[25]  -4.2345493 -13.2990605  -5.0888430 -12.3367083  -5.2526775  -9.3449606
+[31]  -0.6256828 -15.4445952   2.4509297  -8.6759740 -18.3980961  -7.4073407
+[37]  -3.3028145  -5.0363374   0.2126174  -5.1189323  -4.7465516 -12.0877583
+[43] -21.6666722 -14.6927776 -11.7051537  -3.6072524 -10.8226253  -1.6651540
+[49]   1.9031582 -11.9738719
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    3   35    0   12   13
+[2,]    2    3    9    0   16   16
+[3,]    3    1   35    0   12   13
+[4,]    4   44   22    0   17   18
+[5,]    5   14   17    0   15   15
+[6,]    6   47   11    0   15   16
+[1] "nearest neighbors are "
+[1]  1  3 35
+[1] "nearest neighbors are "
+[1] 2 3 9
+[1] "nearest neighbors are "
+[1]  3  1 35
+[1] "nearest neighbors are "
+[1]  4 44 22
+[1] "nearest neighbors are "
+[1]  5 14 17
+[1] "nearest neighbors are "
+[1]  6 47 11
+[1] "nearest neighbors are "
+[1] 10 49 46
+[1] "nearest neighbors are "
+[1] 12 24 43
+[1] "nearest neighbors are "
+[1] 13 31 38
+[1] "nearest neighbors are "
+[1] 15 11 41
+[1] "nearest neighbors are "
+[1] 18 47 32
+[1] "nearest neighbors are "
+[1] 20 47 32
+[1] "nearest neighbors are "
+[1] 23  7 15
+[1] "nearest neighbors are "
+[1] 26  8 24
+[1] "nearest neighbors are "
+[1] 27 46 47
+[1] "nearest neighbors are "
+[1] 29 41 22
+[1] "nearest neighbors are "
+[1] 31 13 25
+[1] "nearest neighbors are "
+[1] 32 33  7
+[1] "nearest neighbors are "
+[1] 33  7 32
+[1] "nearest neighbors are "
+[1] 35  1  3
+[1] "nearest neighbors are "
+[1] 36  8 30
+[1] "nearest neighbors are "
+[1] 37 35  3
+[1] "nearest neighbors are "
+[1] 40 10 48
+[1] "nearest neighbors are "
+[1] 41  7 29
+[1] "nearest neighbors are "
+[1] 42 15  8
+[1] "nearest neighbors are "
+[1] 43 44 12
+[1] "nearest neighbors are "
+[1] 46 39 27
+[1] "nearest neighbors are "
+[1] 47 46  6
+[1] "nearest neighbors are "
+[1] 48 40 21
+[1] "nearest neighbors are "
+[1] 49 10 38
+[1] "nearest neighbors are "
+[1] 50 35  7
+[1] "iteration number: "
+[1] 33
+[1] "fitness is: "
+ [1] -21.51656859  -8.73481452   8.75422173 -17.38434008  -0.08333594
+ [6]   3.65283280  -4.73862089  -3.08366980  -7.45359184  -9.24815980
+[11]  -4.75506605  -5.00884577  -4.63715807  -5.31181688  -7.16221455
+[16]  -4.37205226  -7.14551823  -3.30508039  -4.03454815 -22.56032985
+[21]  -4.27857797   1.55364344  -8.14627607 -26.70126908  -4.98497758
+[26]  -6.02902048   1.77102300 -12.05129515 -14.28913100   1.10092785
+[31] -16.95787178 -12.98486709  -0.31561686 -11.30490869  -4.03028663
+[36]   8.16010391 -13.58732084 -13.78103133 -14.65588855 -16.96604789
+[41] -10.24054839 -14.78675610  -4.25979318 -13.78487058 -11.47371296
+[46] -11.88730636 -15.95836309 -11.90485795 -10.62443069  -9.88236338
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   38   45    0   13   14
+[2,]    2    9   14    0   16   17
+[3,]    3   35   14    0   11   12
+[4,]    4   26   31    0   16   16
+[5,]    5   11   43    0   16   16
+[6,]    6   30   12    0   14   16
+[1] "nearest neighbors are "
+[1]  1 38 45
+[1] "nearest neighbors are "
+[1]  2  9 14
+[1] "nearest neighbors are "
+[1]  3 35 14
+[1] "nearest neighbors are "
+[1]  4 26 31
+[1] "nearest neighbors are "
+[1]  5 11 43
+[1] "nearest neighbors are "
+[1]  6 30 12
+[1] "nearest neighbors are "
+[1] 10 49 26
+[1] "nearest neighbors are "
+[1] 12  6  7
+[1] "nearest neighbors are "
+[1] 13 45 38
+[1] "nearest neighbors are "
+[1] 15 26 38
+[1] "nearest neighbors are "
+[1] 18 10 27
+[1] "nearest neighbors are "
+[1] 20 47 42
+[1] "nearest neighbors are "
+[1] 23 41 33
+[1] "nearest neighbors are "
+[1] 26 10 15
+[1] "nearest neighbors are "
+[1] 27  9 18
+[1] "nearest neighbors are "
+[1] 29 10 18
+[1] "nearest neighbors are "
+[1] 31 42  4
+[1] "nearest neighbors are "
+[1] 32 50 28
+[1] "nearest neighbors are "
+[1] 33 23  5
+[1] "nearest neighbors are "
+[1] 35  3 37
+[1] "nearest neighbors are "
+[1] 36  7  9
+[1] "nearest neighbors are "
+[1] 37 35  3
+[1] "nearest neighbors are "
+[1] 40 44 19
+[1] "nearest neighbors are "
+[1] 41 23  7
+[1] "nearest neighbors are "
+[1] 42 38 31
+[1] "nearest neighbors are "
+[1] 43 11  5
+[1] "nearest neighbors are "
+[1] 46 39 13
+[1] "nearest neighbors are "
+[1] 47 20  7
+[1] "nearest neighbors are "
+[1] 48 22 19
+[1] "nearest neighbors are "
+[1] 49 10 11
+[1] "nearest neighbors are "
+[1] 50  7 32
+[1] "iteration number: "
+[1] 34
+[1] "fitness is: "
+ [1]  -0.04642661  -3.80249377 -16.89168045   3.85392208 -16.76662678
+ [6]  -7.70601245   7.26729014  -3.12752567  -1.00326475  -0.14560380
+[11] -20.30167325 -14.02363232 -13.72660159  -0.63849904 -13.26338316
+[16]  -1.99839992  -3.34536878 -16.24866934 -15.40154730  -0.81144322
+[21]   3.32732230 -23.13874743 -32.34911454   0.41116567 -26.72706243
+[26]  -8.32940800 -13.93086699  -6.90906134  -2.18549271  -4.98868995
+[31]   1.80481199 -12.67828056  -0.60234825 -21.32809262 -22.39231222
+[36] -14.96457594  -4.05056945  -0.12831336 -10.37797909  -2.10759062
+[41]   3.20628713 -16.84042416 -18.72531156  -4.86046255 -10.29294387
+[46]  -2.91117972   1.58510465 -11.96006305 -11.36064780  -8.09064835
+[1] "global fitness updated to :"
+[1] -32.34911
+[1] -32.34911
+[1] "min fit index"
+[1] 23
+[1] 23
+[1] "golbal best num features updated to"
+[1] 21
+[1] 21
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   19   23    0   16   16
+[2,]    2    9   36    0   16   17
+[3,]    3    7   14    0   15   16
+[4,]    4   44    2    0   16   18
+[5,]    5   43   11    0   13   15
+[6,]    6   11   12    0   16   16
+[1] "nearest neighbors are "
+[1]  1 19 23
+[1] "nearest neighbors are "
+[1]  2  9 36
+[1] "nearest neighbors are "
+[1]  3  7 14
+[1] "nearest neighbors are "
+[1]  4 44  2
+[1] "nearest neighbors are "
+[1]  5 43 11
+[1] "nearest neighbors are "
+[1]  6 11 12
+[1] "nearest neighbors are "
+[1] 10 26 25
+[1] "nearest neighbors are "
+[1] 12  6 42
+[1] "nearest neighbors are "
+[1] 13 46 15
+[1] "nearest neighbors are "
+[1] 15 13 17
+[1] "nearest neighbors are "
+[1] 18 21 44
+[1] "nearest neighbors are "
+[1] 20  5 44
+[1] "nearest neighbors are "
+[1] 23 30 11
+[1] "nearest neighbors are "
+[1] 26 10 16
+[1] "nearest neighbors are "
+[1] 27 47 22
+[1] "nearest neighbors are "
+[1] 29 13 41
+[1] "nearest neighbors are "
+[1] 31 42 38
+[1] "nearest neighbors are "
+[1] 32 37  3
+[1] "nearest neighbors are "
+[1] 33 39 19
+[1] "nearest neighbors are "
+[1] 35 26  3
+[1] "nearest neighbors are "
+[1] 36  8 45
+[1] "nearest neighbors are "
+[1] 37 32 16
+[1] "nearest neighbors are "
+[1] 40 17 35
+[1] "nearest neighbors are "
+[1] 41 29  1
+[1] "nearest neighbors are "
+[1] 42 31 50
+[1] "nearest neighbors are "
+[1] 43  5 11
+[1] "nearest neighbors are "
+[1] 46 13 39
+[1] "nearest neighbors are "
+[1] 47 46 27
+[1] "nearest neighbors are "
+[1] 48 21 22
+[1] "nearest neighbors are "
+[1] 49 10 37
+[1] "nearest neighbors are "
+[1] 50  8 42
+[1] "iteration number: "
+[1] 35
+[1] "fitness is: "
+ [1]  -3.3204613   9.6634563  -7.7759614 -22.5752330  -4.9567457  -8.2649245
+ [7]  -1.7523184 -12.5219146 -13.5939919  -5.2063020   5.6556925 -10.3612977
+[13]  -1.5036408  -7.0759878  -0.4704163 -13.1693866 -13.1696956  -7.7723655
+[19]  -8.9228501  -6.8625931  -7.8079236  -2.8050460 -13.8507039 -32.9083755
+[25]  -2.8405809  -4.9684577   2.8557435 -13.7411268 -12.4252283   6.3889206
+[31] -20.1886141  -6.8541880  -7.6592933  -8.2858159   1.8735956  10.9555274
+[37] -12.4813400 -10.5667569  -5.8770626  -6.7132558 -11.1728731   4.4792453
+[43]  -3.0478643   1.0297255 -22.9421390 -12.2186552  -5.1816771  -4.8355700
+[49] -17.7561480  -4.6979031
+[1] "global fitness updated to :"
+[1] -32.90838
+[1] -32.90838
+[1] "min fit index"
+[1] 24
+[1] 24
+[1] "golbal best num features updated to"
+[1] 21
+[1] 21
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    9   26    0   15   15
+[2,]    2   32   36    0   17   17
+[3,]    3    7   14    0   17   17
+[4,]    4   45    1    0   14   16
+[5,]    5   20   33    0   14   17
+[6,]    6   30    3    0   16   18
+[1] "nearest neighbors are "
+[1]  1  9 26
+[1] "nearest neighbors are "
+[1]  2 32 36
+[1] "nearest neighbors are "
+[1]  3  7 14
+[1] "nearest neighbors are "
+[1]  4 45  1
+[1] "nearest neighbors are "
+[1]  5 20 33
+[1] "nearest neighbors are "
+[1]  6 30  3
+[1] "nearest neighbors are "
+[1] 10 49 43
+[1] "nearest neighbors are "
+[1] 12 31 23
+[1] "nearest neighbors are "
+[1] 13 15 43
+[1] "nearest neighbors are "
+[1] 15 13 12
+[1] "nearest neighbors are "
+[1] 18 21 39
+[1] "nearest neighbors are "
+[1] 20  5 17
+[1] "nearest neighbors are "
+[1] 23 50 12
+[1] "nearest neighbors are "
+[1] 26  1 10
+[1] "nearest neighbors are "
+[1] 27  8 46
+[1] "nearest neighbors are "
+[1] 29 22 13
+[1] "nearest neighbors are "
+[1] 31 12 38
+[1] "nearest neighbors are "
+[1] 32  2 22
+[1] "nearest neighbors are "
+[1] 33 22 44
+[1] "nearest neighbors are "
+[1] 35  7 42
+[1] "nearest neighbors are "
+[1] 36  8 30
+[1] "nearest neighbors are "
+[1] 37 16 34
+[1] "nearest neighbors are "
+[1] 40 11 17
+[1] "nearest neighbors are "
+[1] 41 23 19
+[1] "nearest neighbors are "
+[1] 42 38 31
+[1] "nearest neighbors are "
+[1] 43 17 10
+[1] "nearest neighbors are "
+[1] 46 39 27
+[1] "nearest neighbors are "
+[1] 47  5 27
+[1] "nearest neighbors are "
+[1] 48 39 21
+[1] "nearest neighbors are "
+[1] 49 10 26
+[1] "nearest neighbors are "
+[1] 50 23  7
+[1] "iteration number: "
+[1] 36
+[1] "fitness is: "
+ [1]   1.4667752  -3.3738544 -11.5194705   1.9881887 -15.7425714  -7.1269255
+ [7]   1.1053731  -6.9897524   0.3738195   6.4407562  -7.2629759 -17.1554439
+[13] -17.3337856  -8.3366036 -17.3756770 -11.4653521  -4.1608999 -10.9336227
+[19] -10.8405629  -2.3780479  -5.0309948  -9.0549786 -22.1994803  -1.6829048
+[25] -18.0268293 -10.6574202 -17.3140105  -6.2861906 -10.2932469 -12.7356639
+[31]  -5.4210103  -2.7850274  -2.6248312  -2.5308956 -21.5103203  -6.6245991
+[37]  -0.8133872  -0.1283134  -8.7826967   1.2971964  -9.0544488 -12.3871008
+[43] -15.5294954 -19.6099548  -4.3241759   3.2019421 -14.3499365  -0.4938504
+[49]  -8.6398938 -12.2273929
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    4   27    0   14   16
+[2,]    2    9    3    0   15   16
+[3,]    3    5    2    0   15   16
+[4,]    4   34    1    0   13   14
+[5,]    5   20    3    0   13   15
+[6,]    6   26   10    0   14   18
+[1] "nearest neighbors are "
+[1]  1  4 27
+[1] "nearest neighbors are "
+[1] 2 9 3
+[1] "nearest neighbors are "
+[1] 3 5 2
+[1] "nearest neighbors are "
+[1]  4 34  1
+[1] "nearest neighbors are "
+[1]  5 20  3
+[1] "nearest neighbors are "
+[1]  6 26 10
+[1] "nearest neighbors are "
+[1] 10 41 19
+[1] "nearest neighbors are "
+[1] 12  8 32
+[1] "nearest neighbors are "
+[1] 13 39  1
+[1] "nearest neighbors are "
+[1] 15 29 49
+[1] "nearest neighbors are "
+[1] 18 20 21
+[1] "nearest neighbors are "
+[1] 20  5 18
+[1] "nearest neighbors are "
+[1] 23 22 19
+[1] "nearest neighbors are "
+[1] 26  6 38
+[1] "nearest neighbors are "
+[1] 27  1  4
+[1] "nearest neighbors are "
+[1] 29 15 37
+[1] "nearest neighbors are "
+[1] 31 20 42
+[1] "nearest neighbors are "
+[1] 32 27  2
+[1] "nearest neighbors are "
+[1] 33 19 41
+[1] "nearest neighbors are "
+[1] 35  3 16
+[1] "nearest neighbors are "
+[1] 36  8  7
+[1] "nearest neighbors are "
+[1] 37 16 44
+[1] "nearest neighbors are "
+[1] 40 11 43
+[1] "nearest neighbors are "
+[1] 41 10 33
+[1] "nearest neighbors are "
+[1] 42 31 38
+[1] "nearest neighbors are "
+[1] 43 11 40
+[1] "nearest neighbors are "
+[1] 46 39 47
+[1] "nearest neighbors are "
+[1] 47 46 22
+[1] "nearest neighbors are "
+[1] 48 21 22
+[1] "nearest neighbors are "
+[1] 49 15 18
+[1] "nearest neighbors are "
+[1] 50  7 33
+[1] "iteration number: "
+[1] 37
+[1] "fitness is: "
+ [1]  -7.8830818   0.1730849   1.9224516 -11.4507149   0.7410723  -5.5920574
+ [7] -12.3221150  -5.1500568 -11.2138097  -8.3143438  -0.8358200   0.6674518
+[13] -15.9794074  -8.1693253   0.7909583 -10.0457971  -6.2148974  -8.2043586
+[19]  -9.6610320 -14.9554465  -2.2797717  -3.9190703  -0.9818446 -30.5555207
+[25]  -4.2758366 -21.3333129  -9.0332550  -7.3294862   2.9009115   3.5758394
+[31] -14.7702895  -5.0948620  -9.5814926  -9.7313129   2.3866515   9.9604604
+[37] -11.3477689  -4.7288752  -5.6241975 -15.6999297  -9.3001040 -15.6040694
+[43]  -4.5014148  -9.3620285 -22.4345428  -5.0028679  -3.3670336 -10.5843860
+[49] -10.1909924  -5.5247159
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   23   45    0   17   17
+[2,]    2   32   38    0   14   14
+[3,]    3   17    7    0   15   16
+[4,]    4   31   27    0   15   16
+[5,]    5   20   33    0   11   15
+[6,]    6   50   27    0   16   17
+[1] "nearest neighbors are "
+[1]  1 23 45
+[1] "nearest neighbors are "
+[1]  2 32 38
+[1] "nearest neighbors are "
+[1]  3 17  7
+[1] "nearest neighbors are "
+[1]  4 31 27
+[1] "nearest neighbors are "
+[1]  5 20 33
+[1] "nearest neighbors are "
+[1]  6 50 27
+[1] "nearest neighbors are "
+[1] 10 13 49
+[1] "nearest neighbors are "
+[1] 12 17  5
+[1] "nearest neighbors are "
+[1] 13 10 40
+[1] "nearest neighbors are "
+[1] 15 17 23
+[1] "nearest neighbors are "
+[1] 18  2 21
+[1] "nearest neighbors are "
+[1] 20  5 43
+[1] "nearest neighbors are "
+[1] 23 15  1
+[1] "nearest neighbors are "
+[1] 26 49 10
+[1] "nearest neighbors are "
+[1] 27  4  6
+[1] "nearest neighbors are "
+[1] 29 35 22
+[1] "nearest neighbors are "
+[1] 31 42  4
+[1] "nearest neighbors are "
+[1] 32  2 50
+[1] "nearest neighbors are "
+[1] 33  5 22
+[1] "nearest neighbors are "
+[1] 35 37 29
+[1] "nearest neighbors are "
+[1] 36  8  9
+[1] "nearest neighbors are "
+[1] 37 35  8
+[1] "nearest neighbors are "
+[1] 40 11 13
+[1] "nearest neighbors are "
+[1] 41 22 33
+[1] "nearest neighbors are "
+[1] 42 38 31
+[1] "nearest neighbors are "
+[1] 43 11 40
+[1] "nearest neighbors are "
+[1] 46 39 47
+[1] "nearest neighbors are "
+[1] 47 46  7
+[1] "nearest neighbors are "
+[1] 48 21 35
+[1] "nearest neighbors are "
+[1] 49 26 10
+[1] "nearest neighbors are "
+[1] 50  6  8
+[1] "iteration number: "
+[1] 38
+[1] "fitness is: "
+ [1]  -3.11609152  -0.79960309 -15.62972394   4.28391699 -16.12053885
+ [6] -22.40174483   1.73426487   3.39304201  -3.93578536  -0.17834749
+[11] -25.56464908 -27.99971243 -21.12546167 -14.32410114 -14.50169406
+[16]  -4.80330969 -12.29146794  -6.46748985  -4.50502806   2.83505159
+[21] -10.40876499  -3.12529888 -33.07628625  -4.82839380 -13.94358461
+[26] -16.42678508  -4.82533663  -2.06910388   1.81436126 -11.11030477
+[31]   0.04872472  -8.45899365 -19.82292988   0.30363947  -9.21083691
+[36] -25.40669428   0.70561804   0.35949522  -3.99446792  -2.09258341
+[41] -10.41165820  -6.55362514 -15.95210621 -16.83774546  -6.06311630
+[46]  -1.62887658 -13.58521752  -4.13169058 -15.23350768  -9.14507980
+[1] "global fitness updated to :"
+[1] -33.07629
+[1] -33.07629
+[1] "min fit index"
+[1] 23
+[1] 23
+[1] "golbal best num features updated to"
+[1] 18
+[1] 18
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   26   22    0   15   17
+[2,]    2   32    9    0   12   17
+[3,]    3    9   11    0   14   14
+[4,]    4   25   34    0   13   15
+[5,]    5   20   30    0   13   17
+[6,]    6   23   35    0   14   16
+[1] "nearest neighbors are "
+[1]  1 26 22
+[1] "nearest neighbors are "
+[1]  2 32  9
+[1] "nearest neighbors are "
+[1]  3  9 11
+[1] "nearest neighbors are "
+[1]  4 25 34
+[1] "nearest neighbors are "
+[1]  5 20 30
+[1] "nearest neighbors are "
+[1]  6 23 35
+[1] "nearest neighbors are "
+[1] 10 49 18
+[1] "nearest neighbors are "
+[1] 12 49 11
+[1] "nearest neighbors are "
+[1] 13 44 12
+[1] "nearest neighbors are "
+[1] 15 17  4
+[1] "nearest neighbors are "
+[1] 18 10 13
+[1] "nearest neighbors are "
+[1] 20  5 14
+[1] "nearest neighbors are "
+[1] 23 22  6
+[1] "nearest neighbors are "
+[1] 26  8  1
+[1] "nearest neighbors are "
+[1] 27 50 26
+[1] "nearest neighbors are "
+[1] 29 31 22
+[1] "nearest neighbors are "
+[1] 31 42 29
+[1] "nearest neighbors are "
+[1] 32  2 15
+[1] "nearest neighbors are "
+[1] 33 19 41
+[1] "nearest neighbors are "
+[1] 35 37  6
+[1] "nearest neighbors are "
+[1] 36 30  8
+[1] "nearest neighbors are "
+[1] 37 35 50
+[1] "nearest neighbors are "
+[1] 40 11 43
+[1] "nearest neighbors are "
+[1] 41 33  7
+[1] "nearest neighbors are "
+[1] 42 38 31
+[1] "nearest neighbors are "
+[1] 43 17 40
+[1] "nearest neighbors are "
+[1] 46 39 47
+[1] "nearest neighbors are "
+[1] 47 46 26
+[1] "nearest neighbors are "
+[1] 48 21 39
+[1] "nearest neighbors are "
+[1] 49 10 12
+[1] "nearest neighbors are "
+[1] 50  8 27
+[1] "iteration number: "
+[1] 39
+[1] "fitness is: "
+ [1]  -5.20731838  -6.64876234   5.27934211 -22.18479074  -0.15651091
+ [6] -16.79309906  -6.23732817  -5.21198543 -10.25217275  -7.69251608
+[11]  -3.81937820  -1.95563142 -16.99639544  -0.02380486  -7.50187400
+[16] -12.11813579 -15.40000044  -5.57920369  -5.14268541  -6.42029682
+[21]  -4.18826667  -5.69565458   0.28810059 -30.55552073 -17.40584991
+[26]  -7.88006314  -8.52140885  -5.70960547  -4.57863265   3.47842580
+[31] -27.29769711  -1.57011282  -4.36276311 -11.97665609 -13.98973153
+[36]  -8.85435360  -0.54469772 -10.56294148  -8.49328962  -5.38823594
+[41] -12.25818015  -6.44013993  -2.68717942  -6.23895197  -6.45155048
+[46] -10.40834254  -4.60057391  -8.28333517  -7.12735173   1.05178105
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   31   48    0   15   15
+[2,]    2   10    9    0   17   18
+[3,]    3   43    1    0   15   16
+[4,]    4   46   27    0   15   16
+[5,]    5   33   20    0   12   14
+[6,]    6   10   23    0   11   16
+[1] "nearest neighbors are "
+[1]  1 31 48
+[1] "nearest neighbors are "
+[1]  2 10  9
+[1] "nearest neighbors are "
+[1]  3 43  1
+[1] "nearest neighbors are "
+[1]  4 46 27
+[1] "nearest neighbors are "
+[1]  5 33 20
+[1] "nearest neighbors are "
+[1]  6 10 23
+[1] "nearest neighbors are "
+[1] 10  6 26
+[1] "nearest neighbors are "
+[1] 12  5 10
+[1] "nearest neighbors are "
+[1] 13 31 37
+[1] "nearest neighbors are "
+[1] 15 22 31
+[1] "nearest neighbors are "
+[1] 18 49 23
+[1] "nearest neighbors are "
+[1] 20  5 12
+[1] "nearest neighbors are "
+[1] 23 47 10
+[1] "nearest neighbors are "
+[1] 26 10 47
+[1] "nearest neighbors are "
+[1] 27 46 32
+[1] "nearest neighbors are "
+[1] 29 10 43
+[1] "nearest neighbors are "
+[1] 31 42  1
+[1] "nearest neighbors are "
+[1] 32 27 46
+[1] "nearest neighbors are "
+[1] 33  5 16
+[1] "nearest neighbors are "
+[1] 35 37  7
+[1] "nearest neighbors are "
+[1] 36  9  8
+[1] "nearest neighbors are "
+[1] 37 35 16
+[1] "nearest neighbors are "
+[1] 40 11  9
+[1] "nearest neighbors are "
+[1] 41  7 33
+[1] "nearest neighbors are "
+[1] 42 38 31
+[1] "nearest neighbors are "
+[1] 43 11  3
+[1] "nearest neighbors are "
+[1] 46 27 34
+[1] "nearest neighbors are "
+[1] 47 23 26
+[1] "nearest neighbors are "
+[1] 48 21 39
+[1] "nearest neighbors are "
+[1] 49 10 12
+[1] "nearest neighbors are "
+[1] 50  8 33
+[1] "iteration number: "
+[1] 40
+[1] "fitness is: "
+ [1]  -0.4358569  -9.6726675 -15.6432346   9.6665460 -26.5548257  -3.6351157
+ [7]   5.7343332   4.4871073  -2.2920731  -8.3405704 -15.6831267 -14.8468324
+[13]  -8.9931323  -1.4471535  -4.7245293 -13.7818113  -1.2396267 -16.6796903
+[19] -16.9983431   1.0535045 -10.9537844 -10.0199952 -16.0135246  -3.0863626
+[25] -27.5715228 -16.6485514 -10.3989279  -8.6430837   3.6954079 -13.5580004
+[31]   3.4201149  -9.8066158 -12.2924973 -11.9435148 -11.1127274  -9.9181880
+[37]  -2.9164840   0.3594952   3.6095925   4.9499364   4.4023716  -3.4590267
+[43] -23.1559689 -12.8363753  -3.0711473  -5.8223378  -7.0913472   1.3174829
+[49] -18.9738879  -5.1164952
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   32   33    0   11   16
+[2,]    2   18    9    0   16   17
+[3,]    3   33    7    0   13   15
+[4,]    4   15   31    0   15   16
+[5,]    5   29   12    0   16   17
+[6,]    6   11   43    0   16   16
+[1] "nearest neighbors are "
+[1]  1 32 33
+[1] "nearest neighbors are "
+[1]  2 18  9
+[1] "nearest neighbors are "
+[1]  3 33  7
+[1] "nearest neighbors are "
+[1]  4 15 31
+[1] "nearest neighbors are "
+[1]  5 29 12
+[1] "nearest neighbors are "
+[1]  6 11 43
+[1] "nearest neighbors are "
+[1] 10 49 18
+[1] "nearest neighbors are "
+[1] 12 20  5
+[1] "nearest neighbors are "
+[1] 13 17 35
+[1] "nearest neighbors are "
+[1] 15  4 29
+[1] "nearest neighbors are "
+[1] 18 21 10
+[1] "nearest neighbors are "
+[1] 20 12 17
+[1] "nearest neighbors are "
+[1] 23 34 47
+[1] "nearest neighbors are "
+[1] 26 27 49
+[1] "nearest neighbors are "
+[1] 27 26  9
+[1] "nearest neighbors are "
+[1] 29  5 15
+[1] "nearest neighbors are "
+[1] 31 42  4
+[1] "nearest neighbors are "
+[1] 32  1 33
+[1] "nearest neighbors are "
+[1] 33  3 32
+[1] "nearest neighbors are "
+[1] 35 13 22
+[1] "nearest neighbors are "
+[1] 36 30  7
+[1] "nearest neighbors are "
+[1] 37 16 28
+[1] "nearest neighbors are "
+[1] 40 11 22
+[1] "nearest neighbors are "
+[1] 41 38  7
+[1] "nearest neighbors are "
+[1] 42 31 38
+[1] "nearest neighbors are "
+[1] 43 11 17
+[1] "nearest neighbors are "
+[1] 46 39 47
+[1] "nearest neighbors are "
+[1] 47 44 46
+[1] "nearest neighbors are "
+[1] 48 21 46
+[1] "nearest neighbors are "
+[1] 49 10 43
+[1] "nearest neighbors are "
+[1] 50  8  7
+[1] "iteration number: "
+[1] 41
+[1] "fitness is: "
+ [1] -16.0694531  -1.0392255   0.3845347 -19.1088911  -0.8850748 -18.2716370
+ [7] -18.9762039 -15.6731677 -10.4160556  -7.7000619  -6.5728185 -10.4933425
+[13] -12.9715871 -14.9783242 -10.2638708  -9.5488369  -6.1871378  -1.8853568
+[19]  -6.2080254  -2.0989506  -5.2845934  -0.2353377   4.3214038 -30.5555207
+[25]  -0.5280978   0.2890709  -9.5496585  -6.2553051  -3.6885746  12.3944066
+[31] -15.7094814  -3.9314997  -8.8589148  -3.9289681 -14.1460760   4.3149370
+[37] -10.3838112  -8.3666772 -18.2776796 -22.8663631 -13.6885073 -15.6479997
+[43]  -3.3568233  -6.4443708 -22.6839890 -11.5640626  -0.7468581  -9.2449418
+[49] -12.3623308   0.5927551
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    4   31    0   14   14
+[2,]    2    9   30    0   11   15
+[3,]    3    7   36    0   14   15
+[4,]    4    1   11    0   14   16
+[5,]    5   43   20    0   13   15
+[6,]    6   23   41    0   17   17
+[1] "nearest neighbors are "
+[1]  1  4 31
+[1] "nearest neighbors are "
+[1]  2  9 30
+[1] "nearest neighbors are "
+[1]  3  7 36
+[1] "nearest neighbors are "
+[1]  4  1 11
+[1] "nearest neighbors are "
+[1]  5 43 20
+[1] "nearest neighbors are "
+[1]  6 23 41
+[1] "nearest neighbors are "
+[1] 10 49 18
+[1] "nearest neighbors are "
+[1] 12 47 44
+[1] "nearest neighbors are "
+[1] 13 30  9
+[1] "nearest neighbors are "
+[1] 15 26 11
+[1] "nearest neighbors are "
+[1] 18 10 38
+[1] "nearest neighbors are "
+[1] 20  5 28
+[1] "nearest neighbors are "
+[1] 23 47 22
+[1] "nearest neighbors are "
+[1] 26 42 10
+[1] "nearest neighbors are "
+[1] 27  4  9
+[1] "nearest neighbors are "
+[1] 29 22 43
+[1] "nearest neighbors are "
+[1] 31 42  1
+[1] "nearest neighbors are "
+[1] 32 19 40
+[1] "nearest neighbors are "
+[1] 33 40 30
+[1] "nearest neighbors are "
+[1] 35 37  3
+[1] "nearest neighbors are "
+[1] 36  8 14
+[1] "nearest neighbors are "
+[1] 37  7 16
+[1] "nearest neighbors are "
+[1] 40 11 33
+[1] "nearest neighbors are "
+[1] 41 19  6
+[1] "nearest neighbors are "
+[1] 42 38 31
+[1] "nearest neighbors are "
+[1] 43  5 11
+[1] "nearest neighbors are "
+[1] 46 21 48
+[1] "nearest neighbors are "
+[1] 47 22 23
+[1] "nearest neighbors are "
+[1] 48 21 39
+[1] "nearest neighbors are "
+[1] 49 10 37
+[1] "nearest neighbors are "
+[1] 50 36  7
+[1] "iteration number: "
+[1] 42
+[1] "fitness is: "
+ [1]  -9.2119734  -5.5559528  -7.1872098  -3.9427969  -6.9776201  -9.8200759
+ [7]   3.2354299   0.4352145  -4.0199218  -4.8188068  -5.6998600 -25.8037598
+[13]   2.1001683 -13.9908684 -15.2910374   0.1565227   1.2665458 -14.0426038
+[19]  -6.4207126  -6.4437479  -7.0857592  -9.9244894 -12.4252678  -1.4872007
+[25] -24.9899184  -4.4322065  -5.1896571  -9.1518301 -15.4024684 -12.3548118
+[31]  -5.2909292 -11.3737142  -9.5632721 -13.5858064  -9.4893977 -17.5819698
+[37]  -4.6069499  -0.3311907   4.3116931   0.2690831  -9.5269255  -9.8679976
+[43]  -4.8651580 -18.3034853  -6.0631163  -3.3773727 -13.3577967   5.9337624
+[49] -13.3890859  -0.3088562
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   26   21    0   15   17
+[2,]    2    3   33    0   17   17
+[3,]    3    7    9    0   16   16
+[4,]    4    5   17    0   14   15
+[5,]    5    4   29    0   14   16
+[6,]    6   10   23    0   16   17
+[1] "nearest neighbors are "
+[1]  1 26 21
+[1] "nearest neighbors are "
+[1]  2  3 33
+[1] "nearest neighbors are "
+[1] 3 7 9
+[1] "nearest neighbors are "
+[1]  4  5 17
+[1] "nearest neighbors are "
+[1]  5  4 29
+[1] "nearest neighbors are "
+[1]  6 10 23
+[1] "nearest neighbors are "
+[1] 10 49  6
+[1] "nearest neighbors are "
+[1] 12 14  5
+[1] "nearest neighbors are "
+[1] 13 26  8
+[1] "nearest neighbors are "
+[1] 15 11 29
+[1] "nearest neighbors are "
+[1] 18 49 10
+[1] "nearest neighbors are "
+[1] 20 14 16
+[1] "nearest neighbors are "
+[1] 23 41 22
+[1] "nearest neighbors are "
+[1] 26  1 13
+[1] "nearest neighbors are "
+[1] 27 36 47
+[1] "nearest neighbors are "
+[1] 29 11 43
+[1] "nearest neighbors are "
+[1] 31 42 13
+[1] "nearest neighbors are "
+[1] 32 14 44
+[1] "nearest neighbors are "
+[1] 33 30 39
+[1] "nearest neighbors are "
+[1] 35  3  7
+[1] "nearest neighbors are "
+[1] 36  8 30
+[1] "nearest neighbors are "
+[1] 37 16  7
+[1] "nearest neighbors are "
+[1] 40 11 41
+[1] "nearest neighbors are "
+[1] 41  9 19
+[1] "nearest neighbors are "
+[1] 42 38 31
+[1] "nearest neighbors are "
+[1] 43 11 17
+[1] "nearest neighbors are "
+[1] 46 21 47
+[1] "nearest neighbors are "
+[1] 47 46 22
+[1] "nearest neighbors are "
+[1] 48 21 19
+[1] "nearest neighbors are "
+[1] 49 10 43
+[1] "nearest neighbors are "
+[1] 50  7  8
+[1] "iteration number: "
+[1] 43
+[1] "fitness is: "
+ [1] -11.533286  -6.589984  -7.012431  -6.325535  -9.523810  -3.627481
+ [7]  -8.625652 -12.447208 -13.424870 -15.066967 -12.398024  -5.903799
+[13]  -3.470443 -13.048052  -5.595572  -8.875436  -6.187138  -9.238292
+[19] -13.053235   3.011638  -2.153626   3.009389  -7.493459 -30.555521
+[25]   2.890070  -2.409841  -2.302781  -7.997308  -5.838150   6.533376
+[31] -13.830957 -10.500245  -4.840657  -6.555549  -3.901139  -9.180214
+[37] -10.807506  -8.448188 -16.219770  -8.570393  -8.744383 -13.353945
+[43]  -5.000950   3.193752 -15.131703 -11.814661  -7.167650 -12.172527
+[49]  -8.279592   2.261614
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1    6   19    0   16   16
+[2,]    2    9   24    0   15   17
+[3,]    3   17    7    0   15   18
+[4,]    4   30   44    0   15   15
+[5,]    5   11   20    0   15   15
+[6,]    6    1   45    0   16   16
+[1] "nearest neighbors are "
+[1]  1  6 19
+[1] "nearest neighbors are "
+[1]  2  9 24
+[1] "nearest neighbors are "
+[1]  3 17  7
+[1] "nearest neighbors are "
+[1]  4 30 44
+[1] "nearest neighbors are "
+[1]  5 11 20
+[1] "nearest neighbors are "
+[1]  6  1 45
+[1] "nearest neighbors are "
+[1] 10 18 49
+[1] "nearest neighbors are "
+[1] 12 32 13
+[1] "nearest neighbors are "
+[1] 13 29 10
+[1] "nearest neighbors are "
+[1] 15 11 26
+[1] "nearest neighbors are "
+[1] 18 10 21
+[1] "nearest neighbors are "
+[1] 20 17  5
+[1] "nearest neighbors are "
+[1] 23 10 15
+[1] "nearest neighbors are "
+[1] 26 41 15
+[1] "nearest neighbors are "
+[1] 27  2 10
+[1] "nearest neighbors are "
+[1] 29 42 13
+[1] "nearest neighbors are "
+[1] 31 42  4
+[1] "nearest neighbors are "
+[1] 32 12 39
+[1] "nearest neighbors are "
+[1] 33  8 28
+[1] "nearest neighbors are "
+[1] 35 16 27
+[1] "nearest neighbors are "
+[1] 36 30 50
+[1] "nearest neighbors are "
+[1] 37 16 28
+[1] "nearest neighbors are "
+[1] 40 39 11
+[1] "nearest neighbors are "
+[1] 41 19 26
+[1] "nearest neighbors are "
+[1] 42 38 29
+[1] "nearest neighbors are "
+[1] 43 17 11
+[1] "nearest neighbors are "
+[1] 46 21 32
+[1] "nearest neighbors are "
+[1] 47 22 46
+[1] "nearest neighbors are "
+[1] 48 21 19
+[1] "nearest neighbors are "
+[1] 49 10 18
+[1] "nearest neighbors are "
+[1] 50  7  8
+[1] "iteration number: "
+[1] 44
+[1] "fitness is: "
+ [1] -10.1053742  -7.5194411 -26.3888628   1.9967751 -11.4173348 -17.0133236
+ [7]  -5.5995429  -3.1021623  -4.0357854   5.6232123  -4.0484577 -11.5678342
+[13] -13.5547482 -19.0263588 -18.9449451  -6.3485038 -10.0225496  -5.9727840
+[19] -19.4652246 -12.8912177 -11.7932310 -13.3435906  -9.2669078  -3.0863626
+[25] -23.4339734  -8.2125481  -4.3678259 -11.9082221 -12.9386073 -11.2413698
+[31]   2.1062843  -9.4471025 -19.5704252 -13.4381001 -13.7461547 -17.2649985
+[37]  -1.7126769  -4.6199575  -2.5604071   2.3192370  -1.1035268  -0.6157330
+[43] -18.5560343 -18.6650628   0.7672375   4.4776772 -15.4621678  -9.7786177
+[49] -12.4682545   1.0991914
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   21   45    0   15   15
+[2,]    2   46    9    0   15   16
+[3,]    3   33   14    0   15   16
+[4,]    4   24   23    0   16   17
+[5,]    5   20   21    0   15   16
+[6,]    6   10   27    0   17   17
+[1] "nearest neighbors are "
+[1]  1 21 45
+[1] "nearest neighbors are "
+[1]  2 46  9
+[1] "nearest neighbors are "
+[1]  3 33 14
+[1] "nearest neighbors are "
+[1]  4 24 23
+[1] "nearest neighbors are "
+[1]  5 20 21
+[1] "nearest neighbors are "
+[1]  6 10 27
+[1] "nearest neighbors are "
+[1] 10 18  6
+[1] "nearest neighbors are "
+[1] 12 24 20
+[1] "nearest neighbors are "
+[1] 13 29 10
+[1] "nearest neighbors are "
+[1] 15 11 45
+[1] "nearest neighbors are "
+[1] 18 10 12
+[1] "nearest neighbors are "
+[1] 20 17  5
+[1] "nearest neighbors are "
+[1] 23 22 29
+[1] "nearest neighbors are "
+[1] 26 19 41
+[1] "nearest neighbors are "
+[1] 27 36  2
+[1] "nearest neighbors are "
+[1] 29 38 42
+[1] "nearest neighbors are "
+[1] 31 42 45
+[1] "nearest neighbors are "
+[1] 32 46 47
+[1] "nearest neighbors are "
+[1] 33  3  8
+[1] "nearest neighbors are "
+[1] 35 37 47
+[1] "nearest neighbors are "
+[1] 36 38 27
+[1] "nearest neighbors are "
+[1] 37 28 35
+[1] "nearest neighbors are "
+[1] 40 11  7
+[1] "nearest neighbors are "
+[1] 41 22 26
+[1] "nearest neighbors are "
+[1] 42 38 31
+[1] "nearest neighbors are "
+[1] 43 17 40
+[1] "nearest neighbors are "
+[1] 46 21 47
+[1] "nearest neighbors are "
+[1] 47 39 46
+[1] "nearest neighbors are "
+[1] 48 21  1
+[1] "nearest neighbors are "
+[1] 49 43 14
+[1] "nearest neighbors are "
+[1] 50  7  8
+[1] "iteration number: "
+[1] 45
+[1] "fitness is: "
+ [1]   0.99212822 -13.99340129   0.07570909 -11.38667101   8.10391243
+ [6] -10.58082376  -7.00634735  -5.31198874 -12.13905208  -7.35385496
+[11]  -2.74694901  -8.49575812 -19.56847966  -0.14807583  -8.93543621
+[16] -13.86526652 -10.93696305 -25.05526987  -8.94482006  -1.65808425
+[21]  -6.88843708  -2.21005131  -0.73434469 -30.55552073   2.46672427
+[26]  -9.88722285  -3.28894470  -9.39665152  -5.51775781   8.40050138
+[31] -15.42115591   3.80509236  -1.82927322  -0.40191308  -2.61357883
+[36]   2.74397608  -9.30826671  -7.09408308  -9.51474239  -1.48863684
+[41] -11.12820210  -1.39828206  -3.23682457  -0.11923092 -16.20569631
+[46]  -6.92373100   1.23327715  -9.15708918  -8.19754782   0.94955729
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   32   48    0   13   14
+[2,]    2   46   45    0   14   17
+[3,]    3    6    1    0   16   17
+[4,]    4   14   24    0   15   16
+[5,]    5   20   40    0   14   14
+[6,]    6    3   10    0   16   16
+[1] "nearest neighbors are "
+[1]  1 32 48
+[1] "nearest neighbors are "
+[1] 3 6 1
+[1] "nearest neighbors are "
+[1]  4 14 24
+[1] "nearest neighbors are "
+[1]  5 20 40
+[1] "nearest neighbors are "
+[1]  7 50 44
+[1] "nearest neighbors are "
+[1] 11 40 43
+[1] "nearest neighbors are "
+[1] 12 38 18
+[1] "nearest neighbors are "
+[1] 13 14 45
+[1] "nearest neighbors are "
+[1] 14  4 20
+[1] "nearest neighbors are "
+[1] 16 37  7
+[1] "nearest neighbors are "
+[1] 19 22 41
+[1] "nearest neighbors are "
+[1] 20 17  5
+[1] "nearest neighbors are "
+[1] 21 48 47
+[1] "nearest neighbors are "
+[1] 22 19 23
+[1] "nearest neighbors are "
+[1] 24  4  1
+[1] "nearest neighbors are "
+[1] 26 15 10
+[1] "nearest neighbors are "
+[1] 27 35 48
+[1] "nearest neighbors are "
+[1] 28  7 37
+[1] "nearest neighbors are "
+[1] 29 18 13
+[1] "nearest neighbors are "
+[1] 30 38 18
+[1] "nearest neighbors are "
+[1] 31 45 29
+[1] "nearest neighbors are "
+[1] 33 47 44
+[1] "nearest neighbors are "
+[1] 34 44 25
+[1] "nearest neighbors are "
+[1] 35 27 37
+[1] "nearest neighbors are "
+[1] 36  7  5
+[1] "nearest neighbors are "
+[1] 38 42 12
+[1] "nearest neighbors are "
+[1] 42 38 12
+[1] "nearest neighbors are "
+[1] 43 17 11
+[1] "nearest neighbors are "
+[1] 44  7 34
+[1] "nearest neighbors are "
+[1] 45 31 13
+[1] "nearest neighbors are "
+[1] 46  2 21
+[1] "nearest neighbors are "
+[1] 47 21 33
+[1] "nearest neighbors are "
+[1] 48 21  1
+[1] "nearest neighbors are "
+[1] 49 43 14
+[1] "iteration number: "
+[1] 46
+[1] "fitness is: "
+ [1]  -1.5679643  -8.2769983 -11.5440547  -3.5780148 -15.0750304 -24.3479635
+ [7]  -5.0333762   1.2296488  -4.9798768  -8.3365085 -13.3388093 -11.9912625
+[13]  -9.6137036  -8.7527308  -5.1169240  -3.2125737 -10.0225496 -13.9786769
+[19]  -4.1557716 -16.6023149 -13.9105831  -3.9454280 -17.8227698  -0.5782480
+[25] -23.5701104  -0.8283869   1.6957942  -9.2061195 -22.8577383 -10.5364723
+[31]   2.4273545  -8.7483863 -11.9038412 -10.3121294 -12.1395180  -7.7820446
+[37]  -6.8729582   2.1511490  -5.4217996  -1.3924785   0.7545688  -5.3806683
+[43] -13.8015800 -13.2677757   0.9154819  -5.3273340 -19.0682868  -2.5581079
+[49] -18.0972479   1.1535833
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   17   19    0   13   13
+[2,]    2    9   10    0   16   17
+[3,]    3   46   50    0   16   16
+[4,]    4    5    6    0   18   18
+[5,]    5   21   34    0   13   15
+[6,]    6   47   23    0   13   16
+[1] "nearest neighbors are "
+[1]  1 17 19
+[1] "nearest neighbors are "
+[1]  3 46 50
+[1] "nearest neighbors are "
+[1] 4 5 6
+[1] "nearest neighbors are "
+[1]  5 21 34
+[1] "nearest neighbors are "
+[1]  7 50 28
+[1] "nearest neighbors are "
+[1] 11 16 40
+[1] "nearest neighbors are "
+[1] 12 49 11
+[1] "nearest neighbors are "
+[1] 13  4 18
+[1] "nearest neighbors are "
+[1] 14 36 47
+[1] "nearest neighbors are "
+[1] 16 37 11
+[1] "nearest neighbors are "
+[1] 19  1 22
+[1] "nearest neighbors are "
+[1] 20 17 29
+[1] "nearest neighbors are "
+[1] 21 48  5
+[1] "nearest neighbors are "
+[1] 22 23 19
+[1] "nearest neighbors are "
+[1] 24 27  1
+[1] "nearest neighbors are "
+[1] 26 49 23
+[1] "nearest neighbors are "
+[1] 27 24 48
+[1] "nearest neighbors are "
+[1] 28  7 37
+[1] "nearest neighbors are "
+[1] 29 34 20
+[1] "nearest neighbors are "
+[1] 30 36 33
+[1] "nearest neighbors are "
+[1] 31 42  2
+[1] "nearest neighbors are "
+[1] 33 30 36
+[1] "nearest neighbors are "
+[1] 34 29  5
+[1] "nearest neighbors are "
+[1] 35 16  6
+[1] "nearest neighbors are "
+[1] 36 30 50
+[1] "nearest neighbors are "
+[1] 38 42 30
+[1] "nearest neighbors are "
+[1] 42 38 26
+[1] "nearest neighbors are "
+[1] 43 17 12
+[1] "nearest neighbors are "
+[1] 44 11  8
+[1] "nearest neighbors are "
+[1] 45 10 21
+[1] "nearest neighbors are "
+[1] 46  9  3
+[1] "nearest neighbors are "
+[1] 47  6 41
+[1] "nearest neighbors are "
+[1] 48 21 32
+[1] "nearest neighbors are "
+[1] 49 12 26
+[1] "iteration number: "
+[1] 47
+[1] "fitness is: "
+ [1]  -0.23824077  -7.34025183  -0.94012412  -4.00018850  -0.96243862
+ [6]  -8.84324837 -19.74719340 -14.55917466 -12.13905208 -13.65897289
+[11]   1.49432151  -0.06875786 -17.48108715 -19.92677149  -7.05154775
+[16] -17.16847438  -4.44564355  -6.46517464 -13.64859607  -9.71735743
+[21]  -2.13342914   3.95346497  -2.42022119 -27.81031141   1.71141521
+[26]  -6.17094539  -7.67509459 -12.57216340  -1.13598544   6.82823461
+[31] -19.29317263  -8.03330885  -7.81082730  -5.71845078  -2.20029367
+[36]   3.35316543  -9.25840716  -4.70907015  -8.07511521  -6.69500991
+[41]  -5.70532299 -10.60312160  -4.28730077  -2.01486753 -15.13170306
+[46]  -5.81244515   2.83625758  -9.57324624  -6.16624009  -3.97954592
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   16   31    0   15   15
+[2,]    2   31   50    0   15   15
+[3,]    3   17   14    0   16   17
+[4,]    4   30    6    0   16   18
+[5,]    5   40   44    0   12   14
+[6,]    6   27    4    0   16   18
+[1] "nearest neighbors are "
+[1]  1 16 31
+[1] "nearest neighbors are "
+[1]  3 17 14
+[1] "nearest neighbors are "
+[1]  4 30  6
+[1] "nearest neighbors are "
+[1]  5 40 44
+[1] "nearest neighbors are "
+[1] 7 8 9
+[1] "nearest neighbors are "
+[1] 11 40 33
+[1] "nearest neighbors are "
+[1] 12 33 42
+[1] "nearest neighbors are "
+[1] 13 45 31
+[1] "nearest neighbors are "
+[1] 14  3  5
+[1] "nearest neighbors are "
+[1] 16  7  1
+[1] "nearest neighbors are "
+[1] 19 22 41
+[1] "nearest neighbors are "
+[1] 20 17 28
+[1] "nearest neighbors are "
+[1] 21 48 32
+[1] "nearest neighbors are "
+[1] 22 19 23
+[1] "nearest neighbors are "
+[1] 24 39  8
+[1] "nearest neighbors are "
+[1] 26 29 10
+[1] "nearest neighbors are "
+[1] 27  6  5
+[1] "nearest neighbors are "
+[1] 28 46 42
+[1] "nearest neighbors are "
+[1] 29 15 26
+[1] "nearest neighbors are "
+[1] 30 42  4
+[1] "nearest neighbors are "
+[1] 31  1  2
+[1] "nearest neighbors are "
+[1] 33 12  8
+[1] "nearest neighbors are "
+[1] 34 11 21
+[1] "nearest neighbors are "
+[1] 35 22 47
+[1] "nearest neighbors are "
+[1] 36 40 44
+[1] "nearest neighbors are "
+[1] 38 42 26
+[1] "nearest neighbors are "
+[1] 42 38 30
+[1] "nearest neighbors are "
+[1] 43 17 36
+[1] "nearest neighbors are "
+[1] 44  5 36
+[1] "nearest neighbors are "
+[1] 45 13 16
+[1] "nearest neighbors are "
+[1] 46 28 15
+[1] "nearest neighbors are "
+[1] 47 41 10
+[1] "nearest neighbors are "
+[1] 48 21 39
+[1] "nearest neighbors are "
+[1] 49 18 37
+[1] "iteration number: "
+[1] 48
+[1] "fitness is: "
+ [1] -21.0721431 -12.0091603 -18.0829767  -3.6954064 -11.3437324  -6.1967294
+ [7]   5.5673876   2.2620122  -5.0209200  -8.7312001  -6.7754365 -14.1516487
+[13]  -5.7895822  -7.7195662 -17.2996463  -5.4202689  -6.4660955  -0.9352809
+[19] -17.2886420  -8.0755462 -11.7345094  -8.9289792 -19.8895318  -6.2599182
+[25] -15.5417659  -5.7709930 -11.0273950 -12.1609010 -12.5216302 -17.3125840
+[31]   3.0064114 -14.3491471 -10.5278133 -13.1862632 -15.9925116 -18.5034313
+[37]  -6.8729582  -0.4115938   5.1977112   3.1084800   8.0347296   1.5169626
+[43] -14.3480241 -27.0148062  -1.5322322  -2.1466141 -10.5002723  -0.5974079
+[49]  -6.9564358  -5.0200512
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   24   21    0   15   16
+[2,]    2   20    5    0   15   17
+[3,]    3   17   36    0   14   17
+[4,]    4   30   13    0   13   17
+[5,]    5   27   14    0   13   16
+[6,]    6   10   27    0   16   16
+[1] "nearest neighbors are "
+[1]  1 24 21
+[1] "nearest neighbors are "
+[1]  3 17 36
+[1] "nearest neighbors are "
+[1]  4 30 13
+[1] "nearest neighbors are "
+[1]  5 27 14
+[1] "nearest neighbors are "
+[1]  7 28 35
+[1] "nearest neighbors are "
+[1] 11 15 23
+[1] "nearest neighbors are "
+[1] 12 33 49
+[1] "nearest neighbors are "
+[1] 13  4 29
+[1] "nearest neighbors are "
+[1] 14  5 17
+[1] "nearest neighbors are "
+[1] 16 37  8
+[1] "nearest neighbors are "
+[1] 19 25 32
+[1] "nearest neighbors are "
+[1] 20  2 17
+[1] "nearest neighbors are "
+[1] 21 48  1
+[1] "nearest neighbors are "
+[1] 22 40 14
+[1] "nearest neighbors are "
+[1] 24  1 16
+[1] "nearest neighbors are "
+[1] 26 29 49
+[1] "nearest neighbors are "
+[1] 27  9  5
+[1] "nearest neighbors are "
+[1] 28 42 49
+[1] "nearest neighbors are "
+[1] 29 15 26
+[1] "nearest neighbors are "
+[1] 30  4 33
+[1] "nearest neighbors are "
+[1] 31 42 27
+[1] "nearest neighbors are "
+[1] 33 30 12
+[1] "nearest neighbors are "
+[1] 34 44 11
+[1] "nearest neighbors are "
+[1] 35  7 22
+[1] "nearest neighbors are "
+[1] 36  5 16
+[1] "nearest neighbors are "
+[1] 38 42 30
+[1] "nearest neighbors are "
+[1] 42 38 28
+[1] "nearest neighbors are "
+[1] 43 17 15
+[1] "nearest neighbors are "
+[1] 44 34  5
+[1] "nearest neighbors are "
+[1] 45 10 48
+[1] "nearest neighbors are "
+[1] 46  9 48
+[1] "nearest neighbors are "
+[1] 47 15 39
+[1] "nearest neighbors are "
+[1] 48 21 18
+[1] "nearest neighbors are "
+[1] 49 25 28
+[1] "iteration number: "
+[1] 49
+[1] "fitness is: "
+ [1]  -2.8282831  -8.5392279  -1.5953874  -8.6200957  -3.8111470   0.5353232
+ [7] -15.5446422 -13.1645237 -12.1390521  -6.6373103 -13.2648501   9.0448864
+[13]  -6.3680638   2.6416502 -16.3628745 -11.0156193  -6.1871378  -6.5717169
+[19] -18.8456294  -1.1846580  -2.4634259   3.7104868  -2.6625650 -18.4975674
+[25]  -7.9086870 -11.3166885 -14.8975574 -13.7995283   0.4720211   2.8919228
+[31] -15.7094814  -7.4060312  -1.6530815 -11.8835599  -0.3901205  15.2135533
+[37] -12.5845896  -7.7405530  -7.1556879  -2.7575557 -10.2246183  -5.8197062
+[43]   1.9010892  -4.3960671 -15.0109497 -14.8482648  -3.9066980  -7.9371112
+[49]   0.4429144  -6.2020490
+[1] "RE-INITIALIZING..."
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   11   13    0    6    8
+[2,]    2    7   47    0    9    9
+[3,]    3   10   31    0    4    7
+[4,]    4   48    3    0    7    9
+[5,]    5   38   35    0    5    7
+[6,]    6   35   11    0    5    6
+[1] "nearest neighbors are "
+[1]  2  7 47
+[1] "nearest neighbors are "
+[1]  3 10 31
+[1] "nearest neighbors are "
+[1]  4 48  3
+[1] "nearest neighbors are "
+[1]  6 35 11
+[1] "nearest neighbors are "
+[1] 14 17 44
+[1] "nearest neighbors are "
+[1] 16 35  1
+[1] "nearest neighbors are "
+[1] 17 14 25
+[1] "nearest neighbors are "
+[1] 19  6  7
+[1] "nearest neighbors are "
+[1] 21 12 35
+[1] "nearest neighbors are "
+[1] 23 24 14
+[1] "nearest neighbors are "
+[1] 25 11 39
+[1] "nearest neighbors are "
+[1] 26  7 11
+[1] "nearest neighbors are "
+[1] 27  9 11
+[1] "nearest neighbors are "
+[1] 28 10 22
+[1] "nearest neighbors are "
+[1] 32 27 36
+[1] "nearest neighbors are "
+[1] 33 15 35
+[1] "nearest neighbors are "
+[1] 34 37 27
+[1] "nearest neighbors are "
+[1] 35 33  6
+[1] "nearest neighbors are "
+[1] 37  7 30
+[1] "nearest neighbors are "
+[1] 41 27 20
+[1] "nearest neighbors are "
+[1] 42 10 37
+[1] "nearest neighbors are "
+[1] 43 18 42
+[1] "nearest neighbors are "
+[1] 44 14 48
+[1] "nearest neighbors are "
+[1] 45 30 36
+[1] "nearest neighbors are "
+[1] 46 25 43
+[1] "nearest neighbors are "
+[1] 47 37  7
+[1] "nearest neighbors are "
+[1] 48  7 44
+[1] "nearest neighbors are "
+[1] 49 37 35
+[1] "nearest neighbors are "
+[1] 50 30 37
+[1] "iteration number: "
+[1] 50
+[1] "fitness is: "
+ [1] -17.05601349 -14.51835309  -6.76549878  -2.42719456  -1.12211469
+ [6]  -9.77378238   3.68409690   4.63449392  -3.85615667  -3.90476355
+[11] -19.46823619 -25.15760693  -8.14549061   3.07431128 -12.41832446
+[16]  -9.87086484 -12.08823043   5.36997049  -3.58456022   1.21639430
+[21]  -8.87285677  -7.45185302 -24.80000487  -8.55889672 -14.17277225
+[26] -16.15486226 -16.15682258  -8.56753422 -11.67560796  -5.23924344
+[31]  -7.01520667 -16.59473571  -9.02716473 -14.80719281 -10.72414016
+[36] -22.12432605  -1.05385250 -12.44470374  -5.42179962  -6.20641621
+[41]  -6.90651485  -0.07475906 -14.70534547 -20.03209397  -1.18615621
+[46]  -3.33583391  -9.24984420   2.43642689  -7.06735653   3.11095877
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   19   17    0   14   15
+[2,]    2   21   48    0   15   16
+[3,]    3   14   50    0   15   17
+[4,]    4    1   35    0   16   16
+[5,]    5   14   40    0   15   16
+[6,]    6   27   10    0   12   17
+[1] "nearest neighbors are "
+[1]  2 21 48
+[1] "nearest neighbors are "
+[1]  3 14 50
+[1] "nearest neighbors are "
+[1]  4  1 35
+[1] "nearest neighbors are "
+[1]  6 27 10
+[1] "nearest neighbors are "
+[1] 14  3  5
+[1] "nearest neighbors are "
+[1] 16 24 37
+[1] "nearest neighbors are "
+[1] 17 43  1
+[1] "nearest neighbors are "
+[1] 19  7  1
+[1] "nearest neighbors are "
+[1] 21 48  2
+[1] "nearest neighbors are "
+[1] 23 26 11
+[1] "nearest neighbors are "
+[1] 25 22 48
+[1] "nearest neighbors are "
+[1] 26 15 23
+[1] "nearest neighbors are "
+[1] 27  6  9
+[1] "nearest neighbors are "
+[1] 28 15 20
+[1] "nearest neighbors are "
+[1] 32 34  5
+[1] "nearest neighbors are "
+[1] 33 34 47
+[1] "nearest neighbors are "
+[1] 34 33 32
+[1] "nearest neighbors are "
+[1] 35  4 40
+[1] "nearest neighbors are "
+[1] 37 50 16
+[1] "nearest neighbors are "
+[1] 41 39 10
+[1] "nearest neighbors are "
+[1] 42 38 15
+[1] "nearest neighbors are "
+[1] 43 40 17
+[1] "nearest neighbors are "
+[1] 44 11 34
+[1] "nearest neighbors are "
+[1] 45 19 21
+[1] "nearest neighbors are "
+[1] 46  9 43
+[1] "nearest neighbors are "
+[1] 47 33 40
+[1] "nearest neighbors are "
+[1] 48 21 25
+[1] "nearest neighbors are "
+[1] 49 15 37
+[1] "nearest neighbors are "
+[1] 50  8 37
+[1] "iteration number: "
+[1] 51
+[1] "fitness is: "
+ [1]  -9.2309438  -9.6285727   4.2267403  -7.2754052  -5.6795458  -3.1999298
+ [7] -11.5684698 -11.0032038 -20.9027900 -12.9891736  -9.2665393  -3.2345103
+[13] -20.5184830  -3.8607901  -3.1265276 -21.6688640  -1.5781966 -17.7264903
+[19]  11.1903734  -8.1747709 -17.9096581   0.2897379 -18.3158367 -22.5138499
+[25]  -5.0696887   2.2530262 -16.2077287  -1.4388160   0.6495470   4.9278394
+[31] -10.0561956  -7.0707725   8.7518978  -1.8649742  -1.2595920   6.1446918
+[37]  -4.3741796   2.4771036  -6.3409626  -2.6340611  -7.3760701  -3.1711494
+[43]  -5.6582232  -0.2097591  -9.6588618 -15.6420764 -18.2447618  -5.7196437
+[49] -12.9026252   3.0506327
+Target points completed: 
+		
+[1] 50  6
+     [,1] [,2] [,3] [,4] [,5] [,6]
+[1,]    1   28    8    0   14   15
+[2,]    2   36   37    0   16   16
+[3,]    3   34   36    0   14   15
+[4,]    4   20    3    0   16   17
+[5,]    5    1   14    0   16   16
+[6,]    6   14   27    0   15   15
+[1] "nearest neighbors are "
+[1]  2 36 37
+[1] "nearest neighbors are "
+[1]  3 34 36
+[1] "nearest neighbors are "
+[1]  4 20  3
+[1] "nearest neighbors are "
+[1]  6 14 27
+[1] "nearest neighbors are "
+[1] 14  6  5
+[1] "nearest neighbors are "
+[1] 16  7 37
+[1] "nearest neighbors are "
+[1] 17 43 20
+[1] "nearest neighbors are "
+[1] 19 36 41
+[1] "nearest neighbors are "
+[1] 21  9 23
+[1] "nearest neighbors are "
+[1] 23 21 22
+[1] "nearest neighbors are "
+[1] 25  6 31
+[1] "nearest neighbors are "
+[1] 26 15 18
+[1] "nearest neighbors are "
+[1] 27  6  9
+[1] "nearest neighbors are "
+[1] 28  1 15
+[1] "nearest neighbors are "
+[1] 32  1 12
+[1] "nearest neighbors are "
+[1] 33  7 30
+[1] "nearest neighbors are "
+[1] 34  3 45
+[1] "nearest neighbors are "
+[1] 35 22 18
+[1] "nearest neighbors are "
+[1] 37 16  2
+[1] "nearest neighbors are "
+[1] 41 40 30
+[1] "nearest neighbors are "
+[1] 42 38 30
+[1] "nearest neighbors are "
+[1] 43 17 36
+[1] "nearest neighbors are "
+[1] 44 36 30
+[1] "nearest neighbors are "
+[1] 45  1  9
+[1] "nearest neighbors are "
+[1] 46 28 14
+[1] "nearest neighbors are "
+[1] 47 11 19
+[1] "nearest neighbors are "
+[1] 48 21 47
+[1] "nearest neighbors are "
+[1] 49 16  5
+[1] "nearest neighbors are "
+[1] 50 37 35
+[1] "k"
+[1] "numfeatg is "
+[1] 44
+[1] 50 44
+[1] "number of features selected using population mean"
+[1] 0
+[1] "number of features selected using global best"
+[1] 18
+[1] "best accuracy"
+[1] 33.07629
+[1] "Modified train 10 fold accuracy using train data is "
+[1] 82.5
+[1] "Modified train accuracy is "
+[1] 0.925
+[1] "train confusion matrix is "
+          trainclass
+pred_train  0  1
+         0 40  6
+         1  0 34
+[1] "Train dimension is "
+[1] 80 18
+[1] "Test dimension is "
+[1] 187  18
+[1] "Test confusion matrix is "
+    
+pred   0   1
+   0  10  54
+   1   5 118
+[1] "Test acc is "
+[1] 0.684492
+[1] "train 10 fold"
+[1] 82.5
+[1] "Test confusion matrix is "
+    
+pred   0   1
+   0  10  54
+   1   5 118
+[1] "Test acc is "
+[1] 0.684492
+[1] "Test AUC:"
+[1] 0.6763566
+[1] "Train acc is "
+[1] 0.925
+[1] "# of features after PSO:"
+[1] 80 19
+> print("Complete")
+[1] "Complete"
+> stopCluster(cl)
+> 

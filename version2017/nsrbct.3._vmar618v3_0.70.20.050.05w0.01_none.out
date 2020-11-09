@@ -1,0 +1,4113 @@
+
+R version 3.2.2 (2015-08-14) -- "Fire Safety"
+Copyright (C) 2015 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> #.libPaths("/home/kuppal3/karan_libs/Rlibs")
+> library(snow)
+Warning message:
+package ‘snow’ was built under R version 3.2.5 
+> library(e1071)
+Warning message:
+package ‘e1071’ was built under R version 3.2.5 
+> library(yaImpute)
+
+Attaching package: ‘yaImpute’
+
+The following object is masked from ‘package:e1071’:
+
+    impute
+
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+Warning message:
+package ‘pROC’ was built under R version 3.2.5 
+> library(bioDist)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘parallel’
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, clusterSplit, makeCluster, parApply,
+    parCapply, parLapply, parRapply, parSapply, splitIndices,
+    stopCluster
+
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parRapply, parSapply
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, as.vector, cbind, colnames,
+    do.call, duplicated, eval, evalq, Filter, Find, get, grep, grepl,
+    intersect, is.unsorted, lapply, lengths, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unlist, unsplit
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: KernSmooth
+KernSmooth 2.23 loaded
+Copyright M. P. Wand 1997-2009
+> #library(CMA, lib="/home/kuppal3/karan_libs/Rlibs/")
+> library(RankAggreg)
+Warning message:
+package ‘RankAggreg’ was built under R version 3.2.5 
+> library(CMA)
+
+Attaching package: ‘CMA’
+
+The following object is masked from ‘package:pROC’:
+
+    roc
+
+The following object is masked from ‘package:e1071’:
+
+    tune
+
+Warning message:
+package ‘CMA’ was built under R version 3.2.4 
+> library(expm)
+Loading required package: Matrix
+
+Attaching package: ‘expm’
+
+The following object is masked from ‘package:Matrix’:
+
+    expm
+
+Warning messages:
+1: package ‘expm’ was built under R version 3.2.5 
+2: package ‘Matrix’ was built under R version 3.2.5 
+> 
+> cl<-makeCluster(1)
+> 
+> 
+> args<-commandArgs(trailingOnly=TRUE)
+> 
+> dirloc<-"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/"
+> #sname<-paste("/home/stu/kuppal3/Research/Feature_selection/Rcode/versionnov2014/OCFS_",args[9],".R",sep="")
+> 
+> sname<-paste(dirloc,"version2017/OCFS_",args[9],".R",sep="")
+> source(sname)
+> 
+> outloc<-paste(dirloc,"/Datasets/SRBCT_Khan/OCFSvmay2415_Srbct",args[9],"/",sep="")
+> 
+> 
+> sname<-paste(dirloc,"Datasets/SRBCT_Khan/Srbct.Rda",sep="")
+> load(sname)
+> 
+> trainm<-Srbct$X
+> testm<-Srbct$Xt
+> trainclass<-Srbct$Y
+> testclass<-Srbct$Yt
+> 
+> 
+> trainm<-t(trainm)
+> testm<-t(testm)
+> 
+> cnames<-paste("var",seq(1,dim(trainm)[2]),sep="")
+> colnames(trainm)<-cnames
+> colnames(testm)<-cnames
+> 
+> trainclass<-t(trainclass)
+> testclass<-t(testclass)
+> 
+> trainm<-cbind(trainclass,trainm)
+> testm<-cbind(testclass,testm)
+> 
+> trainm<-na.omit(trainm)
+> testm<-na.omit(testm)
+> 
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO//Datasets/SRBCT_Khan/OCFSvmay2415_Srbctvmarch62018_v3' already exists
+> setwd(outloc)
+> 
+> trainm<-as.matrix(trainm)
+> testm<-as.matrix(testm)
+> trainclass<-trainm[,1] #CMAres$modtrainclass
+> testclass<-testm[,1] #CMAres$modtestclass
+> trainm<-trainm[,-c(1)] #CMAres$modtrainmata
+> testm<-testm[,-c(1)] #CMAres$modtestmata
+> 
+> #a: Confusions
+> #b: Neighbors
+> #c: Global
+> #d: Death
+> 
+> a<-c(0.25,0.25,0.25,0.25)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0.25,0.25,0.5,0)
+> d<-c(0.9,0.1,0,0.1)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0,0.5,0.5,0)
+> d<-c(0.9,0.1,0,0)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.2,0.3,0.4,0.1)
+> c<-c(0,0.4,0.4,0.2)
+> d<-c(0.9,0.1,0,0)
+> 
+> transition_matrix<-rbind(a,b,c,d)
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO//Datasets/SRBCT_Khan/OCFSvmay2415_Srbctvmarch62018_v3' already exists
+> setwd(outloc)
+> temp2=t(trainm)
+> temp2=apply(temp2, 2, function(x){which(x=="MD")})
+> temp2=unlist(temp2)
+> temp2=unique(temp2)
+> if(length(temp2)>1)
++ {
++ 	trainm=trainm[,-c(temp2)]
++ 
++ 	rm(temp2)
++ }
+> 
+> boostweight=rep(0,dim(trainm)[2])
+> 
+> #if(FALSE)
+> {
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("limma"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("lasso"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("rfe"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("elasticnet"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ 
++ if(FALSE){
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("rf"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ }
++ 
++ CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("f.test"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
++ }
+[1] "dim of trainm is "
+[1]   63 2308
+[1]   63 2308
+[1] "maxnum is "
+[1] 3
+[1] "# of genes left after filtering:"
+[1]   63 2308
+[1] "limma"
+[1] "Method name: limma"
+[1]   63 2308
+nci_y
+ 1  2  3  4 
+ 8 23 12 20 
+learningset mode:  CV 
+number of learningsets:  10 
+(maximum) number of observations per learning set:  57 
+[1] "one-vs-all"
+GeneSelection: iteration 1 
+
+Attaching package: ‘limma’
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    plotMA
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] 23
+[1] "varselmethod"
+[1] "none"
+[1] 23
+[1] "Method: limma"
+[1] 23
+[1] "dim of scoring matrix is "
+[1] 2308    1
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+0.000000 0.000000 0.000000 0.009965 0.000000 1.000000 
+[1] 23
+[1] 2308
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]    1  129  187  246  255  742  836  842  851 1003 1319 1387 1389 1427 1764
+[16] 1886 1954 1955 2022 2046 2050 2166 2198
+            var1    var129    var187    var246    var255     var742     var836
+[1,]  0.77334370 -2.763035 -3.426515 1.6047470 -1.514582  0.7311171 -1.8695050
+[2,] -0.07817778 -2.264326 -2.361274 0.7924947 -1.701005  0.3808308 -0.4274040
+[3,] -0.08446916 -2.050271 -2.259526 1.5527410 -1.256319 -0.2871489 -0.5600159
+       var842     var851   var1003   var1319   var1387    var1389    var1427
+[1,] 1.553629 -0.1328459 -3.231455 1.5368030 -2.105375  1.1830760 -1.1248540
+[2,] 1.732505  0.2616717 -2.294617 0.6934471 -1.773134  0.5451111  0.2765706
+[3,] 1.454747  1.3272610 -2.154165 1.3106270 -2.309610 -0.7044104  0.1036390
+        var1764    var1886   var1954    var1955     var2022   var2046   var2050
+[1,] -1.4184040 -0.7019861 0.3828786 -1.0604500  0.17722530 -2.051826 -4.635629
+[2,] -1.6049480 -0.4965940 1.0915880 -1.1135230  0.81889840 -3.007805 -1.356736
+[3,] -0.4869463 -1.1760330 0.9684277 -0.8947739 -0.04971559 -2.972016 -2.922482
+         var2166    var2198
+[1,]  0.23293550  0.1826548
+[2,]  0.07844143 -1.5970150
+[3,] -0.44394610 -1.0261060
+          var1    var129     var187     var246    var255     var742    var836
+[1,] 0.1395010 -1.822631 -0.8549605 -2.5010360  1.165710  1.1040309 -2.657832
+[2,] 1.1642752 -1.283377 -2.8949824 -0.5151684 -0.592759 -1.1605941 -2.926206
+[3,] 0.8410929  2.636203  2.9578798 -1.9330926 -1.027222 -0.7325119 -2.064356
+         var842     var851   var1003    var1319   var1387   var1389    var1427
+[1,] -0.3690368  0.4353475 -1.988505 -0.1239772 -2.402405 -2.189256  0.1800690
+[2,]  0.7715886 -1.6124424 -2.928074 -0.8072121 -2.277892 -0.638091  0.1127928
+[3,]  0.9271515 -0.5922165  1.000558 -1.5871873 -2.040990 -1.346689 -0.3768777
+        var1764    var1886    var1954    var1955    var2022     var2046
+[1,] -0.8259931 -1.8878299 -1.3862944 -1.7915595  0.1485062  0.05600219
+[2,] -1.8183088 -0.7734899  0.4342469 -1.1867880 -0.9644311 -2.95651156
+[3,] -1.5287800 -2.1848021 -0.4942963  0.8235173  0.3374717  1.32433917
+         var2050    var2166    var2198
+[1,]  0.58053824 -0.5447272  0.1581142
+[2,] -2.61729584 -2.3881430 -1.0936247
+[3,]  0.08571887 -1.6476591 -0.3399583
+[1] "numgenes selected:23"
+[1] "test acc:1"
+[1] "test AUC acc:1"
+[1] "10 fold train100"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2  3  4
+         1  8  0  0  0
+         2  0 23  0  0
+         3  0  0 12  0
+         4  0  0  0 20
+[1] "confusion matrix test"
+         test_y
+pred_test 1 2 3 4
+        1 3 0 0 0
+        2 0 6 0 0
+        3 0 0 6 0
+        4 0 0 0 5
+[1] "train acc:1"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2  3  4
+         1  8  0  0  0
+         2  0 23  0  0
+         3  0  0 12  0
+         4  0  0  0 20
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   63 2308
+[1]   63 2308
+[1] "maxnum is "
+[1] 3
+[1] "# of genes left after filtering:"
+[1]   63 2308
+[1] "lasso"
+[1] "Method name: lasso"
+[1]   63 2308
+nci_y
+ 1  2  3  4 
+ 8 23 12 20 
+learningset mode:  CV 
+number of learningsets:  10 
+(maximum) number of observations per learning set:  57 
+[1] "one-vs-all"
+GeneSelection: iteration 1 
+Loaded glmnet 2.0-10
+
+
+Attaching package: ‘glmnet’
+
+The following object is masked from ‘package:pROC’:
+
+    auc
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+genelist
+ 246  255  842 1003 1954 1955 1427    1 1764  836 1389 2050  248 2046  129  509 
+  10   10   10   10   10   10    8    7    7    5    5    4    3    3    2    2 
+ 589  742 2198  695  851  910 1319 1387 2022 
+   2    2    2    1    1    1    1    1    1 
+[1] 25
+[1] "varselmethod"
+[1] "none"
+[1] 25
+[1] "Method: lasso"
+[1] 25
+[1] "dim of scoring matrix is "
+[1] 2308    1
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.00000 0.00000 0.00000 0.01083 0.00000 1.00000 
+[1] 25
+[1] 2308
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]    1  129  246  248  255  509  589  695  742  836  842  851  910 1003 1319
+[16] 1387 1389 1427 1764 1954 1955 2022 2046 2050 2198
+            var1    var129    var246    var248    var255    var509     var589
+[1,]  0.77334370 -2.763035 1.6047470 0.5256157 -1.514582 -1.844528 -0.8889188
+[2,] -0.07817778 -2.264326 0.7924947 0.8172657 -1.701005 -1.699363 -0.8363250
+[3,] -0.08446916 -2.050271 1.5527410 0.2816388 -1.256319 -1.478848 -0.5610668
+        var695     var742     var836   var842     var851     var910   var1003
+[1,] -1.584745  0.7311171 -1.8695050 1.553629 -0.1328459 -1.2772610 -3.231455
+[2,] -1.360237  0.3808308 -0.4274040 1.732505  0.2616717 -0.2969247 -2.294617
+[3,] -1.485894 -0.2871489 -0.5600159 1.454747  1.3272610 -0.2886158 -2.154165
+       var1319   var1387    var1389    var1427    var1764   var1954    var1955
+[1,] 1.5368030 -2.105375  1.1830760 -1.1248540 -1.4184040 0.3828786 -1.0604500
+[2,] 0.6934471 -1.773134  0.5451111  0.2765706 -1.6049480 1.0915880 -1.1135230
+[3,] 1.3106270 -2.309610 -0.7044104  0.1036390 -0.4869463 0.9684277 -0.8947739
+         var2022   var2046   var2050    var2198
+[1,]  0.17722530 -2.051826 -4.635629  0.1826548
+[2,]  0.81889840 -3.007805 -1.356736 -1.5970150
+[3,] -0.04971559 -2.972016 -2.922482 -1.0261060
+          var1    var129     var246     var248    var255    var509    var589
+[1,] 0.1395010 -1.822631 -2.5010360 -1.1917149  1.165710 -1.367276 -1.581823
+[2,] 1.1642752 -1.283377 -0.5151684 -1.6591535 -0.592759 -2.365525 -1.061895
+[3,] 0.8410929  2.636203 -1.9330926 -0.1529181 -1.027222  2.815109 -1.136626
+         var695     var742    var836     var842     var851     var910   var1003
+[1,] -0.5839341  1.1040309 -2.657832 -0.3690368  0.4353475 -0.6292339 -1.988505
+[2,] -2.9778924 -1.1605941 -2.926206  0.7715886 -1.6124424 -0.5980188 -2.928074
+[3,] -1.5422467 -0.7325119 -2.064356  0.9271515 -0.5922165  1.4630702  1.000558
+        var1319   var1387   var1389    var1427    var1764    var1954    var1955
+[1,] -0.1239772 -2.402405 -2.189256  0.1800690 -0.8259931 -1.3862944 -1.7915595
+[2,] -0.8072121 -2.277892 -0.638091  0.1127928 -1.8183088  0.4342469 -1.1867880
+[3,] -1.5871873 -2.040990 -1.346689 -0.3768777 -1.5287800 -0.4942963  0.8235173
+        var2022     var2046     var2050    var2198
+[1,]  0.1485062  0.05600219  0.58053824  0.1581142
+[2,] -0.9644311 -2.95651156 -2.61729584 -1.0936247
+[3,]  0.3374717  1.32433917  0.08571887 -0.3399583
+[1] "numgenes selected:25"
+[1] "test acc:1"
+[1] "test AUC acc:1"
+[1] "10 fold train100"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2  3  4
+         1  8  0  0  0
+         2  0 23  0  0
+         3  0  0 12  0
+         4  0  0  0 20
+[1] "confusion matrix test"
+         test_y
+pred_test 1 2 3 4
+        1 3 0 0 0
+        2 0 6 0 0
+        3 0 0 6 0
+        4 0 0 0 5
+[1] "train acc:1"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2  3  4
+         1  8  0  0  0
+         2  0 23  0  0
+         3  0  0 12  0
+         4  0  0  0 20
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   63 2308
+[1]   63 2308
+[1] "maxnum is "
+[1] 3
+[1] "# of genes left after filtering:"
+[1]   63 2308
+[1] "rfe"
+[1] "Method name: rfe"
+[1]   63 2308
+nci_y
+ 1  2  3  4 
+ 8 23 12 20 
+learningset mode:  CV 
+number of learningsets:  10 
+(maximum) number of observations per learning set:  57 
+[1] "one-vs-all"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] 21
+[1] "varselmethod"
+[1] "none"
+[1] 21
+[1] "Method: rfe"
+[1] 21
+[1] "dim of scoring matrix is "
+[1] 2308    1
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+0.000000 0.000000 0.000000 0.009099 0.000000 1.000000 
+[1] 21
+[1] 2308
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]  107  129  187  246  255  509  566  819  846  851 1003 1594 1601 1750 1890
+[16] 1915 1916 1955 2046 2050 2198
+         var107    var129    var187    var246    var255    var509      var566
+[1,] -2.6118310 -2.763035 -3.426515 1.6047470 -1.514582 -1.844528  0.03459464
+[2,]  0.8554786 -2.264326 -2.361274 0.7924947 -1.701005 -1.699363 -1.24098300
+[3,] -0.3792127 -2.050271 -2.259526 1.5527410 -1.256319 -1.478848  1.01465100
+        var819    var846     var851   var1003   var1594    var1601  var1750
+[1,] -2.108664 -3.803169 -0.1328459 -3.231455 -2.520741  0.0875529 1.354571
+[2,] -3.272804 -3.083471  0.2616717 -2.294617 -1.227241 -0.7918632 1.736370
+[3,] -2.767800 -2.285728  1.3272610 -2.154165 -1.213686  0.7540541 1.645789
+        var1890    var1915   var1916    var1955   var2046   var2050    var2198
+[1,] -1.2751110 -2.0234390 -3.611918 -1.0604500 -2.051826 -4.635629  0.1826548
+[2,] -1.7164660 -2.2926350 -2.896792 -1.1135230 -3.007805 -1.356736 -1.5970150
+[3,] -0.7609978 -0.7663632 -2.586275 -0.8947739 -2.972016 -2.922482 -1.0261060
+         var107    var129     var187     var246    var255    var509     var566
+[1,] -1.7344344 -1.822631 -0.8549605 -2.5010360  1.165710 -1.367276 -2.9917403
+[2,] -1.8559780 -1.283377 -2.8949824 -0.5151684 -0.592759 -2.365525 -0.3112919
+[3,]  0.8299918  2.636203  2.9578798 -1.9330926 -1.027222  2.815109 -1.8566180
+        var819    var846     var851   var1003    var1594    var1601   var1750
+[1,] -1.657054 -2.160218  0.4353475 -1.988505  0.4095899  1.8007192 1.3047860
+[2,] -2.199126 -2.487711 -1.6124424 -2.928074 -2.2985931 -0.9545119 2.3969585
+[3,] -1.017493 -2.153303 -0.5922165  1.000558 -0.6907501  0.1650058 0.5802584
+       var1890   var1915   var1916    var1955     var2046     var2050
+[1,] -2.263364 -2.332014 -2.284745 -1.7915595  0.05600219  0.58053824
+[2,] -2.913231 -2.160218 -2.389233 -1.1867880 -2.95651156 -2.61729584
+[3,] -1.622017 -1.562554 -1.795165  0.8235173  1.32433917  0.08571887
+        var2198
+[1,]  0.1581142
+[2,] -1.0936247
+[3,] -0.3399583
+[1] "numgenes selected:21"
+[1] "test acc:0.95"
+[1] "test AUC acc:0.986111111111111"
+[1] "10 fold train100"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2  3  4
+         1  8  0  0  0
+         2  0 23  0  0
+         3  0  0 12  0
+         4  0  0  0 20
+[1] "confusion matrix test"
+         test_y
+pred_test 1 2 3 4
+        1 3 0 0 0
+        2 0 6 1 0
+        3 0 0 5 0
+        4 0 0 0 5
+[1] "train acc:1"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2  3  4
+         1  8  0  0  0
+         2  0 23  0  0
+         3  0  0 12  0
+         4  0  0  0 20
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   63 2308
+[1]   63 2308
+[1] "maxnum is "
+[1] 3
+[1] "# of genes left after filtering:"
+[1]   63 2308
+[1] "elasticnet"
+[1] "Method name: elasticnet"
+[1]   63 2308
+nci_y
+ 1  2  3  4 
+ 8 23 12 20 
+learningset mode:  CV 
+number of learningsets:  10 
+(maximum) number of observations per learning set:  57 
+[1] "one-vs-all"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] 23
+[1] "varselmethod"
+[1] "none"
+[1] 23
+[1] "Method: elasticnet"
+[1] 23
+[1] "dim of scoring matrix is "
+[1] 2308    1
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+0.000000 0.000000 0.000000 0.009965 0.000000 1.000000 
+[1] 23
+[1] 2308
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]    1  129  246  248  255  509  589  742  836  842  851 1003 1319 1387 1389
+[16] 1427 1764 1954 1955 2022 2046 2050 2198
+            var1    var129    var246    var248    var255    var509     var589
+[1,]  0.77334370 -2.763035 1.6047470 0.5256157 -1.514582 -1.844528 -0.8889188
+[2,] -0.07817778 -2.264326 0.7924947 0.8172657 -1.701005 -1.699363 -0.8363250
+[3,] -0.08446916 -2.050271 1.5527410 0.2816388 -1.256319 -1.478848 -0.5610668
+         var742     var836   var842     var851   var1003   var1319   var1387
+[1,]  0.7311171 -1.8695050 1.553629 -0.1328459 -3.231455 1.5368030 -2.105375
+[2,]  0.3808308 -0.4274040 1.732505  0.2616717 -2.294617 0.6934471 -1.773134
+[3,] -0.2871489 -0.5600159 1.454747  1.3272610 -2.154165 1.3106270 -2.309610
+        var1389    var1427    var1764   var1954    var1955     var2022
+[1,]  1.1830760 -1.1248540 -1.4184040 0.3828786 -1.0604500  0.17722530
+[2,]  0.5451111  0.2765706 -1.6049480 1.0915880 -1.1135230  0.81889840
+[3,] -0.7044104  0.1036390 -0.4869463 0.9684277 -0.8947739 -0.04971559
+       var2046   var2050    var2198
+[1,] -2.051826 -4.635629  0.1826548
+[2,] -3.007805 -1.356736 -1.5970150
+[3,] -2.972016 -2.922482 -1.0261060
+          var1    var129     var246     var248    var255    var509    var589
+[1,] 0.1395010 -1.822631 -2.5010360 -1.1917149  1.165710 -1.367276 -1.581823
+[2,] 1.1642752 -1.283377 -0.5151684 -1.6591535 -0.592759 -2.365525 -1.061895
+[3,] 0.8410929  2.636203 -1.9330926 -0.1529181 -1.027222  2.815109 -1.136626
+         var742    var836     var842     var851   var1003    var1319   var1387
+[1,]  1.1040309 -2.657832 -0.3690368  0.4353475 -1.988505 -0.1239772 -2.402405
+[2,] -1.1605941 -2.926206  0.7715886 -1.6124424 -2.928074 -0.8072121 -2.277892
+[3,] -0.7325119 -2.064356  0.9271515 -0.5922165  1.000558 -1.5871873 -2.040990
+       var1389    var1427    var1764    var1954    var1955    var2022
+[1,] -2.189256  0.1800690 -0.8259931 -1.3862944 -1.7915595  0.1485062
+[2,] -0.638091  0.1127928 -1.8183088  0.4342469 -1.1867880 -0.9644311
+[3,] -1.346689 -0.3768777 -1.5287800 -0.4942963  0.8235173  0.3374717
+         var2046     var2050    var2198
+[1,]  0.05600219  0.58053824  0.1581142
+[2,] -2.95651156 -2.61729584 -1.0936247
+[3,]  1.32433917  0.08571887 -0.3399583
+[1] "numgenes selected:23"
+[1] "test acc:1"
+[1] "test AUC acc:1"
+[1] "10 fold train100"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2  3  4
+         1  8  0  0  0
+         2  0 23  0  0
+         3  0  0 12  0
+         4  0  0  0 20
+[1] "confusion matrix test"
+         test_y
+pred_test 1 2 3 4
+        1 3 0 0 0
+        2 0 6 0 0
+        3 0 0 6 0
+        4 0 0 0 5
+[1] "train acc:1"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2  3  4
+         1  8  0  0  0
+         2  0 23  0  0
+         3  0  0 12  0
+         4  0  0  0 20
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+[1] "dim of trainm is "
+[1]   63 2308
+[1]   63 2308
+[1] "maxnum is "
+[1] 3
+[1] "# of genes left after filtering:"
+[1]   63 2308
+[1] "f.test"
+[1] "Method name: f.test"
+[1]   63 2308
+nci_y
+ 1  2  3  4 
+ 8 23 12 20 
+learningset mode:  CV 
+number of learningsets:  10 
+(maximum) number of observations per learning set:  57 
+[1] "one-vs-all"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] 26
+[1] "varselmethod"
+[1] "none"
+[1] 26
+[1] "Method: f.test"
+[1] 26
+[1] "dim of scoring matrix is "
+[1] 2308    1
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.00000 0.00000 0.00000 0.01127 0.00000 1.00000 
+[1] 26
+[1] 2308
+[1] "DS index stage 1"
+[1] NA
+[1] "bestgenelist"
+ [1]    1  129  187  246  248  255  589  742  836  842  851 1003 1319 1387 1389
+[16] 1427 1764 1886 1896 1911 1954 1955 2022 2046 2050 2198
+            var1    var129    var187    var246    var248    var255     var589
+[1,]  0.77334370 -2.763035 -3.426515 1.6047470 0.5256157 -1.514582 -0.8889188
+[2,] -0.07817778 -2.264326 -2.361274 0.7924947 0.8172657 -1.701005 -0.8363250
+[3,] -0.08446916 -2.050271 -2.259526 1.5527410 0.2816388 -1.256319 -0.5610668
+         var742     var836   var842     var851   var1003   var1319   var1387
+[1,]  0.7311171 -1.8695050 1.553629 -0.1328459 -3.231455 1.5368030 -2.105375
+[2,]  0.3808308 -0.4274040 1.732505  0.2616717 -2.294617 0.6934471 -1.773134
+[3,] -0.2871489 -0.5600159 1.454747  1.3272610 -2.154165 1.3106270 -2.309610
+        var1389    var1427    var1764    var1886   var1896   var1911   var1954
+[1,]  1.1830760 -1.1248540 -1.4184040 -0.7019861 -1.628111 -3.172469 0.3828786
+[2,]  0.5451111  0.2765706 -1.6049480 -0.4965940 -1.764923 -2.869981 1.0915880
+[3,] -0.7044104  0.1036390 -0.4869463 -1.1760330 -1.717580 -2.882404 0.9684277
+        var1955     var2022   var2046   var2050    var2198
+[1,] -1.0604500  0.17722530 -2.051826 -4.635629  0.1826548
+[2,] -1.1135230  0.81889840 -3.007805 -1.356736 -1.5970150
+[3,] -0.8947739 -0.04971559 -2.972016 -2.922482 -1.0261060
+          var1    var129     var187     var246     var248    var255    var589
+[1,] 0.1395010 -1.822631 -0.8549605 -2.5010360 -1.1917149  1.165710 -1.581823
+[2,] 1.1642752 -1.283377 -2.8949824 -0.5151684 -1.6591535 -0.592759 -1.061895
+[3,] 0.8410929  2.636203  2.9578798 -1.9330926 -0.1529181 -1.027222 -1.136626
+         var742    var836     var842     var851   var1003    var1319   var1387
+[1,]  1.1040309 -2.657832 -0.3690368  0.4353475 -1.988505 -0.1239772 -2.402405
+[2,] -1.1605941 -2.926206  0.7715886 -1.6124424 -2.928074 -0.8072121 -2.277892
+[3,] -0.7325119 -2.064356  0.9271515 -0.5922165  1.000558 -1.5871873 -2.040990
+       var1389    var1427    var1764    var1886    var1896   var1911    var1954
+[1,] -2.189256  0.1800690 -0.8259931 -1.8878299 -0.7996194 -2.968117 -1.3862944
+[2,] -0.638091  0.1127928 -1.8183088 -0.7734899 -1.2204410 -2.695628  0.4342469
+[3,] -1.346689 -0.3768777 -1.5287800 -2.1848021  1.8907447 -1.487220 -0.4942963
+        var1955    var2022     var2046     var2050    var2198
+[1,] -1.7915595  0.1485062  0.05600219  0.58053824  0.1581142
+[2,] -1.1867880 -0.9644311 -2.95651156 -2.61729584 -1.0936247
+[3,]  0.8235173  0.3374717  1.32433917  0.08571887 -0.3399583
+[1] "numgenes selected:26"
+[1] "test acc:1"
+[1] "test AUC acc:1"
+[1] "10 fold train100"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2  3  4
+         1  8  0  0  0
+         2  0 23  0  0
+         3  0  0 12  0
+         4  0  0  0 20
+[1] "confusion matrix test"
+         test_y
+pred_test 1 2 3 4
+        1 3 0 0 0
+        2 0 6 0 0
+        3 0 0 6 0
+        4 0 0 0 5
+[1] "train acc:1"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2  3  4
+         1  8  0  0  0
+         2  0 23  0  0
+         3  0  0 12  0
+         4  0  0  0 20
+[1] "DS index stage 1"
+[1] NA
+[1] "KI index stage 1"
+[1] NA
+There were 44 warnings (use warnings() to see them)
+> #1
+> CMAres<-performCMA(trainm, trainclass, testm, testclass,outloc,
++ maxnum=as.numeric(args[10]),
++ minnum=3,
++ stepitr=1,
++ gsmethods=c("limma","lasso","rfe","elasticnet", "f.test"), #"lasso","elasticnet","kruskal.test"), #"f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ pct_train=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none",
++ tolerance=0.5,
++ maxitrs=5,
++ classindex=1,
++ numfacts=0,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ varselmethod=args[11],
++ scheme_val="one-vs-all",
++ iter_learn=1,boostweight=rep(0,dim(trainm)[2]))
+[1] "dim of trainm is "
+[1]   63 2308
+[1]   63 2308
+[1] "maxnum is "
+[1] 3
+[1] "# of genes left after filtering:"
+[1]   63 2308
+[1] "limma"      "lasso"      "rfe"        "elasticnet" "f.test"    
+[1] "Method name: limma"
+[1]   63 2308
+nci_y
+ 1  2  3  4 
+ 8 23 12 20 
+learningset mode:  CV 
+number of learningsets:  10 
+(maximum) number of observations per learning set:  57 
+[1] "one-vs-all"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] 23
+[1] "varselmethod"
+[1] "none"
+[1] 23
+[1] "Method: limma"
+[1] 23
+[1] "Method name: lasso"
+[1]   63 2308
+nci_y
+ 1  2  3  4 
+ 8 23 12 20 
+learningset mode:  CV 
+number of learningsets:  10 
+(maximum) number of observations per learning set:  57 
+[1] "one-vs-all"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+genelist
+ 246  255  842 1003 1954 1955 1427    1 1764  836 1389 2050  248 2046  129  509 
+  10   10   10   10   10   10    8    7    7    5    5    4    3    3    2    2 
+ 589  742 2198  695  851  910 1319 1387 2022 
+   2    2    2    1    1    1    1    1    1 
+[1] 25
+[1] "varselmethod"
+[1] "none"
+[1] 25
+[1] "Method: lasso"
+[1] 25
+[1] "Method name: rfe"
+[1]   63 2308
+nci_y
+ 1  2  3  4 
+ 8 23 12 20 
+learningset mode:  CV 
+number of learningsets:  10 
+(maximum) number of observations per learning set:  57 
+[1] "one-vs-all"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] 21
+[1] "varselmethod"
+[1] "none"
+[1] 21
+[1] "Method: rfe"
+[1] 21
+[1] "Method name: elasticnet"
+[1]   63 2308
+nci_y
+ 1  2  3  4 
+ 8 23 12 20 
+learningset mode:  CV 
+number of learningsets:  10 
+(maximum) number of observations per learning set:  57 
+[1] "one-vs-all"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] 23
+[1] "varselmethod"
+[1] "none"
+[1] 23
+[1] "Method: elasticnet"
+[1] 23
+[1] "Method name: f.test"
+[1]   63 2308
+nci_y
+ 1  2  3  4 
+ 8 23 12 20 
+learningset mode:  CV 
+number of learningsets:  10 
+(maximum) number of observations per learning set:  57 
+[1] "one-vs-all"
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 1 
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+[1] 26
+[1] "varselmethod"
+[1] "none"
+[1] 26
+[1] "Method: f.test"
+[1] 26
+[1] "dim of scoring matrix is "
+[1] 2308    5
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.00000 0.00000 0.00000 0.05113 0.00000 5.00000 
+[1] 40
+[1] 2308
+[1] "DS index stage 1"
+[1] 0.7089301
+[1] "bestgenelist"
+ [1]    1  107  129  187  246  248  255  509  566  589  695  742  819  836  842
+[16]  846  851  910 1003 1319 1387 1389 1427 1594 1601 1750 1764 1886 1890 1896
+[31] 1911 1915 1916 1954 1955 2022 2046 2050 2166 2198
+            var1     var107    var129    var187    var246    var248    var255
+[1,]  0.77334370 -2.6118310 -2.763035 -3.426515 1.6047470 0.5256157 -1.514582
+[2,] -0.07817778  0.8554786 -2.264326 -2.361274 0.7924947 0.8172657 -1.701005
+[3,] -0.08446916 -0.3792127 -2.050271 -2.259526 1.5527410 0.2816388 -1.256319
+        var509      var566     var589    var695     var742    var819     var836
+[1,] -1.844528  0.03459464 -0.8889188 -1.584745  0.7311171 -2.108664 -1.8695050
+[2,] -1.699363 -1.24098300 -0.8363250 -1.360237  0.3808308 -3.272804 -0.4274040
+[3,] -1.478848  1.01465100 -0.5610668 -1.485894 -0.2871489 -2.767800 -0.5600159
+       var842    var846     var851     var910   var1003   var1319   var1387
+[1,] 1.553629 -3.803169 -0.1328459 -1.2772610 -3.231455 1.5368030 -2.105375
+[2,] 1.732505 -3.083471  0.2616717 -0.2969247 -2.294617 0.6934471 -1.773134
+[3,] 1.454747 -2.285728  1.3272610 -0.2886158 -2.154165 1.3106270 -2.309610
+        var1389    var1427   var1594    var1601  var1750    var1764    var1886
+[1,]  1.1830760 -1.1248540 -2.520741  0.0875529 1.354571 -1.4184040 -0.7019861
+[2,]  0.5451111  0.2765706 -1.227241 -0.7918632 1.736370 -1.6049480 -0.4965940
+[3,] -0.7044104  0.1036390 -1.213686  0.7540541 1.645789 -0.4869463 -1.1760330
+        var1890   var1896   var1911    var1915   var1916   var1954    var1955
+[1,] -1.2751110 -1.628111 -3.172469 -2.0234390 -3.611918 0.3828786 -1.0604500
+[2,] -1.7164660 -1.764923 -2.869981 -2.2926350 -2.896792 1.0915880 -1.1135230
+[3,] -0.7609978 -1.717580 -2.882404 -0.7663632 -2.586275 0.9684277 -0.8947739
+         var2022   var2046   var2050     var2166    var2198
+[1,]  0.17722530 -2.051826 -4.635629  0.23293550  0.1826548
+[2,]  0.81889840 -3.007805 -1.356736  0.07844143 -1.5970150
+[3,] -0.04971559 -2.972016 -2.922482 -0.44394610 -1.0261060
+          var1     var107    var129     var187     var246     var248    var255
+[1,] 0.1395010 -1.7344344 -1.822631 -0.8549605 -2.5010360 -1.1917149  1.165710
+[2,] 1.1642752 -1.8559780 -1.283377 -2.8949824 -0.5151684 -1.6591535 -0.592759
+[3,] 0.8410929  0.8299918  2.636203  2.9578798 -1.9330926 -0.1529181 -1.027222
+        var509     var566    var589     var695     var742    var819    var836
+[1,] -1.367276 -2.9917403 -1.581823 -0.5839341  1.1040309 -1.657054 -2.657832
+[2,] -2.365525 -0.3112919 -1.061895 -2.9778924 -1.1605941 -2.199126 -2.926206
+[3,]  2.815109 -1.8566180 -1.136626 -1.5422467 -0.7325119 -1.017493 -2.064356
+         var842    var846     var851     var910   var1003    var1319   var1387
+[1,] -0.3690368 -2.160218  0.4353475 -0.6292339 -1.988505 -0.1239772 -2.402405
+[2,]  0.7715886 -2.487711 -1.6124424 -0.5980188 -2.928074 -0.8072121 -2.277892
+[3,]  0.9271515 -2.153303 -0.5922165  1.4630702  1.000558 -1.5871873 -2.040990
+       var1389    var1427    var1594    var1601   var1750    var1764    var1886
+[1,] -2.189256  0.1800690  0.4095899  1.8007192 1.3047860 -0.8259931 -1.8878299
+[2,] -0.638091  0.1127928 -2.2985931 -0.9545119 2.3969585 -1.8183088 -0.7734899
+[3,] -1.346689 -0.3768777 -0.6907501  0.1650058 0.5802584 -1.5287800 -2.1848021
+       var1890    var1896   var1911   var1915   var1916    var1954    var1955
+[1,] -2.263364 -0.7996194 -2.968117 -2.332014 -2.284745 -1.3862944 -1.7915595
+[2,] -2.913231 -1.2204410 -2.695628 -2.160218 -2.389233  0.4342469 -1.1867880
+[3,] -1.622017  1.8907447 -1.487220 -1.562554 -1.795165 -0.4942963  0.8235173
+        var2022     var2046     var2050    var2166    var2198
+[1,]  0.1485062  0.05600219  0.58053824 -0.5447272  0.1581142
+[2,] -0.9644311 -2.95651156 -2.61729584 -2.3881430 -1.0936247
+[3,]  0.3374717  1.32433917  0.08571887 -1.6476591 -0.3399583
+[1] "numgenes selected:40"
+[1] "test acc:1"
+[1] "test AUC acc:1"
+[1] "10 fold train100"
+[1] "confusion matrix train 10 fold"
+          nci_y
+pred10fold  1  2  3  4
+         1  8  0  0  0
+         2  0 23  0  0
+         3  0  0 12  0
+         4  0  0  0 20
+[1] "confusion matrix test"
+         test_y
+pred_test 1 2 3 4
+        1 3 0 0 0
+        2 0 6 0 0
+        3 0 0 6 0
+        4 0 0 0 5
+[1] "train acc:1"
+[1] "confusion matrix train"
+          nci_y
+pred_train  1  2  3  4
+         1  8  0  0  0
+         2  0 23  0  0
+         3  0  0 12  0
+         4  0  0  0 20
+[1] "DS index stage 1"
+[1] 0.7089301
+[1] "KI index stage 1"
+[1] 5.639364
+There were 15 warnings (use warnings() to see them)
+> 
+> cma_feat_list<-colnames(trainm)
+> 
+> save(CMAres,file="CMAres.Rda")
+> write.table(cma_feat_list,file="selected_cma_feat_list.txt",sep="t",row.names=FALSE)
+> 
+> # modtraindata=modtrain, modtestdata=modtest, blindtest=testacc, modtrainclass=nci_y, modtestclass=test_y
+> #if(FALSE)
+> {
++ trainm<-CMAres$modtraindata
++ testm<-CMAres$modtestdata
++ trainclass<-CMAres$modtrainclass
++ testclass<-CMAres$modtestclass
++ learningsets<-CMAres$learningsets
++ }
+> 
+> if(FALSE)
++ {
++ trainclass<-trainm[,1] #CMAres$modtrainclass
++ testclass<-testm[,1] #CMAres$modtestclass
++ trainm<-trainm[,-c(1)] #CMAres$modtrainmata
++ testm<-testm[,-c(1)] #CMAres$modtestmata
++ 
++ }
+> 
+> d_dim<-dim(trainm)
+> 
+> print("Original dimension")
+[1] "Original dimension"
+> print(d_dim)
+[1] 63 40
+> 
+> system.time(psores<-run_pso(outloc=outloc,trainm,trainclass,testm,testclass,transition_matrix,c1=2.05,
++ c2=2.05,
++ itr=10,
++ globalpso_maxitr=10,
++ global_max_itr=5,
++ num_part=20,
++ kname="radial",
++ errortype="BER",
++ weightA<-as.numeric(args[1]),
++ weightB<-as.numeric(args[2]),
++ weightC<-as.numeric(args[3]),
++ weightD<-as.numeric(args[4]),
++ featweight.max=0.01,
++ featweight.min=0.01,
++ numfolds=10,
++ followerprob=as.numeric(args[6]),
++ confusionprob=as.numeric(args[7]),
++ leaderprob=as.numeric(args[8]),
++ wmax=1,
++ wmin=1,
++ behavior_reset_itr=5,
++ maxitrreset=10,
++ num_neighbors=3,
++ minselect.pct=0.5,
++ evalMode="CV2",
++ minfitnessthresh=50,
++ maxnum=as.numeric(args[10]),minnum=3,inertia_method=args[5],particlebehav_method="randbased",constriction_factor=1,
++ select.global.best=TRUE,numnodes=4,evalFunc=eval_fit_kfold_diff,itr.terminate=FALSE,train.pct=0.8))
+[1] "c1: 2.05"
+[1] "c2: 2.05"
+[1] "itr: 10"
+[1] "globalpso_maxitr: 10"
+[1] "global_max_itr: 5"
+[1] "num_part: 20"
+[1] "kname: radial"
+[1] "errortype: BER"
+[1] "weightA: 0.7"
+[1] "weightB: 0.2"
+[1] "weightC: 0.05"
+[1] "weightD: 0.05"
+[1] "featweight.max: 0.01"
+[1] "featweight.min: 0.01"
+[1] "numfolds: 10"
+[1] "followerprob: 0.45"
+[1] "confusionprob: 0.2"
+[1] "leaderprob: 0.25"
+[1] "wmax: 1"
+[1] "wmin: 1"
+[1] "behavior_reset_itr: 5"
+[1] "maxitrreset: 10"
+[1] "num_neighbors: 3"
+[1] "minselect.pct: 0.5"
+[1] "minfitnessthresh: 50"
+[1] "maxnum: 3"
+[1] "minnum: 3"
+[1] "inertia_method: global"
+[1] "particlebehav_method: randbased"
+[1] "constriction_factor: 1"
+[1] "select.global.best: TRUE"
+[1] "train 10 fold"
+[1] 100
+[1] "here"
+[1] "s"
+[1] 50.4
+[1] 63 40
+[1] 10
+[1] "learning sets: 1"
+ [1]  9 60 46 32 15 18 51 14 19 36 53 44 20 25 38 56 58  6 17 33 22 41 37 61 40
+[26] 30 50 45 35 59 10  3 52  2  1 43  7 57 11 31 23 63 16 49  4  5 24 47 26 42
+[1] "Starting global iteration number : 1"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -71.68049
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[26] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -73.81002
+[1] "Best solution:"
+ [1] 0 0 0 0 1 1 1 0 0 0 0 0 0 1 0 0 1 0 0 1 0 0 0 1 1 0 1 1 0 0 1 0 0 0 0 1 0 1
+[39] 0 0
+[1] 13
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "Best fitness updated to:"
+[1] -73.90499
+[1] "Best solution:"
+ [1] 0 1 0 0 0 0 0 1 0 0 1 1 0 0 0 0 0 0 1 0 1 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 0
+[39] 0 1
+[1] 9
+[1] "iteration number: "
+[1] 8
+[1] "Best fitness updated to:"
+[1] -74.09751
+[1] "Best solution:"
+ [1] 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 0
+[39] 0 1
+[1] 36
+[1] "iteration number: "
+[1] 9
+[1] "Best fitness updated to:"
+[1] -75.04754
+[1] "Best solution:"
+ [1] 0 1 1 1 1 0 0 1 1 1 0 1 1 1 1 0 1 0 0 1 1 1 1 1 1 1 0 1 1 1 1 1 1 1 1 0 1 0
+[39] 0 1
+[1] 29
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "Best fitness updated to:"
+[1] -75.44033
+[1] "Best solution:"
+ [1] 0 1 1 0 1 1 0 1 1 1 0 0 1 1 1 0 1 1 0 0 0 0 0 1 1 0 0 1 0 0 1 1 0 1 1 0 1 0
+[39] 0 1
+[1] 21
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "Best fitness updated to:"
+[1] -75.52663
+[1] "Best solution:"
+ [1] 1 1 1 1 1 0 0 0 1 1 0 1 1 1 1 1 1 0 0 0 0 0 1 1 1 0 1 1 0 0 0 1 1 1 1 0 1 0
+[39] 0 0
+[1] 23
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "Best fitness updated to:"
+[1] -75.52744
+[1] "Best solution:"
+ [1] 1 1 1 0 0 0 0 0 0 1 1 1 0 1 0 0 0 1 1 1 1 1 1 0 1 1 1 1 0 0 1 1 0 1 0 1 1 0
+[39] 0 1
+[1] 23
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "Best fitness updated to:"
+[1] -75.57794
+[1] "Best solution:"
+ [1] 0 1 1 1 1 1 1 1 0 1 0 1 0 1 1 0 1 1 1 1 1 1 1 1 1 1 1 1 0 0 1 1 1 0 1 1 0 0
+[39] 0 1
+[1] 29
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "Best fitness updated to:"
+[1] -75.70651
+[1] "Best solution:"
+ [1] 1 1 1 1 1 1 0 1 0 1 0 1 1 1 1 1 1 0 0 1 1 0 0 0 1 0 1 0 0 0 1 1 0 1 1 0 1 0
+[39] 0 1
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "Best fitness updated to:"
+[1] -76.91912
+[1] "Best solution:"
+ [1] 1 1 1 1 1 1 0 1 0 1 0 1 1 1 1 1 1 0 0 1 1 0 0 0 1 0 1 0 0 0 1 1 0 1 1 0 1 0
+[39] 0 1
+[1] 24
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 39
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 40
+ [1] 2 3 2 2 2 2 3 2 3 3 2 2 2 2 3 2 3 1 4 3
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "Best fitness updated to:"
+[1] -77.13832
+[1] "Best solution:"
+ [1] 1 1 0 1 1 1 0 1 0 1 0 1 1 0 1 1 1 0 0 0 0 0 0 0 1 0 1 0 0 0 1 1 0 1 1 0 0 0
+[39] 0 1
+[1] 19
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "Best fitness updated to:"
+[1] -77.14769
+[1] "Best solution:"
+ [1] 0 1 1 0 1 0 0 1 0 1 0 1 1 1 1 1 1 0 0 0 1 0 0 1 1 0 1 0 0 0 1 1 0 1 1 0 0 0
+[39] 0 1
+[1] 20
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "Best fitness updated to:"
+[1] -77.68581
+[1] "Best solution:"
+ [1] 0 1 1 0 1 0 0 1 0 1 0 1 1 1 1 0 1 0 0 0 0 0 0 1 1 0 1 0 0 0 1 1 0 1 1 0 0 0
+[39] 0 1
+[1] 18
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 39
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "iteration number: "
+[1] 96
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 34
+ [1] 2 3 2 2 2 2 3 2 3 3 2 2 2 2 3 2 3 1 4 3
+[1] "iteration number: "
+[1] 97
+[1] "iteration number: "
+[1] 98
+[1] "iteration number: "
+[1] 99
+[1] "iteration number: "
+[1] 100
+[1] "iteration number: "
+[1] 101
+[1] "iteration number: "
+[1] 102
+[1] "iteration number: "
+[1] 103
+[1] "iteration number: "
+[1] 104
+[1] "iteration number: "
+[1] 105
+[1] "iteration number: "
+[1] 106
+[1] "iteration number: "
+[1] 107
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 36
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 108
+[1] "iteration number: "
+[1] 109
+[1] "Best fitness updated to:"
+[1] -77.74826
+[1] "Best solution:"
+ [1] 1 1 1 0 1 0 0 1 0 0 0 1 1 1 1 1 1 0 0 0 1 0 0 0 1 0 1 0 0 0 1 1 0 1 1 0 0 0
+[39] 0 1
+[1] 19
+[1] "iteration number: "
+[1] 110
+[1] "iteration number: "
+[1] 111
+[1] "iteration number: "
+[1] 112
+[1] "iteration number: "
+[1] 113
+[1] "iteration number: "
+[1] 114
+[1] "iteration number: "
+[1] 115
+[1] "iteration number: "
+[1] 116
+[1] "iteration number: "
+[1] 117
+[1] "iteration number: "
+[1] 118
+[1] "iteration number: "
+[1] 119
+[1] "iteration number: "
+[1] 120
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 32
+ [1] 2 2 1 1 1 2 4 1 2 4 3 2 2 1 1 2 4 1 3 1
+[1] "iteration number: "
+[1] 121
+[1] "iteration number: "
+[1] 122
+[1] "iteration number: "
+[1] 123
+[1] "iteration number: "
+[1] 124
+[1] "iteration number: "
+[1] 125
+[1] "iteration number: "
+[1] 126
+[1] "iteration number: "
+[1] 127
+[1] "iteration number: "
+[1] 128
+[1] "iteration number: "
+[1] 129
+[1] "iteration number: "
+[1] 130
+[1] "iteration number: "
+[1] 131
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 30
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 132
+[1] "iteration number: "
+[1] 133
+[1] "iteration number: "
+[1] 134
+[1] "iteration number: "
+[1] 135
+[1] "iteration number: "
+[1] 136
+[1] "iteration number: "
+[1] 137
+[1] "iteration number: "
+[1] 138
+[1] "iteration number: "
+[1] 139
+[1] "iteration number: "
+[1] 140
+[1] "iteration number: "
+[1] 141
+[1] "iteration number: "
+[1] 142
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 30
+ [1] 2 3 2 2 2 2 3 2 3 3 2 2 2 2 3 2 3 1 4 3
+[1] "iteration number: "
+[1] 143
+[1] "iteration number: "
+[1] 144
+[1] "iteration number: "
+[1] 145
+[1] "iteration number: "
+[1] 146
+[1] "iteration number: "
+[1] 147
+[1] "iteration number: "
+[1] 148
+[1] "iteration number: "
+[1] 149
+[1] "iteration number: "
+[1] 150
+[1] "iteration number: "
+[1] 151
+[1] "iteration number: "
+[1] 152
+[1] "iteration number: "
+[1] 153
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 30
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 154
+[1] "iteration number: "
+[1] 155
+[1] "iteration number: "
+[1] 156
+[1] "iteration number: "
+[1] 157
+[1] "iteration number: "
+[1] 158
+[1] "iteration number: "
+[1] 159
+[1] "iteration number: "
+[1] 160
+[1] "iteration number: "
+[1] 161
+[1] "iteration number: "
+[1] 162
+[1] "iteration number: "
+[1] 163
+[1] "iteration number: "
+[1] 164
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 26
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 165
+[1] "iteration number: "
+[1] 166
+[1] "iteration number: "
+[1] 167
+[1] "iteration number: "
+[1] 168
+[1] "iteration number: "
+[1] 169
+[1] "iteration number: "
+[1] 170
+[1] "iteration number: "
+[1] 171
+[1] "iteration number: "
+[1] 172
+[1] "iteration number: "
+[1] 173
+[1] "iteration number: "
+[1] 174
+[1] "iteration number: "
+[1] 175
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 26
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 176
+[1] "iteration number: "
+[1] 177
+[1] "iteration number: "
+[1] 178
+[1] "iteration number: "
+[1] 179
+[1] "iteration number: "
+[1] 180
+[1] "iteration number: "
+[1] 181
+[1] "iteration number: "
+[1] 182
+[1] "iteration number: "
+[1] 183
+[1] "iteration number: "
+[1] 184
+[1] "iteration number: "
+[1] 185
+[1] "iteration number: "
+[1] 186
+[1] "RE-INITIALIZING..."
+[1] 7
+[1] 5
+[1] 27
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 187
+[1] "iteration number: "
+[1] 188
+[1] "iteration number: "
+[1] 189
+[1] "iteration number: "
+[1] 190
+[1] "iteration number: "
+[1] 191
+[1] "iteration number: "
+[1] 192
+[1] "iteration number: "
+[1] 193
+[1] "iteration number: "
+[1] 194
+[1] "iteration number: "
+[1] 195
+[1] "iteration number: "
+[1] 196
+[1] "iteration number: "
+[1] 197
+[1] "RE-INITIALIZING..."
+[1] 8
+[1] 5
+[1] 27
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "No change for 8 iterations. Exiting PSO."
+ [1]  2  3  5  8 12 13 14 15 16 17 21 25 27 31 34 35 40
+[1] 1
+[1] "##################################"
+[1] "Results summary for itr:1"
+[1] "number of features selected using population mean"
+[1] 18
+[1] "number of features selected using current global best"
+[1] 17
+[1] "feat ind length"
+[1] 17
+[1] "best accuracy"
+[1] 77.74826
+[1] "test acc:1"
+[1] "##################################"
+[1] "learning sets: 2"
+ [1] 42 28 32 47 22  4 56 35 57 15 58 46  9 51 33 40 63 29 48  2 50  3 53  8  7
+[26] 11 49 54 55 27 45 25 30 18  1 19 21 59 14  5 41 61 52 13 34 31 17 44 24 38
+[1] "Starting global iteration number : 2"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -78.41491
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[26] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "iteration number: "
+[1] 3
+[1] "Best fitness updated to:"
+[1] -80.20999
+[1] "Best solution:"
+ [1] 0 1 1 0 1 1 1 1 0 0 1 0 0 1 1 1 1 1 0 1 1 1 0 1 1 1 1 1 0 1 1 0 0 1 1 0 0 1
+[39] 1 1
+[1] 27
+[1] "iteration number: "
+[1] 4
+[1] "Best fitness updated to:"
+[1] -80.89506
+[1] "Best solution:"
+ [1] 0 1 0 1 0 0 1 0 1 1 1 1 0 1 0 1 1 1 0 0 0 1 0 1 0 1 1 0 1 1 1 1 0 0 0 1 0 1
+[39] 0 1
+[1] 22
+[1] "iteration number: "
+[1] 5
+[1] "Best fitness updated to:"
+[1] -80.91162
+[1] "Best solution:"
+ [1] 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 1 1 0 0 0 1 0 0 0 1 0 0 1 0 0 0 0
+[39] 0 1
+[1] 9
+[1] "iteration number: "
+[1] 6
+[1] "Best fitness updated to:"
+[1] -82.23303
+[1] "Best solution:"
+ [1] 0 1 1 0 1 0 0 0 0 1 1 1 0 0 0 0 0 0 1 1 1 1 0 1 0 0 1 1 1 1 1 0 0 0 0 1 0 0
+[39] 0 1
+[1] 18
+[1] "iteration number: "
+[1] 7
+[1] "iteration number: "
+[1] 8
+[1] "Best fitness updated to:"
+[1] -82.83498
+[1] "Best solution:"
+ [1] 1 0 0 1 0 1 0 0 1 0 1 1 0 1 1 1 1 1 0 0 0 1 1 0 0 0 1 1 1 1 1 0 0 0 0 1 0 1
+[39] 0 1
+[1] 21
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "Best fitness updated to:"
+[1] -83.21587
+[1] "Best solution:"
+ [1] 1 0 1 1 1 0 0 0 1 0 0 0 1 0 1 1 0 0 0 1 1 0 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 0
+[39] 1 1
+[1] 19
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 40
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "Best fitness updated to:"
+[1] -85.33906
+[1] "Best solution:"
+ [1] 1 1 0 0 1 1 1 0 0 1 0 1 0 0 1 1 1 0 0 0 1 1 1 1 1 1 1 1 1 1 1 0 0 1 1 1 1 1
+[39] 0 1
+[1] 27
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 38
+ [1] 2 2 1 1 1 2 4 1 2 4 3 2 2 1 1 2 4 1 3 1
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 36
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "Best fitness updated to:"
+[1] -85.97508
+[1] "Best solution:"
+ [1] 0 1 0 0 1 0 0 0 0 0 0 1 0 0 1 0 0 0 1 0 1 1 1 0 0 0 1 1 1 1 0 1 0 1 0 0 0 0
+[39] 0 1
+[1] 15
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 30
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 31
+ [1] 2 3 2 2 2 2 3 2 3 3 2 2 2 2 3 2 3 1 4 3
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 30
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "iteration number: "
+[1] 96
+[1] "iteration number: "
+[1] 97
+[1] "iteration number: "
+[1] 98
+[1] "iteration number: "
+[1] 99
+[1] "iteration number: "
+[1] 100
+[1] "iteration number: "
+[1] 101
+[1] "iteration number: "
+[1] 102
+[1] "iteration number: "
+[1] 103
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 26
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 104
+[1] "iteration number: "
+[1] 105
+[1] "iteration number: "
+[1] 106
+[1] "iteration number: "
+[1] 107
+[1] "iteration number: "
+[1] 108
+[1] "iteration number: "
+[1] 109
+[1] "iteration number: "
+[1] 110
+[1] "iteration number: "
+[1] 111
+[1] "iteration number: "
+[1] 112
+[1] "iteration number: "
+[1] 113
+[1] "iteration number: "
+[1] 114
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 25
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 115
+[1] "iteration number: "
+[1] 116
+[1] "iteration number: "
+[1] 117
+[1] "iteration number: "
+[1] 118
+[1] "iteration number: "
+[1] 119
+[1] "iteration number: "
+[1] 120
+[1] "iteration number: "
+[1] 121
+[1] "iteration number: "
+[1] 122
+[1] "iteration number: "
+[1] 123
+[1] "iteration number: "
+[1] 124
+[1] "iteration number: "
+[1] 125
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 25
+[1] "No change for 6 iterations. Exiting PSO."
+ [1]  2  5 12 15 16 19 21 22 23 27 28 29 30 31 32 34 40
+[1] 2
+[1] "##################################"
+[1] "Results summary for itr:2"
+[1] "number of features selected using population mean"
+[1] 17
+[1] "number of features selected using current global best"
+[1] 17
+[1] "feat ind length"
+[1] 17
+[1] "best accuracy"
+[1] 85.97508
+[1] "test acc:1"
+[1] "##################################"
+[1] "learning sets: 3"
+ [1] 16 27 41 18 48 21 61 38 57 33 42 12 55 10 63  3 62  9 14 47 23  8  5 46 15
+[26] 24 34 35 37 53 20 17  2 30 19 32 31 25 36 49 26 13  4 22 60 45 50 29 58 39
+[1] "Starting global iteration number : 3"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -72.26848
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[26] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -76.01533
+[1] "Best solution:"
+ [1] 0 0 0 0 1 1 1 0 0 0 0 0 0 1 0 0 1 0 0 1 0 0 0 1 1 0 1 1 0 0 1 0 0 0 0 1 0 1
+[39] 0 0
+[1] 13
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "Best fitness updated to:"
+[1] -77.06591
+[1] "Best solution:"
+ [1] 1 1 1 1 0 1 0 0 1 0 1 0 0 1 0 1 1 1 0 0 0 1 1 0 0 0 0 0 0 1 1 0 0 0 0 1 1 0
+[39] 1 1
+[1] 19
+[1] "iteration number: "
+[1] 5
+[1] "Best fitness updated to:"
+[1] -77.13353
+[1] "Best solution:"
+ [1] 1 1 1 1 0 1 0 1 1 0 1 0 0 0 1 1 0 0 1 0 1 1 1 0 1 0 0 0 0 1 1 0 0 0 0 0 1 0
+[39] 0 1
+[1] 19
+[1] "iteration number: "
+[1] 6
+[1] "Best fitness updated to:"
+[1] -77.48527
+[1] "Best solution:"
+ [1] 0 1 0 1 0 0 1 0 1 0 1 1 1 1 0 0 0 1 0 0 1 0 1 0 1 1 0 1 1 1 1 1 0 1 1 1 1 0
+[39] 1 1
+[1] 24
+[1] "iteration number: "
+[1] 7
+[1] "iteration number: "
+[1] 8
+[1] "iteration number: "
+[1] 9
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "Best fitness updated to:"
+[1] -77.68132
+[1] "Best solution:"
+ [1] 0 0 0 1 1 1 0 0 0 0 1 0 0 1 1 0 1 1 0 1 0 1 1 0 1 0 1 1 1 1 1 0 0 0 1 1 1 1
+[39] 1 0
+[1] 22
+[1] "iteration number: "
+[1] 17
+[1] "Best fitness updated to:"
+[1] -77.68711
+[1] "Best solution:"
+ [1] 1 1 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 1 1 1 1 1 0 0 0 1 0 0 0 1 0 0 1 0 0 0 1
+[39] 1 1
+[1] 14
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "Best fitness updated to:"
+[1] -77.89026
+[1] "Best solution:"
+ [1] 0 1 0 1 0 1 0 0 1 0 0 0 1 0 1 0 1 1 0 1 1 1 1 0 0 0 1 1 0 1 1 0 0 0 1 0 1 1
+[39] 1 1
+[1] 21
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "Best fitness updated to:"
+[1] -78.82717
+[1] "Best solution:"
+ [1] 0 1 0 1 0 1 0 0 1 0 0 0 0 1 1 1 1 1 0 1 1 1 1 0 0 0 1 1 0 1 1 0 0 0 1 1 1 1
+[39] 1 1
+[1] 23
+[1] "iteration number: "
+[1] 22
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 37
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "Best fitness updated to:"
+[1] -79.51464
+[1] "Best solution:"
+ [1] 0 1 0 0 0 1 0 0 0 0 1 0 0 1 1 0 1 1 0 1 0 1 1 1 1 0 1 1 1 1 1 0 0 0 1 1 0 1
+[39] 1 0
+[1] 21
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 37
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "Best fitness updated to:"
+[1] -80.01816
+[1] "Best solution:"
+ [1] 1 1 0 1 0 1 0 0 1 0 0 0 0 0 1 1 1 0 0 0 0 1 1 1 0 0 1 1 1 1 1 0 0 0 1 1 0 1
+[39] 1 0
+[1] 20
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "Best fitness updated to:"
+[1] -80.14518
+[1] "Best solution:"
+ [1] 1 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 1 1 0 1 0 0 0 1 1 0 0 0
+[39] 0 0
+[1] 10
+[1] "iteration number: "
+[1] 62
+[1] "Best fitness updated to:"
+[1] -80.51019
+[1] "Best solution:"
+ [1] 1 1 0 1 0 1 0 0 1 0 0 0 0 0 1 1 1 0 0 0 0 1 1 0 0 0 1 1 1 1 1 0 0 0 1 1 0 1
+[39] 1 0
+[1] 19
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "Best fitness updated to:"
+[1] -81.70738
+[1] "Best solution:"
+ [1] 1 1 0 0 0 1 0 0 1 0 0 0 0 0 1 1 1 0 0 0 0 1 1 0 0 1 1 0 0 0 0 0 0 1 1 0 0 1
+[39] 0 0
+[1] 14
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 34
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "Best fitness updated to:"
+[1] -82.81515
+[1] "Best solution:"
+ [1] 1 1 0 1 0 1 0 0 1 0 0 0 0 1 1 1 1 0 0 1 0 1 1 0 0 0 1 1 0 1 1 0 0 0 1 0 0 1
+[39] 1 0
+[1] 19
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "Best fitness updated to:"
+[1] -82.83981
+[1] "Best solution:"
+ [1] 1 1 0 1 0 1 0 0 1 0 0 0 0 1 1 1 1 0 0 0 0 1 1 1 0 0 1 1 0 1 0 0 0 0 1 1 0 1
+[39] 1 0
+[1] 19
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "iteration number: "
+[1] 96
+[1] "iteration number: "
+[1] 97
+[1] "iteration number: "
+[1] 98
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 32
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 99
+[1] "iteration number: "
+[1] 100
+[1] "iteration number: "
+[1] 101
+[1] "iteration number: "
+[1] 102
+[1] "iteration number: "
+[1] 103
+[1] "iteration number: "
+[1] 104
+[1] "iteration number: "
+[1] 105
+[1] "iteration number: "
+[1] 106
+[1] "iteration number: "
+[1] 107
+[1] "iteration number: "
+[1] 108
+[1] "iteration number: "
+[1] 109
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 28
+ [1] 2 3 2 2 2 2 3 2 3 3 2 2 2 2 3 2 3 1 4 3
+[1] "iteration number: "
+[1] 110
+[1] "iteration number: "
+[1] 111
+[1] "iteration number: "
+[1] 112
+[1] "iteration number: "
+[1] 113
+[1] "iteration number: "
+[1] 114
+[1] "iteration number: "
+[1] 115
+[1] "iteration number: "
+[1] 116
+[1] "iteration number: "
+[1] 117
+[1] "iteration number: "
+[1] 118
+[1] "iteration number: "
+[1] 119
+[1] "iteration number: "
+[1] 120
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 26
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 121
+[1] "iteration number: "
+[1] 122
+[1] "iteration number: "
+[1] 123
+[1] "iteration number: "
+[1] 124
+[1] "iteration number: "
+[1] 125
+[1] "iteration number: "
+[1] 126
+[1] "iteration number: "
+[1] 127
+[1] "iteration number: "
+[1] 128
+[1] "iteration number: "
+[1] 129
+[1] "Best fitness updated to:"
+[1] -83.18936
+[1] "Best solution:"
+ [1] 1 1 0 1 0 1 0 0 1 0 0 0 0 0 1 1 1 0 0 0 0 0 1 0 0 0 1 1 0 1 1 0 0 0 1 1 0 1
+[39] 1 0
+[1] 17
+[1] "iteration number: "
+[1] 130
+[1] "iteration number: "
+[1] 131
+[1] "iteration number: "
+[1] 132
+[1] "iteration number: "
+[1] 133
+[1] "iteration number: "
+[1] 134
+[1] "iteration number: "
+[1] 135
+[1] "iteration number: "
+[1] 136
+[1] "iteration number: "
+[1] 137
+[1] "iteration number: "
+[1] 138
+[1] "iteration number: "
+[1] 139
+[1] "iteration number: "
+[1] 140
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 21
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 141
+[1] "iteration number: "
+[1] 142
+[1] "iteration number: "
+[1] 143
+[1] "iteration number: "
+[1] 144
+[1] "iteration number: "
+[1] 145
+[1] "iteration number: "
+[1] 146
+[1] "Best fitness updated to:"
+[1] -83.51535
+[1] "Best solution:"
+ [1] 1 1 0 0 0 1 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 1 1 0 1 1 0 0 0 1 1 0 1
+[39] 1 0
+[1] 14
+[1] "iteration number: "
+[1] 147
+[1] "iteration number: "
+[1] 148
+[1] "iteration number: "
+[1] 149
+[1] "iteration number: "
+[1] 150
+[1] "iteration number: "
+[1] 151
+[1] "iteration number: "
+[1] 152
+[1] "iteration number: "
+[1] 153
+[1] "iteration number: "
+[1] 154
+[1] "iteration number: "
+[1] 155
+[1] "iteration number: "
+[1] 156
+[1] "iteration number: "
+[1] 157
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 21
+ [1] 2 2 1 1 1 2 4 1 2 4 3 2 2 1 1 2 4 1 3 1
+[1] "iteration number: "
+[1] 158
+[1] "iteration number: "
+[1] 159
+[1] "iteration number: "
+[1] 160
+[1] "iteration number: "
+[1] 161
+[1] "iteration number: "
+[1] 162
+[1] "iteration number: "
+[1] 163
+[1] "iteration number: "
+[1] 164
+[1] "iteration number: "
+[1] 165
+[1] "iteration number: "
+[1] 166
+[1] "iteration number: "
+[1] 167
+[1] "iteration number: "
+[1] 168
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 22
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 169
+[1] "iteration number: "
+[1] 170
+[1] "iteration number: "
+[1] 171
+[1] "iteration number: "
+[1] 172
+[1] "iteration number: "
+[1] 173
+[1] "iteration number: "
+[1] 174
+[1] "iteration number: "
+[1] 175
+[1] "iteration number: "
+[1] 176
+[1] "iteration number: "
+[1] 177
+[1] "iteration number: "
+[1] 178
+[1] "iteration number: "
+[1] 179
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 22
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 180
+[1] "iteration number: "
+[1] 181
+[1] "iteration number: "
+[1] 182
+[1] "iteration number: "
+[1] 183
+[1] "iteration number: "
+[1] 184
+[1] "iteration number: "
+[1] 185
+[1] "iteration number: "
+[1] 186
+[1] "iteration number: "
+[1] 187
+[1] "iteration number: "
+[1] 188
+[1] "iteration number: "
+[1] 189
+[1] "iteration number: "
+[1] 190
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 21
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 191
+[1] "iteration number: "
+[1] 192
+[1] "iteration number: "
+[1] 193
+[1] "iteration number: "
+[1] 194
+[1] "iteration number: "
+[1] 195
+[1] "iteration number: "
+[1] 196
+[1] "iteration number: "
+[1] 197
+[1] "iteration number: "
+[1] 198
+[1] "iteration number: "
+[1] 199
+[1] "iteration number: "
+[1] 200
+[1] "iteration number: "
+[1] 201
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 22
+ [1] 2 3 2 2 2 2 3 2 3 3 2 2 2 2 3 2 3 1 4 3
+[1] "iteration number: "
+[1] 202
+[1] "Best fitness updated to:"
+[1] -83.77861
+[1] "Best solution:"
+ [1] 1 1 0 0 0 1 0 0 1 0 0 0 0 1 0 0 1 0 0 0 0 0 1 0 0 0 1 0 0 1 1 0 0 0 1 0 0 1
+[39] 1 0
+[1] 13
+[1] "iteration number: "
+[1] 203
+[1] "iteration number: "
+[1] 204
+[1] "iteration number: "
+[1] 205
+[1] "iteration number: "
+[1] 206
+[1] "iteration number: "
+[1] 207
+[1] "iteration number: "
+[1] 208
+[1] "iteration number: "
+[1] 209
+[1] "iteration number: "
+[1] 210
+[1] "iteration number: "
+[1] 211
+[1] "iteration number: "
+[1] 212
+[1] "iteration number: "
+[1] 213
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 21
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 214
+[1] "iteration number: "
+[1] 215
+[1] "iteration number: "
+[1] 216
+[1] "iteration number: "
+[1] 217
+[1] "iteration number: "
+[1] 218
+[1] "iteration number: "
+[1] 219
+[1] "iteration number: "
+[1] 220
+[1] "iteration number: "
+[1] 221
+[1] "iteration number: "
+[1] 222
+[1] "iteration number: "
+[1] 223
+[1] "iteration number: "
+[1] 224
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 21
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 225
+[1] "iteration number: "
+[1] 226
+[1] "iteration number: "
+[1] 227
+[1] "iteration number: "
+[1] 228
+[1] "iteration number: "
+[1] 229
+[1] "iteration number: "
+[1] 230
+[1] "iteration number: "
+[1] 231
+[1] "iteration number: "
+[1] 232
+[1] "iteration number: "
+[1] 233
+[1] "iteration number: "
+[1] 234
+[1] "iteration number: "
+[1] 235
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 20
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 236
+[1] "iteration number: "
+[1] 237
+[1] "iteration number: "
+[1] 238
+[1] "iteration number: "
+[1] 239
+[1] "iteration number: "
+[1] 240
+[1] "iteration number: "
+[1] 241
+[1] "iteration number: "
+[1] 242
+[1] "iteration number: "
+[1] 243
+[1] "iteration number: "
+[1] 244
+[1] "iteration number: "
+[1] 245
+[1] "iteration number: "
+[1] 246
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 21
+ [1] 2 3 2 2 2 2 3 2 3 3 2 2 2 2 3 2 3 1 4 3
+[1] "iteration number: "
+[1] 247
+[1] "iteration number: "
+[1] 248
+[1] "iteration number: "
+[1] 249
+[1] "iteration number: "
+[1] 250
+[1] "iteration number: "
+[1] 251
+[1] "iteration number: "
+[1] 252
+[1] "iteration number: "
+[1] 253
+[1] "iteration number: "
+[1] 254
+[1] "iteration number: "
+[1] 255
+[1] "iteration number: "
+[1] 256
+[1] "iteration number: "
+[1] 257
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 21
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 258
+[1] "iteration number: "
+[1] 259
+[1] "iteration number: "
+[1] 260
+[1] "iteration number: "
+[1] 261
+[1] "iteration number: "
+[1] 262
+[1] "iteration number: "
+[1] 263
+[1] "iteration number: "
+[1] 264
+[1] "iteration number: "
+[1] 265
+[1] "iteration number: "
+[1] 266
+[1] "iteration number: "
+[1] 267
+[1] "iteration number: "
+[1] 268
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 20
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 269
+[1] "iteration number: "
+[1] 270
+[1] "iteration number: "
+[1] 271
+[1] "iteration number: "
+[1] 272
+[1] "iteration number: "
+[1] 273
+[1] "iteration number: "
+[1] 274
+[1] "iteration number: "
+[1] 275
+[1] "iteration number: "
+[1] 276
+[1] "iteration number: "
+[1] 277
+[1] "iteration number: "
+[1] 278
+[1] "iteration number: "
+[1] 279
+[1] "RE-INITIALIZING..."
+[1] 7
+[1] 5
+[1] 20
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 280
+[1] "iteration number: "
+[1] 281
+[1] "iteration number: "
+[1] 282
+[1] "iteration number: "
+[1] 283
+[1] "iteration number: "
+[1] 284
+[1] "iteration number: "
+[1] 285
+[1] "iteration number: "
+[1] 286
+[1] "iteration number: "
+[1] 287
+[1] "iteration number: "
+[1] 288
+[1] "iteration number: "
+[1] 289
+[1] "iteration number: "
+[1] 290
+[1] "RE-INITIALIZING..."
+[1] 8
+[1] 5
+[1] 20
+[1] "No change for 8 iterations. Exiting PSO."
+ [1]  2  6  9 17 23 27 28 30 31 35 36 38 39
+[1] 3
+[1] "##################################"
+[1] "Results summary for itr:3"
+[1] "number of features selected using population mean"
+[1] 13
+[1] "number of features selected using current global best"
+[1] 13
+[1] "feat ind length"
+[1] 13
+[1] "best accuracy"
+[1] 83.77861
+[1] "test acc:1"
+[1] "##################################"
+[1] "learning sets: 4"
+ [1] 23 41 24 22  6 31 35 10 46 28 37  5 21 19 53 55 29 25 40 57 47 14 38 13  1
+[26] 36 60 17 11  2 48 43 44 16 30  3 50 32 58 18 51 20  8 33 59 34 45 39 27 54
+[1] "Starting global iteration number : 4"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -73.88374
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[26] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -76.62105
+[1] "Best solution:"
+ [1] 0 0 0 0 1 1 1 0 0 0 0 0 0 1 0 0 1 0 0 1 0 0 0 1 1 0 1 1 0 0 1 0 0 0 0 1 0 1
+[39] 0 0
+[1] 13
+[1] "iteration number: "
+[1] 3
+[1] "Best fitness updated to:"
+[1] -76.96167
+[1] "Best solution:"
+ [1] 0 1 0 1 1 0 0 0 1 0 1 1 0 1 0 0 0 0 0 0 1 0 0 1 1 1 0 0 0 1 0 0 1 0 0 0 1 0
+[39] 0 0
+[1] 14
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "Best fitness updated to:"
+[1] -77.33634
+[1] "Best solution:"
+ [1] 0 1 1 1 1 1 1 1 1 1 0 1 0 0 1 1 0 1 0 0 1 1 1 1 1 0 0 0 1 0 1 1 1 0 1 1 1 0
+[39] 0 1
+[1] 26
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "iteration number: "
+[1] 8
+[1] "Best fitness updated to:"
+[1] -77.80834
+[1] "Best solution:"
+ [1] 0 1 1 0 1 1 1 1 1 1 0 1 0 0 0 1 0 1 0 0 1 1 1 1 1 0 0 0 1 0 1 0 1 0 1 1 1 0
+[39] 1 1
+[1] 24
+[1] "iteration number: "
+[1] 9
+[1] "Best fitness updated to:"
+[1] -78.74838
+[1] "Best solution:"
+ [1] 0 1 1 0 1 1 1 1 1 1 0 1 0 0 1 1 0 1 0 0 1 1 1 1 1 0 0 0 1 0 1 0 1 0 1 1 1 0
+[39] 1 1
+[1] 25
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "iteration number: "
+[1] 13
+[1] "Best fitness updated to:"
+[1] -79.90725
+[1] "Best solution:"
+ [1] 0 1 1 0 0 1 1 1 1 1 0 1 0 1 1 1 1 1 0 0 1 1 1 1 0 0 1 0 1 0 1 0 0 0 1 1 1 0
+[39] 1 1
+[1] 25
+[1] "iteration number: "
+[1] 14
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "Best fitness updated to:"
+[1] -79.93432
+[1] "Best solution:"
+ [1] 0 1 0 0 1 1 1 1 0 0 0 1 0 0 1 1 1 1 0 0 0 1 1 1 1 0 1 1 1 0 1 0 1 0 1 1 0 0
+[39] 1 1
+[1] 23
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "iteration number: "
+[1] 26
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "Best fitness updated to:"
+[1] -80.40761
+[1] "Best solution:"
+ [1] 0 1 1 0 1 1 0 1 1 1 0 1 0 0 1 1 0 1 0 0 1 1 1 1 1 0 0 1 1 0 1 0 1 0 1 1 1 1
+[39] 1 1
+[1] 26
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 39
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 39
+ [1] 2 3 2 2 2 2 3 2 3 3 2 2 2 2 3 2 3 1 4 3
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "Best fitness updated to:"
+[1] -80.48494
+[1] "Best solution:"
+ [1] 0 1 0 1 1 1 1 0 1 1 0 0 0 0 1 1 0 0 0 0 1 1 1 1 1 1 1 0 1 0 1 0 0 0 1 1 1 0
+[39] 1 0
+[1] 22
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "iteration number: "
+[1] 63
+[1] "Best fitness updated to:"
+[1] -80.74759
+[1] "Best solution:"
+ [1] 0 1 0 0 1 1 1 1 1 1 0 1 0 0 1 1 0 0 0 0 1 1 1 1 1 0 0 0 1 0 1 0 1 1 1 1 1 0
+[39] 1 1
+[1] 24
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "Best fitness updated to:"
+[1] -81.50153
+[1] "Best solution:"
+ [1] 0 1 0 0 1 1 1 1 1 1 0 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 0 1 1 0 1 0 1 1 1 1 1 0
+[39] 1 1
+[1] 24
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 35
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 35
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "iteration number: "
+[1] 96
+[1] "iteration number: "
+[1] 97
+[1] "iteration number: "
+[1] 98
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 34
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 99
+[1] "iteration number: "
+[1] 100
+[1] "iteration number: "
+[1] 101
+[1] "iteration number: "
+[1] 102
+[1] "iteration number: "
+[1] 103
+[1] "iteration number: "
+[1] 104
+[1] "iteration number: "
+[1] 105
+[1] "iteration number: "
+[1] 106
+[1] "iteration number: "
+[1] 107
+[1] "iteration number: "
+[1] 108
+[1] "iteration number: "
+[1] 109
+[1] "RE-INITIALIZING..."
+[1] 4
+[1] 5
+[1] 34
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 110
+[1] "iteration number: "
+[1] 111
+[1] "iteration number: "
+[1] 112
+[1] "iteration number: "
+[1] 113
+[1] "iteration number: "
+[1] 114
+[1] "iteration number: "
+[1] 115
+[1] "iteration number: "
+[1] 116
+[1] "iteration number: "
+[1] 117
+[1] "iteration number: "
+[1] 118
+[1] "iteration number: "
+[1] 119
+[1] "iteration number: "
+[1] 120
+[1] "RE-INITIALIZING..."
+[1] 5
+[1] 5
+[1] 33
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 121
+[1] "iteration number: "
+[1] 122
+[1] "iteration number: "
+[1] 123
+[1] "iteration number: "
+[1] 124
+[1] "iteration number: "
+[1] 125
+[1] "iteration number: "
+[1] 126
+[1] "iteration number: "
+[1] 127
+[1] "iteration number: "
+[1] 128
+[1] "iteration number: "
+[1] 129
+[1] "iteration number: "
+[1] 130
+[1] "iteration number: "
+[1] 131
+[1] "RE-INITIALIZING..."
+[1] 6
+[1] 5
+[1] 33
+ [1] 2 3 2 2 2 2 3 2 3 3 2 2 2 2 3 2 3 1 4 3
+[1] "iteration number: "
+[1] 132
+[1] "iteration number: "
+[1] 133
+[1] "iteration number: "
+[1] 134
+[1] "iteration number: "
+[1] 135
+[1] "iteration number: "
+[1] 136
+[1] "iteration number: "
+[1] 137
+[1] "iteration number: "
+[1] 138
+[1] "iteration number: "
+[1] 139
+[1] "iteration number: "
+[1] 140
+[1] "iteration number: "
+[1] 141
+[1] "iteration number: "
+[1] 142
+[1] "RE-INITIALIZING..."
+[1] 7
+[1] 5
+[1] 34
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 143
+[1] "iteration number: "
+[1] 144
+[1] "iteration number: "
+[1] 145
+[1] "iteration number: "
+[1] 146
+[1] "iteration number: "
+[1] 147
+[1] "iteration number: "
+[1] 148
+[1] "iteration number: "
+[1] 149
+[1] "iteration number: "
+[1] 150
+[1] "iteration number: "
+[1] 151
+[1] "iteration number: "
+[1] 152
+[1] "iteration number: "
+[1] 153
+[1] "RE-INITIALIZING..."
+[1] 8
+[1] 5
+[1] 32
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "No change for 8 iterations. Exiting PSO."
+ [1]  2  5  6  7  8  9 10 12 15 16 18 21 22 23 24 25 28 29 31 35 36 37 39 40
+[1] 4
+[1] "##################################"
+[1] "Results summary for itr:4"
+[1] "number of features selected using population mean"
+[1] 23
+[1] "number of features selected using current global best"
+[1] 24
+[1] "feat ind length"
+[1] 24
+[1] "best accuracy"
+[1] 81.50153
+[1] "test acc:1"
+[1] "##################################"
+[1] "learning sets: 5"
+ [1] 53  2 51 11 17 16 54 34  7  1 61 29 26 40 62 55 60 13 19 25 43 57 28 50  3
+[26] 41 56 23 63 37 18  5 45 32 49 35 27 21 58 38 31 47 30 20 14 52 39 12 36 59
+[1] "Starting global iteration number : 5"
+[1] "iteration number: "
+[1] 1
+[1] "Best fitness updated to:"
+[1] -67.59197
+[1] "Best solution:"
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[26] NA NA NA NA NA NA NA NA NA NA NA NA NA NA NA
+[1] 0
+[1] "iteration number: "
+[1] 2
+[1] "Best fitness updated to:"
+[1] -70.22754
+[1] "Best solution:"
+ [1] 0 0 0 0 1 1 1 0 0 0 0 0 0 1 0 0 1 0 0 1 0 0 0 1 1 0 1 1 0 0 1 0 0 0 0 1 0 1
+[39] 0 0
+[1] 13
+[1] "iteration number: "
+[1] 3
+[1] "iteration number: "
+[1] 4
+[1] "iteration number: "
+[1] 5
+[1] "Best fitness updated to:"
+[1] -70.75497
+[1] "Best solution:"
+ [1] 0 1 1 0 1 0 1 1 0 1 0 0 0 1 0 1 0 0 1 1 1 1 0 1 0 1 0 0 0 0 0 0 1 1 1 0 1 0
+[39] 0 1
+[1] 19
+[1] "iteration number: "
+[1] 6
+[1] "iteration number: "
+[1] 7
+[1] "Best fitness updated to:"
+[1] -71.01741
+[1] "Best solution:"
+ [1] 0 1 1 0 0 0 0 1 0 1 1 0 0 0 0 0 0 0 1 0 1 1 0 1 1 0 1 0 0 1 0 0 0 1 1 0 0 0
+[39] 0 1
+[1] 15
+[1] "iteration number: "
+[1] 8
+[1] "iteration number: "
+[1] 9
+[1] "Best fitness updated to:"
+[1] -71.16386
+[1] "Best solution:"
+ [1] 0 1 1 1 1 0 1 1 1 1 0 1 0 0 1 1 1 0 1 0 1 1 0 1 1 1 0 0 0 0 1 0 1 0 1 1 1 0
+[39] 0 1
+[1] 24
+[1] "iteration number: "
+[1] 10
+[1] "iteration number: "
+[1] 11
+[1] "iteration number: "
+[1] 12
+[1] "Best fitness updated to:"
+[1] -71.30051
+[1] "Best solution:"
+ [1] 0 0 1 1 1 1 1 1 0 1 0 1 0 0 1 1 0 1 1 0 1 1 1 1 1 0 0 0 0 0 0 0 0 0 1 1 1 1
+[39] 0 1
+[1] 22
+[1] "iteration number: "
+[1] 13
+[1] "Best fitness updated to:"
+[1] -71.33258
+[1] "Best solution:"
+ [1] 1 1 1 0 1 0 0 1 0 0 0 1 0 0 0 1 0 0 1 0 0 1 0 1 0 1 0 0 0 0 1 1 1 1 1 1 0 0
+[39] 0 1
+[1] 18
+[1] "iteration number: "
+[1] 14
+[1] "Best fitness updated to:"
+[1] -71.48884
+[1] "Best solution:"
+ [1] 1 1 1 1 1 0 1 1 1 1 0 0 0 1 0 1 1 0 1 0 1 1 0 1 0 1 0 0 0 0 1 0 0 0 1 1 0 0
+[39] 0 1
+[1] 21
+[1] "iteration number: "
+[1] 15
+[1] "iteration number: "
+[1] 16
+[1] "iteration number: "
+[1] 17
+[1] "iteration number: "
+[1] 18
+[1] "iteration number: "
+[1] 19
+[1] "iteration number: "
+[1] 20
+[1] "iteration number: "
+[1] 21
+[1] "iteration number: "
+[1] 22
+[1] "Best fitness updated to:"
+[1] -72.80422
+[1] "Best solution:"
+ [1] 0 1 1 1 1 0 1 1 1 1 0 1 0 0 1 0 0 0 0 0 1 1 0 0 1 0 0 0 0 0 0 1 1 0 0 0 1 1
+[39] 0 1
+[1] 18
+[1] "iteration number: "
+[1] 23
+[1] "iteration number: "
+[1] 24
+[1] "iteration number: "
+[1] 25
+[1] "Best fitness updated to:"
+[1] -72.92501
+[1] "Best solution:"
+ [1] 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 1 0 0 1 0 1 0 0 0 0 0 0 1 0 0 0 1
+[39] 0 1
+[1] 10
+[1] "iteration number: "
+[1] 26
+[1] "Best fitness updated to:"
+[1] -73.13558
+[1] "Best solution:"
+ [1] 1 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 1 0 1 1 0 0 1 0 1 0 0 0 1 1 0 1 0 0 0 1
+[39] 0 0
+[1] 13
+[1] "iteration number: "
+[1] 27
+[1] "iteration number: "
+[1] 28
+[1] "iteration number: "
+[1] 29
+[1] "iteration number: "
+[1] 30
+[1] "iteration number: "
+[1] 31
+[1] "iteration number: "
+[1] 32
+[1] "iteration number: "
+[1] 33
+[1] "iteration number: "
+[1] 34
+[1] "iteration number: "
+[1] 35
+[1] "iteration number: "
+[1] 36
+[1] "iteration number: "
+[1] 37
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 38
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 38
+[1] "iteration number: "
+[1] 39
+[1] "iteration number: "
+[1] 40
+[1] "iteration number: "
+[1] 41
+[1] "Best fitness updated to:"
+[1] -73.15911
+[1] "Best solution:"
+ [1] 0 1 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 1 1 0 0 0 0 1 0 0 0 1 0 0 1 0 0 0 0
+[39] 0 1
+[1] 10
+[1] "iteration number: "
+[1] 42
+[1] "iteration number: "
+[1] 43
+[1] "iteration number: "
+[1] 44
+[1] "iteration number: "
+[1] 45
+[1] "iteration number: "
+[1] 46
+[1] "iteration number: "
+[1] 47
+[1] "iteration number: "
+[1] 48
+[1] "iteration number: "
+[1] 49
+[1] "iteration number: "
+[1] 50
+[1] "iteration number: "
+[1] 51
+[1] "iteration number: "
+[1] 52
+[1] "Best fitness updated to:"
+[1] -73.86406
+[1] "Best solution:"
+ [1] 0 1 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 0 1 0 1 1 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0
+[39] 0 1
+[1] 10
+[1] "iteration number: "
+[1] 53
+[1] "iteration number: "
+[1] 54
+[1] "iteration number: "
+[1] 55
+[1] "iteration number: "
+[1] 56
+[1] "iteration number: "
+[1] 57
+[1] "iteration number: "
+[1] 58
+[1] "Best fitness updated to:"
+[1] -73.89842
+[1] "Best solution:"
+ [1] 0 1 0 0 0 0 1 1 0 0 0 1 0 0 0 0 0 0 1 0 1 1 0 0 0 0 1 0 0 0 1 0 0 1 0 1 0 1
+[39] 0 0
+[1] 12
+[1] "iteration number: "
+[1] 59
+[1] "iteration number: "
+[1] 60
+[1] "iteration number: "
+[1] 61
+[1] "iteration number: "
+[1] 62
+[1] "Best fitness updated to:"
+[1] -73.99647
+[1] "Best solution:"
+ [1] 0 1 0 0 0 0 1 1 1 0 1 1 0 0 0 0 0 0 1 0 1 1 0 0 0 0 1 0 0 0 1 0 0 1 0 1 0 1
+[39] 1 0
+[1] 15
+[1] "iteration number: "
+[1] 63
+[1] "iteration number: "
+[1] 64
+[1] "iteration number: "
+[1] 65
+[1] "iteration number: "
+[1] 66
+[1] "iteration number: "
+[1] 67
+[1] "iteration number: "
+[1] 68
+[1] "iteration number: "
+[1] 69
+[1] "Best fitness updated to:"
+[1] -73.99996
+[1] "Best solution:"
+ [1] 0 1 0 0 0 0 1 1 1 0 0 1 0 0 0 0 0 0 1 0 1 1 0 0 0 0 1 0 0 0 1 0 0 1 0 1 0 1
+[39] 0 1
+[1] 14
+[1] "iteration number: "
+[1] 70
+[1] "iteration number: "
+[1] 71
+[1] "iteration number: "
+[1] 72
+[1] "iteration number: "
+[1] 73
+[1] "iteration number: "
+[1] 74
+[1] "iteration number: "
+[1] 75
+[1] "iteration number: "
+[1] 76
+[1] "iteration number: "
+[1] 77
+[1] "iteration number: "
+[1] 78
+[1] "iteration number: "
+[1] 79
+[1] "iteration number: "
+[1] 80
+[1] "Best fitness updated to:"
+[1] -74.01748
+[1] "Best solution:"
+ [1] 0 1 0 0 0 0 1 1 1 0 0 1 0 0 0 0 0 0 1 0 1 1 0 0 0 0 1 0 0 0 1 0 0 1 0 1 0 1
+[39] 0 1
+[1] 14
+[1] "iteration number: "
+[1] 81
+[1] "iteration number: "
+[1] 82
+[1] "iteration number: "
+[1] 83
+[1] "iteration number: "
+[1] 84
+[1] "iteration number: "
+[1] 85
+[1] "iteration number: "
+[1] 86
+[1] "iteration number: "
+[1] 87
+[1] "iteration number: "
+[1] 88
+[1] "iteration number: "
+[1] 89
+[1] "iteration number: "
+[1] 90
+[1] "iteration number: "
+[1] 91
+[1] "RE-INITIALIZING..."
+[1] 1
+[1] 5
+[1] 33
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 92
+[1] "iteration number: "
+[1] 93
+[1] "iteration number: "
+[1] 94
+[1] "iteration number: "
+[1] 95
+[1] "iteration number: "
+[1] 96
+[1] "iteration number: "
+[1] 97
+[1] "iteration number: "
+[1] 98
+[1] "iteration number: "
+[1] 99
+[1] "iteration number: "
+[1] 100
+[1] "iteration number: "
+[1] 101
+[1] "iteration number: "
+[1] 102
+[1] "RE-INITIALIZING..."
+[1] 2
+[1] 5
+[1] 36
+ [1] 2 3 2 2 2 2 3 2 3 3 2 2 2 2 3 2 3 1 4 3
+[1] "iteration number: "
+[1] 103
+[1] "iteration number: "
+[1] 104
+[1] "iteration number: "
+[1] 105
+[1] "iteration number: "
+[1] 106
+[1] "iteration number: "
+[1] 107
+[1] "iteration number: "
+[1] 108
+[1] "iteration number: "
+[1] 109
+[1] "iteration number: "
+[1] 110
+[1] "iteration number: "
+[1] 111
+[1] "iteration number: "
+[1] 112
+[1] "iteration number: "
+[1] 113
+[1] "RE-INITIALIZING..."
+[1] 3
+[1] 5
+[1] 31
+ [1] 2 2 2 2 2 1 2 1 2 2 4 2 1 2 2 2 3 2 2 1
+[1] "iteration number: "
+[1] 114
+[1] "iteration number: "
+[1] 115
+[1] "iteration number: "
+[1] 116
+[1] "iteration number: "
+[1] 117
+[1] "iteration number: "
+[1] 118

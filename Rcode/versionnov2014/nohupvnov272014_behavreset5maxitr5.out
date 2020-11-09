@@ -1,0 +1,326 @@
+
+R version 3.1.2 (2014-10-31) -- "Pumpkin Helmet"
+Copyright (C) 2014 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> #.libPaths("/home/stu/kuppal3/karan_libs/Rlibs")
+> library(snow)
+> library(e1071)
+> library(yaImpute)
+
+Attaching package: ‘yaImpute’
+
+The following object is masked from ‘package:e1071’:
+
+    impute
+
+> library(pROC)
+Type 'citation("pROC")' for a citation.
+
+Attaching package: ‘pROC’
+
+The following objects are masked from ‘package:stats’:
+
+    cov, smooth, var
+
+> library(bioDist)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘parallel’
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, clusterSplit, makeCluster, parApply,
+    parCapply, parLapply, parRapply, parSapply, splitIndices,
+    stopCluster
+
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:snow’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parRapply, parSapply
+
+The following object is masked from ‘package:stats’:
+
+    xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, as.vector, cbind, colnames,
+    do.call, duplicated, eval, evalq, Filter, Find, get, intersect,
+    is.unsorted, lapply, Map, mapply, match, mget, order, paste, pmax,
+    pmax.int, pmin, pmin.int, Position, rank, rbind, Reduce, rep.int,
+    rownames, sapply, setdiff, sort, table, tapply, union, unique,
+    unlist, unsplit
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Loading required package: KernSmooth
+KernSmooth 2.23 loaded
+Copyright M. P. Wand 1997-2009
+> #library(CMA, lib="/home/stu/kuppal3/karan_libs/Rlibs/")
+> 
+> library(CMA)
+
+Attaching package: ‘CMA’
+
+The following object is masked from ‘package:pROC’:
+
+    roc
+
+The following object is masked from ‘package:e1071’:
+
+    tune
+
+> library(expm)
+Loading required package: Matrix
+
+Attaching package: ‘expm’
+
+The following object is masked from ‘package:Matrix’:
+
+    expm
+
+> 
+> cl<-makeCluster(20)
+> 
+> 
+> source("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014/OCFS_vnov272014_v2.R")
+> 
+> 
+> 
+> if(FALSE){
++ trainy<-read.csv("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/arcene_train.labels", header=FALSE)
++ testy<-read.csv("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/arcene_valid.labels", header=FALSE)
++ trainm<-read.table("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/arcene_train.data", sep=" ",header=FALSE)
++ testm<-read.table("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/arcene_valid.data", sep=" ",header=FALSE)
++ }
+> 
+> #/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/khan.xtest
+> 
+> #/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/khan.xtest
+> trainy<-read.table("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014//khan.ytrain", header=FALSE)
+> testy<-read.table("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014//khan.ytest", header=FALSE)
+> 
+> trainy<-t(trainy)
+> testy<-t(testy)
+> 
+> #trainm<-read.table("/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/khan.xtrain", sep=" ",header=FALSE)
+> #testm<-read.table("/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/khan.xtest", sep=" ",header=FALSE)
+> 
+> 
+> trainm<-read.table("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014//khan.xtrain")
+> 
+> testm<-read.table("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014//khan.xtest")
+> 
+> trainm<-t(trainm) #[,-c(10001)]
+> testm<-t(testm) #[,-c(10001)]
+> trainm<-cbind(trainy,trainm)
+> testm<-cbind(testy,testm)
+> 
+> trainm<-na.omit(trainm)
+> testm<-na.omit(testm)
+> 
+> #outloc<-"/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/minpres2union_pso1000f0.25c0.25_backwardfalse_cvfoldthres0.7itr4w1/"
+> #outloc<-"/home/stu/kuppal3/Research/Feature_selection/Datasets/Khan_SRBCT/itr1cmapso100_best90pctf0.3c0.1behav0.2w1_0920eval10foldVIP_minpres_all2/"
+> #trainm<-read.csv("/home/stu/kuppal3/Research/SpectF_data/SPECTF.train", header=FALSE)
+> #outloc<-"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Datasets/ARCENE/itr6_allmethods_minmethods1_ttestfilt_backwardsel_pso10/"
+> 
+> 
+> trainm<-read.csv("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014/SPECTF.train", header=FALSE)
+> testm<-read.csv("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014/SPECTF.test", header=FALSE)
+> 
+> 
+> outloc<-"/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014//CMAPSO100itrgmax1maxitr30fit70featw100to0.08_rankbehavf0.6l0.25c0.15100itr_randtopol/"
+> 
+> 
+> 
+> #trainy<-trainm[,c(1)]
+> #testy<-testm[,c(1)]
+> #a: Confusions
+> #b: Neighbors
+> #c: Global
+> #d: Death
+> 
+> a<-c(0.25,0.25,0.25,0.25)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0.25,0.25,0.5,0)
+> d<-c(0.9,0.1,0,0.1)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.3,0.1,0.4,0.1)
+> c<-c(0,0.5,0.5,0)
+> d<-c(0.9,0.1,0,0)
+> 
+> a<-c(0,0.4,0.1,0.5)
+> b<-c(0.2,0.3,0.4,0.1)
+> c<-c(0,0.4,0.4,0.2)
+> d<-c(0.9,0.1,0,0)
+> 
+> transition_matrix<-rbind(a,b,c,d)
+> 
+> 
+> dir.create(outloc)
+Warning message:
+In dir.create(outloc) :
+  '/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/Rcode/versionnov2014//CMAPSO100itrgmax1maxitr30fit70featw100to0.08_rankbehavf0.6l0.25c0.15100itr_randtopol' already exists
+> setwd(outloc)
+> temp2=t(trainm)
+> temp2=apply(temp2, 2, function(x){which(x=="MD")})
+> temp2=unlist(temp2)
+> temp2=unique(temp2)
+> if(length(temp2)>1)
++ {
++ 	trainm=trainm[,-c(temp2)]
++ 
++ 	rm(temp2)
++ }
+> 
+> 
+> #1
+> CMAres<-performCMA(trainm, testm, outloc,
++ maxnum=0.5,
++ minnum=1,
++ stepitr=1,
++ gsmethods=c("rf","rfe"), #,"limma","lasso","elasticnet","kruskal.test","f.test", "f.test", "elasticnet", "wilcox.test", "welch.test"),
++ percentTest=0.40,
++ accuracyweight=1,
++ featweight=0.06,
++ minpresent=1,
++ kname="radial",
++ norm_method="none", 
++ tolerance=0.1,
++ maxitrs=100,
++ removeindex=c(0),
++ classindex=1,
++ numfacts=0,
++ upclasssep=1,
++ dclasssep=-1,
++ evalmethod="CV",
++ numfolds=10,
++ CVfoldthresh=0.7,
++ backward.sel=TRUE,
++ scheme_val="one-vs-all",
++ iter_learn=5)
+[1] "classindex is "
+[1] 1
+[1] "dim of trainm is "
+[1] 80 45
+NULL
+[1] 80 45
+[1] "length of factcols"
+[1] 0
+[1] 80 44
+[1] 187  44
+integer(0)
+character(0)
+NULL
+[1] "ok"
+[1] "test class"
+[1] 1 1 1 1
+Levels: 0 1
+[1] "orig train matrix"
+     V2 V3 V4 V5 V6 V7 V8 V9 V10 V11
+[1,] 59 52 70 67 73 66 72 61  58  52
+[2,] 72 62 69 67 78 82 74 65  69  63
+[3,] 71 62 70 64 67 64 79 65  70  69
+[4,] 69 71 70 78 61 63 67 65  59  59
+[5,] 70 66 61 66 61 58 69 69  72  68
+[1] "orig train matrix"
+     V2 V3 V4 V5 V6 V7 V8 V9 V10 V11
+[1,] 59 52 70 67 73 66 72 61  58  52
+[2,] 72 62 69 67 78 82 74 65  69  63
+[3,] 71 62 70 64 67 64 79 65  70  69
+[4,] 69 71 70 78 61 63 67 65  59  59
+[5,] 70 66 61 66 61 58 69 69  72  68
+[1] 70 69 70
+[1] "norm train matrix"
+     V2 V3 V4 V5 V6 V7 V8 V9 V10 V11
+[1,] 59 52 70 67 73 66 72 61  58  52
+[2,] 72 62 69 67 78 82 74 65  69  63
+[3,] 71 62 70 64 67 64 79 65  70  69
+[4,] 69 71 70 78 61 63 67 65  59  59
+[5,] 70 66 61 66 61 58 69 69  72  68
+[1] "mean of feat 2"
+[1] 67.55
+[1] "sd of feat 2"
+[1] 6.88403
+[1] "maxnum is "
+[1] 22
+[1] "# of genes left after filtering:"
+[1] 80 44
+GeneSelection: iteration 1 
+randomForest 4.6-10
+Type rfNews() to see new features/changes/bug fixes.
+
+Attaching package: ‘randomForest’
+
+The following object is masked from ‘package:Biobase’:
+
+    combine
+
+The following object is masked from ‘package:BiocGenerics’:
+
+    combine
+
+GeneSelection: iteration 2 
+GeneSelection: iteration 3 
+GeneSelection: iteration 4 
+GeneSelection: iteration 5 
+GeneSelection: iteration 6 
+GeneSelection: iteration 7 
+GeneSelection: iteration 8 
+GeneSelection: iteration 9 
+GeneSelection: iteration 10 
+GeneSelection: iteration 11 
+GeneSelection: iteration 12 
+GeneSelection: iteration 13 
+GeneSelection: iteration 14 
+GeneSelection: iteration 15 
+GeneSelection: iteration 16 
+GeneSelection: iteration 17 
+GeneSelection: iteration 18 
+GeneSelection: iteration 19 
+GeneSelection: iteration 20 
+GeneSelection: iteration 21 
+GeneSelection: iteration 22 
+GeneSelection: iteration 23 
+GeneSelection: iteration 24 
+GeneSelection: iteration 25 
+GeneSelection: iteration 26 
+GeneSelection: iteration 27 
+GeneSelection: iteration 28 
+GeneSelection: iteration 29 
+GeneSelection: iteration 30 
+GeneSelection: iteration 31 

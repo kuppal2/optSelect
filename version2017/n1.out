@@ -1,0 +1,10 @@
+ngolub3globalnochange5itrreset5nod1pctvjan9_0.70.20.050.052.out
+limma : [1] "test AUC acc:0.928571428571429"
+lasso : [1] "test AUC acc:0.9"
+rfe : [1] "test AUC acc:0.903571428571429"
+elasticnet : [1] "test AUC acc:0.9"
+f.test : [1] "test AUC acc:0.928571428571429"
+union : [1] "test AUC acc:0.964285714285714"
+rankAggreg-monte carlo : [1] "test AUC acc rank aggreg CE:0.9"
+rankAggreg-GA : [1] "test AUC acc rank aggreg GA:0.9"
+optselect : [1] 0.9642857

@@ -9,6 +9,7 @@ data(Golub)
 #trainclass: A n x 1 vector with class labels for instances in the training set
 #testm:  A m x p data matrix with training data, where m is the number of samples in the test set and p is the number of variables
 #testclass: A m x 1 vector with class labels for instances in the test set
+#outloc: Output folder location
 #maxnum: Number of top features to select (e.g. 5)
 #num_part: Number of particles in the PSO (e.g. 5, 10, or 20)
 #stage1.featsel.methods: Feature selection methods to use in stage one. Default: c("limma","lasso","rfe","elasticnet", "f.test")

@@ -26,6 +26,27 @@ A n x 1 vector with class labels for instances in the training set
  \item{maxnum}{
  Maximum number of features to select (e.g. maxnum=5)
 }
+\item{num_part}{
+ Number of particles in the PSO (e.g. 5, 10, or 20)
+}
+\item{stage1.featsel.methods}{
+ Feature selection methods to use in stage one. Default: c("limma","lasso","rfe","elasticnet", "f.test")
+}
+\item{train.pct}{
+ In each iteration, what percentage of training data should be used for feature selection & inner cross-validation? A value of
+ 0.7 would mean that 70 percent of training instances would be used for selecting the features and 30 percent 
+ will be used for evaluating the classification accuracy. Default: 0.7
+}
+\item{c1}{
+ Cognitive scaling parameter in PSO. Default: 2.05
+}
+\item{c2}{
+ Social scaling parameter in PSO. Default: 2.05
+}
+\item{globalpso_maxitr}{
+ Number of times the PSO should be run on different subsets of training data. Default: 10
+}
+
 }
 \value{
 \item{scoringmatrix }{Binary matrix with 0 (not selected) or 1 (selected) assignment in each iteration}

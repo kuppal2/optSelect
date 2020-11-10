@@ -210,7 +210,7 @@ boostweight=boostweight,train.pct=train.pct,...)
 	
 		dicesorenson_res<-get_DSindex(scoringmatrix)
 
-#print("DS index stage 2")
+#print("mean Sorensor-Dice index stage 2 across different PSO")
 #print(dicesorenson_res)
 
 

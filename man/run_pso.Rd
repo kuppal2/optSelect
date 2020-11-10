@@ -5,7 +5,9 @@
 This function uses a multi agent-based stochastic optimization approach for ensemble feature selection. Stage one involves function perturbation, where ranked list of features are generated using different feature selection methods and stage two involves data perturbation, where feature selection is performed within randomly selected learning sets of the training data. The agents are assigned to different behavior states and move according to a binary PSO algorithm. A multi-objective fitness function is used to evaluate the classifica-tion accuracy of the agents. 
 }
 \usage{
-run_pso(trainm, trainclass, testm, testclass, outloc,maxnum)
+run_pso(trainm, trainclass, testm, testclass, outloc,maxnum=5,num_part=20,
+stage1.featsel.methods=c("limma","lasso","rfe","elasticnet", "f.test"),train.pct=0.7,
+c1=2.05,c2=2.05,global_max_itr=3,globalpso_maxitr=10,numfolds = 10)
 }
 \arguments{
   \item{trainm}{

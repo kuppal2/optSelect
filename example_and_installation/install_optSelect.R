@@ -4,10 +4,10 @@
 if (!requireNamespace("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 
-BiocManager::install("bioDist")
-BiocManager::install("CMA")
+BiocManager::install(c("bioDist","limma"))
+BiocManager::install("CMA",dependencies=TRUE)
 install.packages("expm",dependencies=TRUE)
-install.packages("snow",dependencies=TRUE)
+install.packages("parallel",dependencies=TRUE)
 install.packages("e1071",dependencies=TRUE)
 install.packages("yaImpute",dependencies=TRUE)
 install.packages("RankAggreg",dependencies=TRUE)

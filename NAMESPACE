@@ -1,0 +1,2 @@
+export(run_pso,performCMA,b3pso,eval_fit_test_diff,get_KIindex,get_DSindex,find_similar_samples,nn_search,mdist,svm_cv,evalFunc_multiobj)
+import(parallel,e1071,yaImpute,pROC,bioDist,RankAggreg,CMA,expm)

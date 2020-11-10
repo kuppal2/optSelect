@@ -43,8 +43,14 @@ A n x 1 vector with class labels for instances in the training set
 \item{c2}{
  Social scaling parameter in PSO. Default: 2.05
 }
+\item{global_max_itr}{
+ Number of times to reset the swarm as a result of no change in performance before the PSO is terminated. Default: 3
+}
 \item{globalpso_maxitr}{
  Number of times the PSO should be run on different subsets of training data. Default: 10
+}
+\item{numfolds}{
+ Number of k-folds for cross-validation. Default: 10
 }
 
 }

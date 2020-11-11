@@ -1,1 +1,0 @@
-Please refer to the "example_and_installation/install_optSelect.R" and "example_and_installation/run_example.R" files for instructions on installing the package and for an example run script. You can install by running this command in R: source("https://raw.githubusercontent.com/kuppal2/optSelect/master/example_and_installation/install_optSelect.R")

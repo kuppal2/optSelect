@@ -35,6 +35,7 @@ function(trainm,trainclass,testm,testclass,outloc,maxnum=5,
 	
 suppressWarnings(dir.create(outloc))
   suppressWarnings(setwd(outloc))
+  print("Starting processing now. Please check the Log.txt file for information on status updates and input parameters.")
   suppressWarnings(sink(file="Log.txt"))
   
   print("########Input parameters#######")

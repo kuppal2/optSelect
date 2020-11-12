@@ -484,7 +484,7 @@ prob_behavior_particles<-array(0, dim=c(num_part, dim(transition_matrix)[2]))
 					cverror<-c(cverror,res1[[np]]$cverror)
 					cvpermerror<-c(cvpermerror,res1[[np]]$cvpermerror)
 					
-					if(cverror<cvpermerror){
+					if(res1[[np]]$cverror<res1[[np]]$cvpermerror){
 
 						bad_pos[[num_obstacles]]<-x[np,]
 						num_obstacles<-num_obstacles+1

@@ -693,7 +693,7 @@ prob_behavior_particles<-array(0, dim=c(num_part, dim(transition_matrix)[2]))
 					}
 					
 				#	save(agent_behavior,transition_matrix,num_part,file="d1.Rda")
-					agent_behavior<-sample(x=seq(1,dim(transition_matrix)[1]),prob=c(0.25,0.25,0.25,0.25),size=num_part,replace=TRUE)
+					agent_behavior[row]<-sample(x=seq(1,dim(transition_matrix)[1]),prob=c(0.25,0.25,0.25,0.25),size=num_part,replace=TRUE)
 					
 					#new addition in v7; removed in v13
 					#x_gbest<-runif(dimsize,0,1)

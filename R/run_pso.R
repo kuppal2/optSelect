@@ -84,10 +84,10 @@ evalFunc=eval_fit_kfold_diff
 }
 
 
-if(is.na(testm)==TRUE){
+if(is.na(testm[1])==TRUE){
 	testm<-trainm
 }
-if(is.na(testclass)==TRUE){
+if(is.na(testclass[1])==TRUE){
 	testclass<-trainclass
 }
 

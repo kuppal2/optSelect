@@ -31,7 +31,7 @@ function(outloc,dimsize,
                 itr.terminate=FALSE,evalFunc,trainm=NA,trainclass=NA,boostweight=NA,train.pct=0.7,...)
 {
 
-if(is.na(boostweight)==TRUE){
+if(is.na(boostweight[1])==TRUE){
 
 boostweight=rep(0,dim(trainm)[2])
 }
@@ -259,7 +259,8 @@ prob_behavior_particles<-array(0, dim=c(num_part, dim(transition_matrix)[2]))
 					#agent_behavior=runif(num_part,0,1)
 					#agent_behavior<-sample(x=seq(1,dim(transition_matrix)[1]),size=num_part,replace=TRUE)
 		#set.seed(321)          
-    agent_behavior <- sample(x=1:dim(transition_matrix)[1], size = num_part, replace = TRUE, prob = c(confusionprob, followerprob,leaderprob,(1-(confusionprob+followerprob+leaderprob))))
+    agent_behavior <- sample(x=1:dim(transition_matrix)[1], size = num_part, replace = TRUE, 
+                             prob = c(confusionprob, followerprob,leaderprob,(1-(confusionprob+followerprob+leaderprob))))
  
 			
 				#if(FALSE)
@@ -714,6 +715,7 @@ prob_behavior_particles<-array(0, dim=c(num_part, dim(transition_matrix)[2]))
 						x[i,]<-x_lbest_vec
 					}
 					
+					save(agent_behavior,transition_matrix,num_part,file="d1.Rda")
 					agent_behavior[row]<-sample(x=seq(1,dim(transition_matrix)[1]),prob=c(0.25,0.25,0.25,0.25),size=num_part,replace=TRUE)
 					
 					#new addition in v7; removed in v13
@@ -990,6 +992,7 @@ prob_behavior_particles<-array(0, dim=c(num_part, dim(transition_matrix)[2]))
 			cnames_sum<-c("Iteration #", "Inertia", "Number of features","CV best", "Permuted CV best", "Global best fitness","Current best fitness","Number of features in current best agent","Number of features in global best", "Number of features in local best")
 
 			}
+			if(FALSE){
 			itr_val<-cbind(itr_val, (-1)*fitness_gbest)
 			itr_val<-cbind(itr_val, (-1)*min_fit_x)
 			itr_val<-cbind(itr_val, count_feat[min_fit_index])
@@ -997,6 +1000,7 @@ prob_behavior_particles<-array(0, dim=c(num_part, dim(transition_matrix)[2]))
 			itr_val<-cbind(itr_val,length(which(x_lbest[min_fit_index,]==1)))
 	
 			itr_data<-rbind(itr_data, itr_val)
+			}
 		}
 	
 		
@@ -1011,7 +1015,7 @@ prob_behavior_particles<-array(0, dim=c(num_part, dim(transition_matrix)[2]))
 		#print(globalpso_itr)
 		
 		scoringmatrix[bestgenelist,globalpso_itr]=1
-	colnames(itr_data)<-cnames_sum
+	#colnames(itr_data)<-cnames_sum
 #	write.table(itr_data, file=filestr, sep="\t", row.names=F)
 
 
@@ -1053,7 +1057,8 @@ testacc<-sum(diag(test.table))/(dim(modtest)[1])
 
 #print(paste("test acc:", testacc, sep=""))
 testacc_all<-c(testacc_all,testacc)
-		sumr<-paste("global num features ", length(feat_list)-1, "current best set of features ", overall_x_gbest, "global best accuracy ", 1-fitness_gbest," test acc ", testacc)
+		sumr<-paste("global num features ", length(feat_list)-1, "current best set of features ", overall_x_gbest, 
+		            "global best accuracy ", 1-fitness_gbest," test acc ", testacc)
 
 		filestr2<-paste(outloc,  "selected_feature_index_itr",globalpso_itr,".csv", sep="")
 	#	write.table(feat_ind, file=filestr2, sep=",", row.names=FALSE)

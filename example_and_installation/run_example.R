@@ -1,7 +1,7 @@
 library(optSelect)
 data(Golub)
 
-setwd("/Users/karanuppal/Documents/Gatech/Projects/Algorithms/TwostagePSO/optSelect_v0.0.1/example_and_installation/example_data_files/")
+
 #########Code to read data files#######
 #Example data files available at: https://github.com/kuppal2/optSelect/tree/master/example_and_installation
 trainm<-read.table("Golub_traindata.txt",sep="\t",header=TRUE)

@@ -37,7 +37,7 @@ suppressWarnings(dir.create(outloc))
   suppressWarnings(setwd(outloc))
   print("Starting processing now. Please check the Log.txt file for information on status updates and input parameters.")
   suppressWarnings(sink(file="Log.txt"))
-  
+  options(warn=-1)
   print("########Input parameters#######")
 print(paste("Stage 1 feature selection methods: ",paste(stage1.featsel.methods,collapse=";"),sep=""))
 print(paste("c1: ",c1,sep=""))
@@ -473,7 +473,7 @@ write.table(trainacc, file=filestr3, sep=",", row.names=FALSE)
 print("# of features after PSO:")
 print(dim(trainm)[2])
 
-
+options(warn=0)
 sink(file=NULL)
 suppressWarnings(sink(file=NULL))
 

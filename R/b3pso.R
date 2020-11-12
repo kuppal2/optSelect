@@ -541,12 +541,14 @@ prob_behavior_particles<-array(0, dim=c(num_part, dim(transition_matrix)[2]))
 					{
 					
 						fitness_lbest[i]<-fitness_x[i]
-						for (j in 1:dimsize)
-						{
+				#		for (j in 1:dimsize)
+				#		{
 							
-							x_lbest[i,j] <- x[i,j]
+				#			x_lbest[i,j] <- x[i,j]
 							
-						}
+				#		}
+						
+						x_lbest[i,] <- x[i,]
 				
 						num_featl<-length(which(x[i,]==1))	
 					}
@@ -585,13 +587,17 @@ prob_behavior_particles<-array(0, dim=c(num_part, dim(transition_matrix)[2]))
 	
 						#global_best_index<-round(runif(1,1,length(global_best_index)))
 						
-						for (j in 1:dimsize)
-						{
+					
+        #    for (j in 1:dimsize)
+				#		{
 							
-							x_gbest[j]<-x[global_best_index,j]
+				#			x_gbest[j]<-x[global_best_index,j]
 						
 								
-						}
+				#		}
+                                                
+                                                
+                                                x_gbest<-x[global_best_index,]
 						overall_gbest=x_gbest
 						
 						 overall_x_gbest<-x_gbest
@@ -649,7 +655,6 @@ prob_behavior_particles<-array(0, dim=c(num_part, dim(transition_matrix)[2]))
                                                  ran<-runif(1,0,1)
 
                                                 for (col in 1:dimsize)
-
                                                 {
                                                         #ran<-runif(1,0,1)
                                                         if (ran<0.7)
@@ -667,18 +672,9 @@ prob_behavior_particles<-array(0, dim=c(num_part, dim(transition_matrix)[2]))
                                                                         num_feat<-num_feat+1
                                                                 }
 
-                                                                #x_lbest[row,col]<-0
-                                                        #       if(ran==1)
-                                                        #       {
-                                                        #               num_feat<-num_feat+1
-                                                        #       }
                                                         }else{
                                                                 x[row,col]<-x_gbest[col]
-                                                                #x_lbest[row,col]<-1
-
-                                                                #col_sel[row,num_feat]<-col
-
-                                                        }
+                                                       }
 
                                                 }
                                                 count_feat[row]<-num_feat
@@ -687,36 +683,17 @@ prob_behavior_particles<-array(0, dim=c(num_part, dim(transition_matrix)[2]))
 
 						}
 					}
-							#	#print("exited")
-					
-		#			min_fit_x<-1000000000000000000000
-		#			v1<-sample(size=num_part*dimsize,x=c(0,1),replace=TRUE,prob=c(0.4,0.6))
-		#			dim(v1)<-c(num_part, dimsize)	
 						
-			#agent_behavior[row]<-sample(x=seq(1,dim(transition_matrix)[1]),size=num_part,replace=TRUE)
-						
-			#agent_behavior<-sample(x=c(1,4,3),prob=c(0.4,0.4,0.2), size=num_part,replace=TRUE)
-	
-			#agent_behavior<-sample(x=c(1,4),prob=c(0.3,0.7), size=num_part,replace=TRUE)
-			#agent_behavior<-sample(x=c(1,4,3),prob=c(0.3,0.4,0.3), size=num_part,replace=TRUE)	
-			#agent_behavior <- sample(x=1:dim(transition_matrix)[1], size = num_part, replace = TRUE, prob = c(confusionprob, followerprob,(1-(confusionprob+followerprob)),0))
 
-	 #agent_behavior <- sample(x=1:dim(transition_matrix)[1], size = num_part, replace = TRUE, prob = c(confusionprob, followerprob,leaderprob,(1-(confusionprob+followerprob+leaderprob))))
-
-		#print(agent_behavior)
-
-					#new addition in v19; revert to personal best
-					#x<-x_lbest	
-					#agent_behavior<-rep(4,num_part)
-
+				
 					#new addition in v20;
 					for (i in 1:num_part)
-                        		{
+          {
 						x[i,]<-x_lbest_vec
 					}
 					
 					save(agent_behavior,transition_matrix,num_part,file="d1.Rda")
-					agent_behavior[row]<-sample(x=seq(1,dim(transition_matrix)[1]),prob=c(0.25,0.25,0.25,0.25),size=num_part,replace=TRUE)
+					agent_behavior<-sample(x=seq(1,dim(transition_matrix)[1]),prob=c(0.25,0.25,0.25,0.25),size=num_part,replace=TRUE)
 					
 					#new addition in v7; removed in v13
 					#x_gbest<-runif(dimsize,0,1)

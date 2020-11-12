@@ -1,2 +1,5 @@
 export(run_pso,performCMA,b3pso,eval_fit_test_diff,get_KIindex,get_DSindex,find_similar_samples,nn_search,mdist,svm_cv,evalFunc_multiobj)
-import(parallel,e1071::svm,yaImpute::impute,pROC,bioDist,RankAggreg,CMA::GenerateLearningsets,CMA::GeneSelection,CMA::toplist,expm)
+import(parallel,pROC,bioDist,RankAggreg,expm)
+importFrom(CMA,GenerateLearningsets,GeneSelection,toplist)
+importFrom(e1071,svm)
+importFrom(yaImpute,impute)
